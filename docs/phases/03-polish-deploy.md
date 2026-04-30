@@ -87,6 +87,11 @@ Phase 2 makes it functional. Phase 3 makes it shippable. Polish lands now (not e
 - [ ] README updated with deploy instructions
 - [ ] One-page runbook: how to view logs, restart app, run migration
 - [ ] `.env.example` files in `backend/` and `frontend/`
+- [ ] Switch CHANGELOG to **git-cliff** (generated from conventional commits)
+  - Add `cliff.toml` at repo root with grouping config (feat, fix, docs, perf, refactor)
+  - Adopt conventional commit format project-wide; optionally enforce via `commitlint` + pre-commit hook
+  - Regenerate `CHANGELOG.md` on tag push in CI: `git cliff -o CHANGELOG.md`
+  - Remove the "manually edit CHANGELOG" rule from `CLAUDE.md`; replace with "write conventional commit messages"
 
 ## Files to touch
 

@@ -49,6 +49,7 @@ Node API (Fastify + Socket.IO)
 - **No abstractions until third use.** A bug fix doesn't need surrounding cleanup.
 - **No backwards-compat shims.** This is greenfield. Just change the code.
 - **Prefer editing existing files over creating new ones.** Especially: don't create new doc files unless asked.
+- **Update `CHANGELOG.md`** in the same commit as any user-visible change (features, behavior changes, schema, deploy, bugs users would notice). Append under `[Unreleased]`. Skip for typo fixes or pure internal refactors.
 - **Don't add error handling for impossible cases.** Validate at boundaries (user input, external APIs); trust internal calls.
 - **Real-time correctness over clever design.** Server is authoritative for time, scoring, question advancement.
 
