@@ -8,6 +8,7 @@ import {
   topLeaderboard,
 } from './engine.js';
 import { setGame } from './store.js';
+import { gameRepo } from '../db/repositories/gameRepo.js';
 
 type IO = Server<ClientToServerEvents, ServerToClientEvents>;
 
@@ -184,6 +185,29 @@ function endGame(io: IO, g: GameState) {
     finalLeaderboard: topLeaderboard(g, 50),
     gameId: g.gameId,
   });
+
+  if (g.dbQuizId && g.hostUserId) {
+    const startedAt = g.createdAt;
+    const endedAt = Date.now();
+    const playerCount = g.players.size;
+    gameRepo.recordGame({
+      quizId: g.dbQuizId,
+      hostUserId: g.hostUserId,
+      startedAt,
+      endedAt,
+      playerCount,
+    }).then(async (gameRow) => {
+      const leaderboard = topLeaderboard(g, g.players.size);
+      const results = leaderboard.map(entry => ({
+        playerNickname: entry.nickname,
+        finalScore: entry.score,
+        finalRank: entry.rank,
+      }));
+      await gameRepo.recordResults(gameRow.id, results);
+    }).catch(err => {
+      console.error('Failed to record game to DB', err);
+    });
+  }
 }
 
 export function emitPlayerList(io: IO, g: GameState) {

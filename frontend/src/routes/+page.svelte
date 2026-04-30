@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import { getSocket } from '$lib/socket';
   import { hostSession } from '$lib/stores/host';
+  import { auth } from '$lib/stores/auth';
 
   let pin = $state('');
   let creating = $state(false);
@@ -15,18 +16,11 @@
   }
 
   async function startHosting() {
-    creating = true;
-    createError = null;
-    const socket = getSocket();
-    socket.emit('create_game', {}, (res) => {
-      creating = false;
-      if (!res.ok) {
-        createError = res.error;
-        return;
-      }
-      hostSession.set({ gameId: res.gameId, hostToken: res.hostToken });
-      goto(`/host/${res.gameId}`);
-    });
+    if (!$auth.user) {
+      goto('/login');
+      return;
+    }
+    goto('/host');
   }
 </script>
 
@@ -67,5 +61,10 @@
     {#if createError}
       <div class="error">{createError}</div>
     {/if}
+  </div>
+</div>
+ary" onclick={startHosting}>
+      Host a game
+    </button>
   </div>
 </div>

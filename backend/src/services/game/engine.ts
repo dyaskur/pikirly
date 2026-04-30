@@ -22,6 +22,8 @@ export interface GameState {
   hostToken: string;
   hostSocketId: string | null;
   quiz: Quiz;
+  dbQuizId?: string;
+  hostUserId?: string;
   status: GameStatus;
   currentQuestionIndex: number;
   questionStartedAt: number | null;
@@ -31,12 +33,14 @@ export interface GameState {
   createdAt: number;
 }
 
-export function createGameState(quiz: Quiz, gameId: string): GameState {
+export function createGameState(quiz: Quiz, gameId: string, dbQuizId?: string, hostUserId?: string): GameState {
   return {
     gameId,
     hostToken: randomUUID(),
     hostSocketId: null,
     quiz,
+    dbQuizId,
+    hostUserId,
     status: 'lobby',
     currentQuestionIndex: -1,
     questionStartedAt: null,

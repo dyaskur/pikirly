@@ -1,4 +1,5 @@
 import type { Server, Socket } from 'socket.io';
+import type { FastifyInstance } from 'fastify';
 import type { ClientToServerEvents, ServerToClientEvents } from '@kahoot/shared';
 import { DEFAULT_QUIZ_ID, QUIZZES } from '../data/quizzes.js';
 import { createGameState, publicPlayers } from '../services/game/engine.js';
@@ -12,6 +13,7 @@ import {
 } from '../services/game/lifecycle.js';
 import { generatePin, getGame, setGame } from '../services/game/store.js';
 import { randomUUID } from 'node:crypto';
+import { quizRepo } from '../db/repositories/quizRepo.js';
 
 type IO = Server<ClientToServerEvents, ServerToClientEvents>;
 type IOSocket = Socket<ClientToServerEvents, ServerToClientEvents>;
@@ -34,17 +36,40 @@ function session(s: IOSocket): SocketSessionData {
   return d;
 }
 
-export function registerHandlers(io: IO) {
+export function registerHandlers(io: IO, app: FastifyInstance) {
   io.on('connection', (socket) => {
-    socket.on('create_game', (payload, cb) => {
+    socket.on('create_game', async (payload, cb) => {
       const quizId = payload.quizId ?? DEFAULT_QUIZ_ID;
-      const quiz = QUIZZES[quizId];
+      let quiz;
+      let user: any;
+      
+      if (quizId === DEFAULT_QUIZ_ID) {
+        quiz = QUIZZES[DEFAULT_QUIZ_ID];
+      } else {
+        try {
+          const cookieHeader = socket.handshake.headers.cookie || '';
+          const match = cookieHeader.match(/token=([^;]+)/);
+          if (match) {
+            user = app.jwt.verify(match[1]);
+          }
+        } catch (err) {
+          // ignore
+        }
+        
+        if (!user) {
+          cb({ ok: false, error: 'unauthorized' });
+          return;
+        }
+        
+        quiz = await quizRepo.getById(quizId, user.id);
+      }
+
       if (!quiz) {
         cb({ ok: false, error: 'unknown_quiz' });
         return;
       }
       const gameId = generatePin();
-      const game = createGameState(quiz, gameId);
+      const game = createGameState(quiz as any, gameId, quiz.id, user?.id);
       game.hostSocketId = socket.id;
       setGame(game);
 
