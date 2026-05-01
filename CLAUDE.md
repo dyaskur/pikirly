@@ -4,14 +4,19 @@ Read this before touching code. Architecture decisions are intentional — don't
 
 ## Project status
 
-**Phase 1 complete** (in-memory MVP with full scoring loop, time-decay, leaderboard, reconnect handling). **Next is Phase 2** (Postgres + Google OAuth + Quiz editor).
+**Phase 1 complete** (in-memory MVP). **Phase 2 complete** (Postgres + Google OAuth + Quiz editor). **Next is Phase 3** (Templates + AI generation).
 
 | # | Phase | Status | Action plan |
 |---|---|---|---|
 | 1 | Minimal playable loop, in-memory state | ✅ Done | [docs/phases/01-mvp.md](docs/phases/01-mvp.md) |
-| 2 | Postgres + Google OAuth + Quiz editor | 🔜 Next | [docs/phases/02-persistence-auth-editor.md](docs/phases/02-persistence-auth-editor.md) |
-| 3 | UX polish + deploy | 🔜 | [docs/phases/03-polish-deploy.md](docs/phases/03-polish-deploy.md) |
-| 4 | Google Meet add-on | 🔜 | [docs/phases/04-meet-addon.md](docs/phases/04-meet-addon.md) |
+| 2 | Postgres + Google OAuth + Quiz editor | ✅ Done | [docs/phases/02-persistence-auth-editor.md](docs/phases/02-persistence-auth-editor.md) |
+| 3 | Templates + AI generation | 🔜 Next | [docs/phases/03-templates-ai.md](docs/phases/03-templates-ai.md) |
+| 4 | Google Meet add-on | 🔜 | [docs/phases/04-meet.md](docs/phases/04-meet.md) |
+| 5 | Google Slides add-on | 🔜 | [docs/phases/05-slides.md](docs/phases/05-slides.md) |
+| 6 | Question type system (True/False, dynamic choices, randomize) | 🔜 | [docs/phases/06-question-types-foundation.md](docs/phases/06-question-types-foundation.md) |
+| 7 | Poll / Open Ended / Word Cloud | 🔜 | [docs/phases/07-poll-openended-wordcloud.md](docs/phases/07-poll-openended-wordcloud.md) |
+| 8 | Ordering / Ranking | 🔜 | [docs/phases/08-ordering-ranking.md](docs/phases/08-ordering-ranking.md) |
+| 9 | UX polish + deploy | 🔜 | [docs/phases/09-polish-deploy.md](docs/phases/09-polish-deploy.md) |
 | — | Redis multi-instance scaling | ⏸ Deferred | [docs/phases/deferred-redis.md](docs/phases/deferred-redis.md) |
 
 **For agents picking up work**: read the relevant phase doc — it contains a checklist of deliverables, files to touch, and verification steps. Don't infer; the plan is explicit.
@@ -92,13 +97,11 @@ Always run type checks before claiming a task done. Once Phase 2 lands, also run
 | Style/UI | `frontend/src/app.css` (design tokens) — global cascades from `.card` and `.btn-*` |
 | Reconnect/state-sync bug | `backend/src/ws/index.ts` `join_game` reconnect path |
 
-## Phase 2 starting points (next work)
+## Phase 3 starting points (next work)
 
-1. Add `db/` with `pg` or Kysely client
-2. Migrations: `users`, `quizzes`, `games`, `game_results` (schema in `docs/PLAN.md`)
-3. Move `data/quizzes.ts` to a seed script that populates `quizzes` table
-4. Google OAuth via `@fastify/oauth2` — JWT cookie issued, used by `create_game` handler
-5. Quiz CRUD REST endpoints (`GET/POST/PUT/DELETE /quizzes`) — owner-scoped
-6. Frontend `/host` quiz list + `/host/quiz/new` and `/host/quiz/:id/edit` editor pages
-7. `create_game` handler reads quiz from DB (verify ownership)
-8. `endGame` writes game + results to Postgres
+1. Define template library in `backend/src/data/templates.ts`
+2. `GET /templates` + `GET /templates/:id` REST endpoints
+3. "Start from template" flow in frontend quiz editor
+4. Install `@anthropic-ai/sdk`, add `ANTHROPIC_API_KEY` to env
+5. `POST /ai/generate-questions` endpoint with rate limiting
+6. "Generate with AI" drawer in quiz editor

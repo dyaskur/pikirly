@@ -1,4 +1,4 @@
-# Quizzr — Master Plan
+# Pikirly — Master Plan
 
 Real-time multiplayer quiz (Kahoot-style). MVP-first; scale only when needed.
 
@@ -10,9 +10,14 @@ This file is the entry point. For detail, follow links.
 |---|---|---|---|
 | 1 | Minimal playable loop, in-memory state | ✅ Done | [01-mvp.md](phases/01-mvp.md) |
 | 2 | Postgres + Google OAuth + Quiz editor | 🔜 Next | [02-persistence-auth-editor.md](phases/02-persistence-auth-editor.md) |
-| 3 | UX polish + deploy | 🔜 | [03-polish-deploy.md](phases/03-polish-deploy.md) |
-| 4 | Google Meet add-on | 🔜 | [04-meet-addon.md](phases/04-meet-addon.md) |
-| — | Redis multi-instance scaling | ⏸ Deferred (only if traffic demands) | [deferred-redis.md](phases/deferred-redis.md) |
+| 3 | Templates + AI Generation | 🔜 | [03-templates-ai.md](phases/03-templates-ai.md) |
+| 4 | Google Meet add-on | 🔜 | [04-meet.md](phases/04-meet.md) |
+| 5 | Google Slides add-on | 🔜 | [05-slides.md](phases/05-slides.md) |
+| 6 | Question Type System (Foundation) | 🔜 | [06-question-types-foundation.md](phases/06-question-types-foundation.md) |
+| 7 | Poll / Vote + Open Ended + Word Cloud | 🔜 | [07-poll-openended-wordcloud.md](phases/07-poll-openended-wordcloud.md) |
+| 8 | Ordering / Ranking | 🔜 | [08-ordering-ranking.md](phases/08-ordering-ranking.md) |
+| 9 | UX polish + deploy | 🔜 | [09-polish-deploy.md](phases/09-polish-deploy.md) |
+| — | Redis multi-instance scaling | ⏸ Deferred | [deferred-redis.md](phases/deferred-redis.md) |
 
 ## Reference docs
 

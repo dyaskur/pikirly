@@ -1,12 +1,12 @@
-# Phase 4 — Google Meet add-on
+# Phase 4 — Google Meet Add-on
 
 **Status**: 🔜
 **Depends on**: Phase 2 (DB + auth + `meeting_id` column), Phase 3 (deployed)
-**Goal**: A host running a Meet call launches Quizzr in the Meet side panel; participants play inside Meet without entering a PIN.
+**Goal**: A host running a Meet call launches Pikirly in the Meet side panel; participants play inside Meet without entering a PIN.
 
 ## Why this phase
 
-Distribution. Meet add-ons surface Quizzr to existing Meet users with zero install friction. Builds on Phase 2/3 infrastructure — no engine rewrite needed because design constraints were locked in early.
+Distribution. Meet add-ons surface Pikirly to existing Meet users with zero install friction. Builds on Phase 2/3 infrastructure — no engine rewrite needed because design constraints were locked in early.
 
 ## Out of scope (intentional)
 
@@ -16,11 +16,12 @@ Distribution. Meet add-ons surface Quizzr to existing Meet users with zero insta
 - Recording / replay of past games
 - Live host-to-participant voice prompts
 - Meet bot identity (host is still a real Google user)
+- Google Slides integration (Phase 5)
 
 ## Design constraints already satisfied
 
 - ✅ SPA renders in iframe (`adapter-static`, no SSR redirects)
-- ✅ `frame-ancestors` CSP can be set on static host (Phase 3)
+- ✅ `frame-ancestors` CSP can be set on static host (Phase 9)
 - ✅ Auth via JWT in `Authorization` header (not cookies — iframe-safe)
 - ✅ `meeting_id VARCHAR(64) NULL` reserved in `games` table (Phase 2)
 - ✅ Realtime engine is transport + game logic; no assumption about top-level page
@@ -31,8 +32,8 @@ Distribution. Meet add-ons surface Quizzr to existing Meet users with zero insta
 
 - [ ] Register add-on in Google Workspace Marketplace SDK
 - [ ] Manifest declares two surfaces:
-  - **Side panel** (player-facing): renders `https://quizzr.app/?mode=meet&surface=side`
-  - **Main stage** (host-facing leaderboard): renders `https://quizzr.app/?mode=meet&surface=stage`
+  - **Side panel** (player-facing): renders `https://pikirly.app/?mode=meet&surface=side`
+  - **Main stage** (host-facing leaderboard): renders `https://pikirly.app/?mode=meet&surface=stage`
 - [ ] OAuth scopes: `meetings.space.readonly` (to identify the meeting)
 
 ### 2. Frontend Meet bootstrap
@@ -78,7 +79,7 @@ Players in Meet have a Meet participant ID. We map that to our anonymous `player
 
 ### 6. Host launch flow
 
-- [ ] Side panel shows "Sign in to Quizzr" if not authed in Meet
+- [ ] Side panel shows "Sign in to Pikirly" if not authed in Meet
 - [ ] Once authed, host picks a quiz → `POST /games/by-meeting` → main stage loads with leaderboard
 - [ ] Players in Meet see side panel auto-join (no PIN entry)
 
@@ -114,7 +115,7 @@ docs/
 
 ## Acceptance criteria
 
-- A Meet host launches Quizzr from the side-panel button without leaving Meet
+- A Meet host launches Pikirly from the side-panel button without leaving Meet
 - Participants see the quiz auto-load with their Meet identity (no PIN, no nickname entry)
 - Full game playable inside Meet
 - Standalone web flow (Phase 1-3) continues to work unchanged

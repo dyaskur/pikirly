@@ -1,91 +1,108 @@
-# Quizzr — real-time multiplayer quiz
+# Pikirly — Real-Time Multiplayer Quiz
 
-Kahoot-style quiz game. Host creates a game, players join via 6-digit PIN, questions broadcast in real-time, time-decay scoring, leaderboard updates after each round.
+A Kahoot-style quiz platform. Hosts create and manage quizzes, start real-time games with a 6-digit PIN, and players participate via their mobile devices or browser.
 
-## Stack
+## Features
 
-- **Backend**: Node 24 + TypeScript + Fastify + Socket.IO
-- **Frontend**: SvelteKit (SPA mode, `adapter-static`)
-- **Persistence (Phase 2+)**: PostgreSQL + Google OAuth
-- **State**: in-memory `Map` (Redis swap deferred until scaling demands)
+- **Real-time Gameplay**: Questions broadcast instantly to all players using Socket.IO.
+- **Scoring**: Kahoot-style time-decay scoring (faster correct answers earn more points).
+- **Host Dashboard**: Create, edit, and delete custom quizzes.
+- **Authentication**: Secure login via Google OAuth 2.0.
+- **Persistence**: Quizzes and game history saved to PostgreSQL.
+- **Live Leaderboard**: Real-time rank updates after every question.
+- **Podium**: Final winners revealed at the end of the game.
 
-## Quick start
+## Tech Stack
 
-```bash
-# install once
-npm install
+- **Frontend**: [SvelteKit](https://kit.svelte.dev/) (SPA mode) + [Socket.IO Client](https://socket.io/docs/v4/client-api/)
+- **Backend**: [Fastify](https://fastify.dev/) + [Socket.IO](https://socket.io/) + [TypeScript](https://www.typescriptlang.org/)
+- **Database**: [PostgreSQL](https://www.postgresql.org/)
+- **ORM**: [Drizzle ORM](https://orm.drizzle.team/)
+- **Auth**: Google OAuth 2.0 via `@fastify/oauth2`
+- **Testing**: [Vitest](https://vitest.dev/) + [Testcontainers](https://testcontainers.com/) (Integration)
 
-# terminal 1 — backend on :3001
-cd backend && npm run dev
-
-# terminal 2 — frontend on :5173
-cd frontend && npm run dev
-```
-
-Open [http://localhost:5173](http://localhost:5173). One tab as host (click "Host a new game"), one or more tabs as players (enter PIN + nickname).
-
-### Smoke test (headless)
-
-```bash
-cd backend && node scripts/smoke.mjs
-```
-
-Drives a full game with 2 simulated players.
-
-## Project layout
+## Project Structure
 
 ```
 kahoot-clone/
-├── shared/              # @kahoot/shared — event contract + scoring fn
-│   └── src/index.ts
-├── backend/
+├── shared/              # Shared types, constants, and logic (scoring, events)
+├── backend/             # Fastify server
 │   ├── src/
-│   │   ├── server.ts                     # Fastify + Socket.IO bootstrap
-│   │   ├── ws/index.ts                   # Socket event handlers
-│   │   ├── services/game/
-│   │   │   ├── engine.ts                 # GameState + pure helpers
-│   │   │   ├── lifecycle.ts              # startGame, beginQuestion, recordAnswer, endQuestion
-│   │   │   └── store.ts                  # in-memory Map (→ Redis if scale demands)
-│   │   ├── data/quizzes.ts               # hard-coded JSON quiz seed
-│   │   └── types/quiz.ts
-│   └── scripts/smoke.mjs                 # E2E test driver
-├── frontend/
-│   ├── src/
-│   │   ├── routes/
-│   │   │   ├── +page.svelte              # landing (PIN input + host button)
-│   │   │   ├── join/+page.svelte         # nickname + PIN entry
-│   │   │   ├── host/[gameId]/+page.svelte
-│   │   │   └── play/[gameId]/+page.svelte
-│   │   ├── lib/
-│   │   │   ├── socket.ts                 # Socket.IO client singleton
-│   │   │   └── stores/                   # player + host session (localStorage)
-│   │   ├── app.css                       # design tokens + utilities
-│   │   └── app.html
-│   └── svelte.config.js
-└── docs/
-    ├── PLAN.md                           # architecture + roadmap + decisions
-    └── EVENTS.md                         # WebSocket event reference
+│   │   ├── auth/        # OAuth & JWT middleware
+│   │   ├── db/          # Drizzle schema, client, and repositories
+│   │   ├── routes/      # REST API endpoints (Auth, Quizzes)
+│   │   ├── services/    # Core game engine and lifecycle logic
+│   │   ├── ws/          # WebSocket event handlers
+│   │   └── server.ts    # Main entry point
+│   ├── scripts/         # DB seeding and E2E smoke tests
+│   └── tests/           # Unit and integration tests
+└── frontend/            # SvelteKit SPA
+    ├── src/
+    │   ├── lib/         # Shared components, stores, and API wrappers
+    │   ├── routes/      # App pages (Host dashboard, Join, Play, Login)
+    │   └── app.css      # Global styles and design tokens
 ```
 
-## Docs
+## Getting Started
 
-Start here:
+### Prerequisites
 
-- [`CLAUDE.md`](CLAUDE.md) — instructions for AI coding agents (read this first)
-- [`docs/PLAN.md`](docs/PLAN.md) — master plan + roadmap with links to per-phase docs
+- Node.js 20+
+- PostgreSQL (or Docker for Testcontainers)
 
-Reference:
+### Setup
 
-- [`docs/architecture.md`](docs/architecture.md) — diagram, layer separation, conventions
-- [`docs/data-model.md`](docs/data-model.md) — game state shape, Postgres schema, Redis schema
-- [`docs/EVENTS.md`](docs/EVENTS.md) — WebSocket event contract
-- [`docs/testing.md`](docs/testing.md) — testing strategy, tools, what to test/skip
-- [`docs/decisions.md`](docs/decisions.md) — ADR-style decisions log
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-Per-phase action plans (each is self-contained — agents pick one and execute):
+2. **Environment Variables**:
+   Copy `.env.example` in `backend/` to `.env` and fill in your values (Database URL, Google OAuth credentials, etc.).
 
-- [`docs/phases/01-mvp.md`](docs/phases/01-mvp.md) — Phase 1 (done)
-- [`docs/phases/02-persistence-auth-editor.md`](docs/phases/02-persistence-auth-editor.md) — Phase 2 (next)
-- [`docs/phases/03-polish-deploy.md`](docs/phases/03-polish-deploy.md) — Phase 3
-- [`docs/phases/04-meet-addon.md`](docs/phases/04-meet-addon.md) — Phase 4
-- [`docs/phases/deferred-redis.md`](docs/phases/deferred-redis.md) — Redis swap (deferred)
+3. **Database Migration**:
+   ```bash
+   cd backend
+   npm run db:generate
+   npm run db:migrate
+   ```
+
+4. **Run Development Servers**:
+   ```bash
+   # Terminal 1: Backend
+   cd backend && npm run dev
+   
+   # Terminal 2: Frontend
+   cd frontend && npm run dev
+   ```
+
+Visit `http://localhost:5173` to start playing.
+
+## Development
+
+### Testing
+
+- **Backend**: `cd backend && npm test`
+- **Smoke Test**: `cd backend && node scripts/smoke.mjs` (Requires backend running)
+
+## Documentation
+
+Detailed documentation is available in the `docs/` directory:
+
+- [Master Plan & Roadmap](docs/PLAN.md)
+- [Architecture & Layer Separation](docs/architecture.md)
+- [Data Model & Schema](docs/data-model.md)
+- [WebSocket Event Contract](docs/EVENTS.md)
+- [Testing Strategy](docs/testing.md)
+
+---
+
+### Roadmap
+
+1. ✅ **Phase 1**: Minimal playable loop (In-memory)
+2. ✅ **Phase 2**: Persistence (Postgres) + Auth (Google) + Quiz Editor
+3. 🔜 **Phase 3**: Templates + AI Quiz Generation
+4. 🔜 **Phase 4**: Google Meet Add-on
+5. 🔜 **Phase 5**: Google Slides Add-on
+6. 🔜 **Phase 6**: Advanced Question Types (True/False, Poll, etc.)
+7. 🔜 **Phase 9**: UX Polish & Deployment

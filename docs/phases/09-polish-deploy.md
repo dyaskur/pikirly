@@ -1,12 +1,12 @@
-# Phase 3 — UX polish + deploy
+# Phase 9 — UX Polish + Deploy
 
 **Status**: 🔜
-**Depends on**: Phase 2 done
+**Depends on**: All prior phases
 **Goal**: A polished, mobile-first version of the app is live on a real domain with real users able to play.
 
 ## Why this phase
 
-Phase 2 makes it functional. Phase 3 makes it shippable. Polish lands now (not earlier) so we don't iterate on UI that might be thrown away.
+All previous phases make it functional. Phase 9 makes it shippable. Polish lands last so we don't iterate on UI that might be thrown away during feature development.
 
 ## Out of scope (intentional)
 
@@ -60,13 +60,13 @@ Phase 2 makes it functional. Phase 3 makes it shippable. Polish lands now (not e
 - [ ] **Frontend**: Cloudflare Pages or Vercel free
   - Build: `npm run build` in `frontend/` → static output in `.svelte-kit/output/client`
   - Set `VITE_BACKEND_URL` to production backend URL at build time
-- [ ] **Domain**: $10/yr (e.g., `quizzr.app`)
+- [ ] **Domain**: $10/yr (e.g., `pikirly.app`)
   - DNS A/CNAME → Cloudflare Pages
-  - Subdomain `api.quizzr.app` → Fly.io app
+  - Subdomain `api.pikirly.app` → Fly.io app
 - [ ] **Google OAuth**: register production redirect URI
 - [ ] **Smoke test in prod**: 3 devices, full game
 
-### 5. CI
+### 5. CI/CD
 
 - [ ] GitHub Actions workflow on every PR + push to main:
   - `npm ci`
@@ -75,6 +75,8 @@ Phase 2 makes it functional. Phase 3 makes it shippable. Polish lands now (not e
   - `vitest run` with Docker-in-CI for testcontainers Postgres
   - Layer caching for faster runs
 - [ ] Block merge on red
+- [ ] CD: auto-deploy to Fly.io on merge to main (via `flyctl deploy`)
+- [ ] CodeRabbit + CursorBot: add `.coderabbit.yaml` config
 
 ### 6. Observability
 
@@ -115,6 +117,11 @@ frontend/
   src/routes/play/[gameId]/+page.svelte    # MODIFY: countdown ring
   .env.example                      # NEW
 
+.github/
+  workflows/ci.yml                  # NEW
+  workflows/cd.yml                  # NEW
+.coderabbit.yaml                    # NEW
+
 docs/
   RUNBOOK.md                        # NEW
 ```
@@ -134,6 +141,7 @@ docs/
 - Mobile users can play smoothly without zooming or horizontal scrolling
 - Brief network blips (< 30s) recover without user action
 - Total monthly cost under $15 (domain $10/yr ≈ $0.85/mo + Fly free + Neon free + Cloudflare free)
+- CI blocks merge on type errors or failing tests
 
 ## Reference
 

@@ -1,6 +1,6 @@
 # Phase 2 — Postgres + Google OAuth + Quiz editor
 
-**Status**: 🔜 Next
+**Status**: ✅ Done
 **Depends on**: Phase 1 done
 **Goal**: A signed-in user creates a quiz in the editor, hosts a game from it, and the result is saved to Postgres.
 
