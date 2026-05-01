@@ -10,6 +10,30 @@ Categories: **Added**, **Changed**, **Deprecated**, **Removed**, **Fixed**, **Se
 
 ### Added
 - `CHANGELOG.md` — this file. All future changes land here under `[Unreleased]` until a release is cut.
+- **Phase 2: Postgres + Google OAuth + Quiz editor**
+  - Drizzle ORM schema for `users`, `quizzes`, `games`, `game_results` (`backend/src/db/schema.ts`)
+  - Initial Drizzle migration (`backend/src/db/migrations/0000_*.sql`)
+  - Repositories: `userRepo`, `quizRepo`, `gameRepo` (`backend/src/db/repositories/`)
+  - Google OAuth flow via `@fastify/oauth2`; JWT issued in HTTP-only cookie
+  - Auth routes: `GET /auth/google`, `GET /auth/google/callback`, `POST /auth/logout`, `GET /auth/me`
+  - Quiz CRUD REST routes: `GET/POST/PUT/DELETE /quizzes` (owner-scoped, zod-validated, 404 not 403 for non-owner)
+  - Frontend `/login` page with Google sign-in button
+  - Frontend `/host` quiz dashboard (list / host / edit / delete)
+  - Frontend quiz editor at `/host/quiz/new` and `/host/quiz/:id/edit` (shared `QuizEditor.svelte` component)
+  - `gameRepo.recordGame` + `gameRepo.recordResults` write game history at `game_end` (off-the-realtime-loop)
+  - Vitest + Testcontainers setup (`backend/vitest.config.ts`, `backend/tests/global-setup.ts`)
+  - Unit tests for `engine.ts` and `lifecycle.ts`; integration tests for `userRepo`, `quizRepo`, `gameRepo`
+  - Idempotent seed script (`backend/scripts/seed.ts`)
+  - `Question` and `Quiz` types exported from `@kahoot/shared`
+  - Socket.IO handshake middleware decodes JWT cookie → `socket.data.user`
+
+### Changed
+- `create_game` payload `quizId` is now required for non-default quizzes; DB-backed quizzes verify owner
+- `/auth/me` returns the user object directly (was nested under `{ user }`)
+- Backend `data/quizzes.ts` is now a fallback / seed source only — no longer the authoritative quiz list
+
+### Fixed
+- Various Phase 2 review fixes before commit: type-check passes, no `as any` in WS create_game, quiz list shows correct question count, Vitest containers start once per run (not per file)
 
 ## [2026-04-30]
 

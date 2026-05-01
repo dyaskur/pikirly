@@ -25,6 +25,12 @@ interface SocketSessionData {
   hostToken?: string;
 }
 
+interface AuthedUser {
+  id: string;
+  email: string;
+  name: string;
+}
+
 const sessions = new WeakMap<IOSocket, SocketSessionData>();
 
 function session(s: IOSocket): SocketSessionData {
@@ -37,33 +43,35 @@ function session(s: IOSocket): SocketSessionData {
 }
 
 export function registerHandlers(io: IO, app: FastifyInstance) {
+  // Parse JWT cookie at handshake; attach decoded user to socket.data if present.
+  // Absent or invalid cookie is fine — only DB-backed quiz creation requires it.
+  io.use((socket, next) => {
+    const cookieHeader = socket.handshake.headers.cookie || '';
+    const match = cookieHeader.match(/token=([^;]+)/);
+    if (match) {
+      try {
+        socket.data.user = app.jwt.verify(match[1]) as AuthedUser;
+      } catch {
+        // invalid token — treat as anonymous
+      }
+    }
+    next();
+  });
+
   io.on('connection', (socket) => {
     socket.on('create_game', async (payload, cb) => {
       const quizId = payload.quizId ?? DEFAULT_QUIZ_ID;
       let quizForGame: { id: string; title: string; questions: typeof QUIZZES[string]['questions'] } | null = null;
-      let userId: string | undefined;
+      const user = socket.data.user as AuthedUser | undefined;
+      let userId: string | undefined = user?.id;
 
       if (quizId === DEFAULT_QUIZ_ID) {
         quizForGame = QUIZZES[DEFAULT_QUIZ_ID];
       } else {
-        let user: { id: string; email: string; name: string } | null = null;
-        try {
-          const cookieHeader = socket.handshake.headers.cookie || '';
-          const match = cookieHeader.match(/token=([^;]+)/);
-          if (match) {
-            const payload = app.jwt.verify(match[1]) as { id: string; email: string; name: string };
-            user = payload;
-          }
-        } catch {
-          // invalid token → unauthorized below
-        }
-
         if (!user) {
           cb({ ok: false, error: 'unauthorized' });
           return;
         }
-        userId = user.id;
-
         const row = await quizRepo.getById(quizId, user.id);
         if (row) {
           quizForGame = { id: row.id, title: row.title, questions: row.questions };

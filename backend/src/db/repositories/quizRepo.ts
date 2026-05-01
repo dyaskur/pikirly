@@ -32,7 +32,6 @@ export const quizRepo = {
     const updated = await db.update(quizzes).set({
       title: dto.title,
       questions: dto.questions,
-      updatedAt: new Date(),
     }).where(and(eq(quizzes.id, id), eq(quizzes.ownerUserId, ownerId))).returning();
     return updated[0] || null;
   },
