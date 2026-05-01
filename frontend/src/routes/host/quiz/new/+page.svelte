@@ -1,5 +1,5 @@
 <script lang="ts">
-  import EditPage from '../[id]/edit/+page.svelte';
+  import QuizEditor from '$lib/components/QuizEditor.svelte';
 </script>
 
-<EditPage />
+<QuizEditor />

@@ -40,36 +40,44 @@ export function registerHandlers(io: IO, app: FastifyInstance) {
   io.on('connection', (socket) => {
     socket.on('create_game', async (payload, cb) => {
       const quizId = payload.quizId ?? DEFAULT_QUIZ_ID;
-      let quiz;
-      let user: any;
-      
+      let quizForGame: { id: string; title: string; questions: typeof QUIZZES[string]['questions'] } | null = null;
+      let userId: string | undefined;
+
       if (quizId === DEFAULT_QUIZ_ID) {
-        quiz = QUIZZES[DEFAULT_QUIZ_ID];
+        quizForGame = QUIZZES[DEFAULT_QUIZ_ID];
       } else {
+        let user: { id: string; email: string; name: string } | null = null;
         try {
           const cookieHeader = socket.handshake.headers.cookie || '';
           const match = cookieHeader.match(/token=([^;]+)/);
           if (match) {
-            user = app.jwt.verify(match[1]);
+            const payload = app.jwt.verify(match[1]) as { id: string; email: string; name: string };
+            user = payload;
           }
-        } catch (err) {
-          // ignore
+        } catch {
+          // invalid token → unauthorized below
         }
-        
+
         if (!user) {
           cb({ ok: false, error: 'unauthorized' });
           return;
         }
-        
-        quiz = await quizRepo.getById(quizId, user.id);
+        userId = user.id;
+
+        const row = await quizRepo.getById(quizId, user.id);
+        if (row) {
+          quizForGame = { id: row.id, title: row.title, questions: row.questions };
+        }
       }
 
-      if (!quiz) {
+      if (!quizForGame) {
         cb({ ok: false, error: 'unknown_quiz' });
         return;
       }
       const gameId = generatePin();
-      const game = createGameState(quiz as any, gameId, quiz.id, user?.id);
+      // Only pass dbQuizId for DB-backed quizzes — the default seed has a non-UUID id and isn't in the games FK target.
+      const dbQuizId = quizId === DEFAULT_QUIZ_ID ? undefined : quizForGame.id;
+      const game = createGameState(quizForGame, gameId, dbQuizId, userId);
       game.hostSocketId = socket.id;
       setGame(game);
 

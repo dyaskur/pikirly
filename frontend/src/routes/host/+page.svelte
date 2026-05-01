@@ -1,32 +1,31 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { api } from '$lib/api';
   import { auth } from '$lib/stores/auth';
   import { goto } from '$app/navigation';
   import { getSocket } from '$lib/socket';
   import { hostSession } from '$lib/stores/host';
-  import type { Quiz } from '../../../../shared/src/index'; // Wait, let's just define a local type or import from shared. Wait, the prompt says "The backend currently allows optional for the default quiz". The shared/src/index.ts I read doesn't have Quiz exported. I'll define it here.
 
-  let quizzes = $state<any[]>([]);
+  interface QuizListItem {
+    id: string;
+    title: string;
+    questionCount: number;
+    updatedAt: string;
+  }
+
+  let quizzes = $state<QuizListItem[]>([]);
   let loading = $state(true);
   let error = $state<string | null>(null);
+  let loaded = $state(false);
 
   $effect(() => {
-    if (!$auth.loading && !$auth.user) {
+    if ($auth.loading) return;
+    if (!$auth.user) {
       goto('/login');
+      return;
     }
-  });
-
-  onMount(async () => {
-    if (!$auth.loading && $auth.user) {
-      loadQuizzes();
-    }
-  });
-
-  // Watch for auth state changes if we mount while loading
-  $effect(() => {
-    if (!$auth.loading && $auth.user && loading && quizzes.length === 0 && !error) {
-      loadQuizzes();
+    if (!loaded) {
+      loaded = true;
+      void loadQuizzes();
     }
   });
 
@@ -63,7 +62,7 @@
     try {
       const res = await api(`/quizzes/${id}`, { method: 'DELETE' });
       if (res.ok) {
-        quizzes = quizzes.filter(q => q.id !== id);
+        quizzes = quizzes.filter((q) => q.id !== id);
       } else {
         alert('Failed to delete quiz');
       }
@@ -108,7 +107,7 @@
           <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px;">
             <div>
               <div style="font-weight: bold; font-size: 1.1rem;">{quiz.title}</div>
-              <div class="muted" style="font-size: 0.9rem;">{quiz.questions?.length || 0} questions</div>
+              <div class="muted" style="font-size: 0.9rem;">{quiz.questionCount} {quiz.questionCount === 1 ? 'question' : 'questions'}</div>
             </div>
             <div style="display: flex; gap: 0.5rem;">
               <button class="btn-primary" onclick={() => hostQuiz(quiz.id)}>Host</button>

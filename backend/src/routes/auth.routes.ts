@@ -1,28 +1,34 @@
 import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
 import { userRepo } from '../db/repositories/userRepo.js';
 import { verifyJwt } from '../auth/middleware.js';
+
+const googleUserInfoSchema = z.object({
+  id: z.string(),
+  email: z.string(),
+  name: z.string().optional(),
+});
 
 export async function authRoutes(app: FastifyInstance) {
   // GET /auth/google - handled by oauth2 plugin directly because of startRedirectPath
 
   app.get('/auth/google/callback', async (req, reply) => {
     const token = await app.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
-    
-    // Fetch user info from Google
+
     const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
       headers: { Authorization: `Bearer ${token.token.access_token}` },
     });
-    const userInfo = await userInfoResponse.json();
-
-    if (!userInfo.id) {
+    const parsed = googleUserInfoSchema.safeParse(await userInfoResponse.json());
+    if (!parsed.success) {
       reply.status(400).send({ error: 'oauth_failed', message: 'Failed to get user info' });
       return;
     }
+    const userInfo = parsed.data;
 
     const user = await userRepo.findOrCreateByGoogleSub(
       userInfo.id,
       userInfo.email,
-      userInfo.name || userInfo.email
+      userInfo.name ?? userInfo.email,
     );
 
     const jwtToken = await reply.jwtSign({
@@ -48,6 +54,6 @@ export async function authRoutes(app: FastifyInstance) {
   });
 
   app.get('/auth/me', { preValidation: [verifyJwt] }, async (req, reply) => {
-    reply.send({ user: req.user });
+    reply.send(req.user);
   });
 }
