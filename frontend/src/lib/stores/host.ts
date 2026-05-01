@@ -5,7 +5,7 @@ export interface HostSession {
   hostToken: string;
 }
 
-const KEY = 'quizzr.host';
+const KEY = 'pikirly.host';
 
 function load(): HostSession | null {
   if (typeof localStorage === 'undefined') return null;

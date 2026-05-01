@@ -10,6 +10,11 @@ import { getGame } from './services/game/store.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { quizRoutes } from './routes/quiz.routes.js';
 
+// Bypass self-signed certificate errors for local development behind corporate proxies
+if (process.env.NODE_ENV !== 'production') {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
 const PORT = Number(process.env.PORT ?? 3001);
 const HOST = process.env.HOST ?? '0.0.0.0';
 const ORIGIN = process.env.CORS_ORIGIN ?? 'http://localhost:5173';
@@ -45,6 +50,7 @@ async function main() {
 
   await app.register(authRoutes);
   await app.register(quizRoutes);
+  await app.register(aiRoutes);
 
   app.get('/games/:gameId', async (req, reply) => {
     const { gameId } = req.params as { gameId: string };

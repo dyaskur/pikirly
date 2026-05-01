@@ -6,7 +6,7 @@ export interface PlayerSession {
   nickname: string;
 }
 
-const KEY = 'quizzr.player';
+const KEY = 'pikirly.player';
 
 function load(): PlayerSession | null {
   if (typeof localStorage === 'undefined') return null;

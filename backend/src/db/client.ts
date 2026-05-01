@@ -6,6 +6,7 @@ const pool = new pg.Pool({
   connectionString: config.DATABASE_URL,
   max: 10,
   idleTimeoutMillis: 30000,
+  ssl: process.env.NODE_ENV === 'production' ? true : { rejectUnauthorized: false },
 });
 
 export const db = drizzle(pool);

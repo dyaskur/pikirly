@@ -1,4 +1,9 @@
 import 'dotenv/config';
+
+if (process.env.NODE_ENV !== 'production') {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
 import { eq, and } from 'drizzle-orm';
 import { db } from '../src/db/client.js';
 import { users, quizzes } from '../src/db/schema.js';

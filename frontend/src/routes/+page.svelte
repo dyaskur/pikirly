@@ -27,7 +27,7 @@
 <div class="center">
   <div class="card fade-in" style="max-width: 480px;">
     <div style="text-align:center; margin-bottom:24px;">
-      <div style="font-size: 2.6rem; font-weight: 900; color: var(--brand); letter-spacing: -0.02em;">Quizzr</div>
+      <div style="font-size: 2.6rem; font-weight: 900; color: var(--brand); letter-spacing: -0.02em;">Pikirly</div>
       <div class="muted" style="margin-top: 4px;">Real-time multiplayer quizzes</div>
     </div>
 
