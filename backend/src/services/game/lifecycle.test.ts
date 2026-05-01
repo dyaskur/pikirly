@@ -3,9 +3,9 @@ import { startGame, beginQuestion, maybeEndEarly, recordAnswer, cleanupGame, roo
 import { createGameState, type GameState } from './engine.js';
 import { QUIZZES } from '../../data/quizzes.js';
 import { Server } from 'socket.io';
-import { gameRepo } from '../db/repositories/gameRepo.js';
+import { gameRepo } from '../../db/repositories/gameRepo.js';
 
-vi.mock('../db/repositories/gameRepo.js', () => ({
+vi.mock('../../db/repositories/gameRepo.js', () => ({
   gameRepo: {
     recordGame: vi.fn().mockResolvedValue({ id: 'game-db-id' }),
     recordResults: vi.fn().mockResolvedValue(undefined),

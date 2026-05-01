@@ -1,12 +1,2 @@
-export interface Question {
-  text: string;
-  choices: string[];
-  correct: number;
-  limitMs: number;
-}
-
-export interface Quiz {
-  id: string;
-  title: string;
-  questions: Question[];
-}
+// Re-export shared types so older backend imports keep working.
+export type { Question, Quiz } from '@kahoot/shared';

@@ -4,11 +4,10 @@ import { scoreAnswer } from '@kahoot/shared';
 import {
   type GameState,
   answerDistribution,
-  publicPlayers,
   topLeaderboard,
 } from './engine.js';
 import { setGame } from './store.js';
-import { gameRepo } from '../db/repositories/gameRepo.js';
+import { gameRepo } from '../../db/repositories/gameRepo.js';
 
 type IO = Server<ClientToServerEvents, ServerToClientEvents>;
 
@@ -187,32 +186,28 @@ function endGame(io: IO, g: GameState) {
   });
 
   if (g.dbQuizId && g.hostUserId) {
-    const startedAt = g.createdAt;
-    const endedAt = Date.now();
-    const playerCount = g.players.size;
-    gameRepo.recordGame({
-      quizId: g.dbQuizId,
-      hostUserId: g.hostUserId,
-      startedAt,
-      endedAt,
-      playerCount,
-    }).then(async (gameRow) => {
-      const leaderboard = topLeaderboard(g, g.players.size);
-      const results = leaderboard.map(entry => ({
-        playerNickname: entry.nickname,
-        finalScore: entry.score,
-        finalRank: entry.rank,
-      }));
-      await gameRepo.recordResults(gameRow.id, results);
-    }).catch(err => {
-      console.error('Failed to record game to DB', err);
-    });
+    void persistGame(g);
   }
 }
 
-export function emitPlayerList(io: IO, g: GameState) {
-  // (helper; currently we emit player_joined incrementally — kept for future use)
-  void publicPlayers(g);
+async function persistGame(g: GameState): Promise<void> {
+  try {
+    const gameRow = await gameRepo.recordGame({
+      quizId: g.dbQuizId!,
+      hostUserId: g.hostUserId!,
+      startedAt: g.createdAt,
+      endedAt: Date.now(),
+      playerCount: g.players.size,
+    });
+    const results = topLeaderboard(g, g.players.size).map((entry) => ({
+      playerNickname: entry.nickname,
+      finalScore: entry.score,
+      finalRank: entry.rank,
+    }));
+    await gameRepo.recordResults(gameRow.id, results);
+  } catch (err) {
+    console.error('Failed to record game to DB', err);
+  }
 }
 
 export function cleanupGame(gameId: string) {

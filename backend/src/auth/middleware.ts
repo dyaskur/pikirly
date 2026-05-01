@@ -1,12 +1,15 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
+import type { OAuth2Namespace } from '@fastify/oauth2';
+
+declare module '@fastify/jwt' {
+  interface FastifyJWT {
+    user: { id: string; email: string; name: string };
+  }
+}
 
 declare module 'fastify' {
-  interface FastifyRequest {
-    user?: {
-      id: string;
-      email: string;
-      name: string;
-    };
+  interface FastifyInstance {
+    googleOAuth2: OAuth2Namespace;
   }
 }
 

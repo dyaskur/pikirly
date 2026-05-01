@@ -8,3 +8,5 @@ build
 *.log
 .claude
 .idea
+vite.config.ts.timestamp-*
+vite.config.js.timestamp-*

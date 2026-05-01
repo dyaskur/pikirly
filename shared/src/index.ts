@@ -3,6 +3,20 @@
 
 export type GameStatus = 'lobby' | 'in_question' | 'between' | 'ended';
 
+export interface Question {
+  id: string;
+  text: string;
+  choices: string[];
+  correct: number; // index 0..choices.length-1
+  limitMs: number;
+}
+
+export interface Quiz {
+  id: string;
+  title: string;
+  questions: Question[];
+}
+
 export interface PlayerPublic {
   playerId: string;
   nickname: string;

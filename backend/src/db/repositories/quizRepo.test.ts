@@ -17,8 +17,8 @@ describe('quizRepo', () => {
     const quizData = {
       title: 'Test Quiz',
       questions: [
-        { id: '1', text: 'Q1', type: 'choice' as const, timeLimit: 20, points: 1000, options: [{ id: 'o1', text: 'Op1', isCorrect: true }] }
-      ]
+        { id: '1', text: 'Q1', choices: ['A', 'B', 'C', 'D'], correct: 0, limitMs: 20_000 },
+      ],
     };
 
     const created = await quizRepo.create(userId, quizData);

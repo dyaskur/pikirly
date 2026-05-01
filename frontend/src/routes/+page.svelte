@@ -63,8 +63,3 @@
     {/if}
   </div>
 </div>
-ary" onclick={startHosting}>
-      Host a game
-    </button>
-  </div>
-</div>

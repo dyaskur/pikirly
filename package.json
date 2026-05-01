@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "workspaces": ["backend", "frontend", "shared"],
   "scripts": {
-    "dev": "npm run dev --workspaces --if-present",
+    "dev": "npx concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "npm run dev -w backend",
     "dev:frontend": "npm run dev -w frontend"
   }
