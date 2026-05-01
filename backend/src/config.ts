@@ -9,6 +9,9 @@ const envSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   JWT_SECRET: z.string().optional(),
   SESSION_SECRET: z.string().optional(),
+  AI_PROVIDER: z.string().default('straico'),
+  OPENAI_API_KEY: z.string().optional(),
+  STRAICO_API_KEY: z.string().optional(),
 });
 
 export const config = envSchema.parse(process.env);

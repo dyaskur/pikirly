@@ -9,6 +9,7 @@ import { registerHandlers } from './ws/index.js';
 import { getGame } from './services/game/store.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { quizRoutes } from './routes/quiz.routes.js';
+import { aiRoutes } from './routes/ai.routes.js';
 
 // Bypass self-signed certificate errors for local development behind corporate proxies
 if (process.env.NODE_ENV !== 'production') {

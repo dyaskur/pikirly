@@ -29,24 +29,29 @@ Blank-slate creation is friction. Templates and AI generation lower the barrier 
   - On select → pre-populate quiz editor with template questions (editable)
 - [ ] Templates are read-only system data — not stored in DB, no CRUD
 
-### 2. AI question generation
+### 2. AI question generation (Multi-provider)
 
-- [ ] Install `@anthropic-ai/sdk` in backend
+- [ ] Design pluggable AI service architecture in `backend/src/services/ai/`:
+  - `types.ts`: Define `AIProvider` interface and `GenerateQuestionsOptions`.
+  - `service.ts`: Central `AIService` orchestrator.
+  - `adapters/`: Provider-specific implementations using direct REST (`fetch`):
+    - `openai.ts`: OpenAI Chat Completions (REST).
+    - `straico.ts`: Straico Native Prompt V1 (REST).
 - [ ] New REST endpoint `POST /ai/generate-questions`:
-  - Auth: JWT (hosts only)
-  - Body: `{ topic: string, count: number (1–20), difficulty?: 'easy'|'medium'|'hard' }`
-  - Calls Claude API with structured output prompt
-  - Returns: `Question[]` matching existing schema
-  - Rate limit: 5 requests/min per user (`@fastify/rate-limit` already in Phase 9)
-- [ ] Prompt design:
-  - System: instruct Claude to return valid JSON array of `Question` objects
-  - Include schema definition in system prompt
-  - Use `limitMs: 20000` default; vary by difficulty
-- [ ] Frontend: "Generate with AI" button in quiz editor
-  - Drawer/modal: topic input + count slider (1–20) + difficulty select
-  - On submit → spinner → append generated questions to current quiz (editable)
-  - Error state for rate limit / API failure
-- [ ] Store `ANTHROPIC_API_KEY` in env; add to `.env.example`
+  - Auth: JWT (hosts only).
+  - Body: `{ topic: string, count: number (1–20), difficulty?: 'easy' | 'medium' | 'hard', provider?: string }`.
+  - Calls `AIService.generateQuestions(options)`.
+- [ ] Prompt design & Validation:
+  - System prompt for valid JSON array of `Question` objects.
+  - Zod validation of AI output before returning to client.
+- [ ] Environment Variables:
+  - `AI_PROVIDER`: Default provider (e.g., `straico`).
+  - `OPENAI_API_KEY`: API key for OpenAI.
+  - `STRAICO_API_KEY`: API key for Straico.
+- [ ] Rate limit: 5 requests/min per user.
+- [ ] Frontend: "Generate with AI" button in quiz editor.
+  - Drawer/modal: topic input + count slider (1–20) + difficulty select.
+  - Error state for rate limit / API failure.
 
 ### 3. Template + AI polish
 

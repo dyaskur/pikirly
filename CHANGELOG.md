@@ -9,6 +9,11 @@ Categories: **Added**, **Changed**, **Deprecated**, **Removed**, **Fixed**, **Se
 ## [Unreleased]
 
 ### Added
+- **Phase 3: AI-assisted Quiz Generation**
+  - Multi-provider AI abstraction layer with support for OpenAI and Straico
+  - Pluggable adapter architecture (`backend/src/services/ai/adapters/`)
+  - Configurable AI fallback logic (Straico -> OpenAI)
+  - Zod-validated AI response schema for consistent question generation
 - `CHANGELOG.md` — this file. All future changes land here under `[Unreleased]` until a release is cut.
 - **Phase 2: Postgres + Google OAuth + Quiz editor**
   - Drizzle ORM schema for `users`, `quizzes`, `games`, `game_results` (`backend/src/db/schema.ts`)
