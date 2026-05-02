@@ -73,9 +73,9 @@ Node API (Fastify + Socket.IO)
 Strategy doc: [docs/testing.md](docs/testing.md). Pyramid: unit (Vitest) → integration (Vitest + Testcontainers + real Socket.IO) → E2E smoke. No frontend component tests in MVP.
 
 Commands:
-- **Backend type check**: `cd backend && npx tsc --noEmit`
-- **Frontend type check**: `cd frontend && npx svelte-check`
-- **Unit + integration** (Phase 2+): `cd backend && npx vitest run`
+- **Backend type check**: `cd backend && pnpm tsc --noEmit`
+- **Frontend type check**: `cd frontend && pnpm run check`
+- **Unit + integration** (Phase 2+): `cd backend && pnpm test`
 - **E2E smoke**: `cd backend && node scripts/smoke.mjs` (requires backend dev server running)
 - **Manual smoke**: 2 browser tabs (host + player), play a full game
 

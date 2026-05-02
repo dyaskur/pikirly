@@ -2,10 +2,16 @@
   "name": "kahoot-clone",
   "private": true,
   "version": "0.1.0",
-  "workspaces": ["backend", "frontend", "shared"],
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
-    "dev": "npx concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "dev:backend": "npm run dev -w backend",
-    "dev:frontend": "npm run dev -w frontend"
+    "dev": "concurrently \"pnpm run dev:backend\" \"pnpm run dev:frontend\"",
+    "dev:backend": "pnpm --filter backend run dev",
+    "dev:frontend": "pnpm --filter frontend run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
   }
 }

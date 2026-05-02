@@ -10,7 +10,7 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
-    "@kahoot/shared": "*",
+    "@kahoot/shared": "workspace:*",
     "socket.io-client": "^4.7.5"
   },
   "devDependencies": {

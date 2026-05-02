@@ -19,16 +19,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci -w backend
+      - run: pnpm install --frozen-lockfile
+        working-directory: .
 
-      - run: npx tsc --noEmit
+      - run: pnpm tsc --noEmit
 
-      - run: npm test
+      - run: pnpm test
 
   frontend:
     name: Frontend – node ${{ matrix.node-version }}
@@ -42,13 +45,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci -w frontend
+      - run: pnpm install --frozen-lockfile
+        working-directory: .
 
-      - run: npm run check
+      - run: pnpm run check
 
-      - run: npm run build
+      - run: pnpm run build

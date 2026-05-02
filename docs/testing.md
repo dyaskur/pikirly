@@ -103,16 +103,16 @@ frontend/                            # no test framework added in MVP
 
 ```bash
 # all
-npm test
+pnpm test
 
 # backend only, watch mode
-cd backend && npx vitest
+cd backend && pnpm test:watch
 
 # integration only
-cd backend && npx vitest tests/integration
+cd backend && pnpm test:integration
 
 # DB tests (requires Docker)
-cd backend && npx vitest db
+cd backend && pnpm vitest db
 ```
 
 ## CI expectations (Phase 3)
