@@ -1,5 +1,6 @@
 import type { Question } from '@kahoot/shared';
 import type { AIProvider, GenerateQuestionsOptions } from '../types.js';
+import { extractJSON } from '../../../lib/extract-json.js';
 
 export interface OpenAICompatibleConfig {
   id: string;
@@ -65,7 +66,7 @@ Difficulty: ${options.difficulty || 'medium'}`;
       throw new Error(`${this.id} returned empty or unexpected content shape: ${JSON.stringify(data)}`);
     }
 
-    const jsonStr = content.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
+    const jsonStr = extractJSON(content);
     const parsed = JSON.parse(jsonStr);
 
     if (!Array.isArray(parsed.questions)) {
