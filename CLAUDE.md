@@ -102,6 +102,5 @@ Always run type checks before claiming a task done. Once Phase 2 lands, also run
 1. Define template library in `backend/src/data/templates.ts`
 2. `GET /templates` + `GET /templates/:id` REST endpoints
 3. "Start from template" flow in frontend quiz editor
-4. Install `@anthropic-ai/sdk`, add `ANTHROPIC_API_KEY` to env
-5. `POST /ai/generate-questions` endpoint with rate limiting
-6. "Generate with AI" drawer in quiz editor
+4. Consume the newly created `POST /ai/generate-questions` endpoint in the frontend
+5. "Generate with AI" drawer in quiz editor (calling the multi-provider backend)

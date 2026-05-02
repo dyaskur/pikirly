@@ -9,6 +9,11 @@ Categories: **Added**, **Changed**, **Deprecated**, **Removed**, **Fixed**, **Se
 ## [Unreleased]
 
 ### Added
+- **Phase 3: AI-assisted Quiz Generation**
+  - Multi-provider AI abstraction layer with support for Straico, OpenAI, and OpenRouter
+  - Pluggable adapter architecture using a generic \`OpenAICompatibleProvider\` and custom \`StraicoProvider\`
+  - Configurable AI fallback logic (Straico -> OpenAI)
+  - Zod-validated AI response schema for consistent question generation
 - `CHANGELOG.md` — this file. All future changes land here under `[Unreleased]` until a release is cut.
 - **Phase 2: Postgres + Google OAuth + Quiz editor**
   - Drizzle ORM schema for `users`, `quizzes`, `games`, `game_results` (`backend/src/db/schema.ts`)
@@ -33,6 +38,10 @@ Categories: **Added**, **Changed**, **Deprecated**, **Removed**, **Fixed**, **Se
 - Backend `data/quizzes.ts` is now a fallback / seed source only — no longer the authoritative quiz list
 
 ### Fixed
+- Backend test infrastructure: `testcontainers` import error resolved by using `GenericContainer`.
+- Database client SSL: Restored strict SSL verification for production while allowing `DATABASE_SSL=false` for local Docker testing, fixing MITM risk.
+- Fastify test boots: Isolated `app` instance per integration test to prevent 'Root plugin has already booted' errors.
+- TypeScript IDE Interop: Resolved `TS1259`, `TS1192`, and `TS1343` errors in PhpStorm by refactoring `dotenv` and `node:path` imports to namespaces and removing `import.meta` from setup scripts outside the `src/` directory.
 - Various Phase 2 review fixes before commit: type-check passes, no `as any` in WS create_game, quiz list shows correct question count, Vitest containers start once per run (not per file)
 
 ## [2026-04-30]
