@@ -1,4 +1,4 @@
-import { GenericContainer, type StartedTestContainer } from 'testcontainers';
+import { GenericContainer, Wait, type StartedTestContainer } from 'testcontainers';
 import { execSync } from 'node:child_process';
 import * as path from 'node:path';
 
@@ -15,6 +15,7 @@ export async function setup() {
       POSTGRES_PASSWORD: 'password',
       POSTGRES_DB: 'postgres',
     })
+    .withWaitStrategy(Wait.forLogMessage('database system is ready to accept connections', 2))
     .start();
 
   const port = container.getMappedPort(5432);
