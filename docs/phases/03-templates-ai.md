@@ -46,6 +46,7 @@ Blank-slate creation is friction. Templates and AI generation lower the barrier 
   - Zod validation of AI output before returning to client.
 - [ ] Environment Variables:
   - `AI_PROVIDER`: Default provider (e.g., `straico`).
+  - `AI_FALLBACK_PROVIDER`: Fallback provider if the primary fails (e.g., `openrouter`).
   - `OPENAI_API_KEY`: API key for OpenAI.
   - `STRAICO_API_KEY`: API key for Straico.
   - `OPENROUTER_API_KEY`: API key for OpenRouter.

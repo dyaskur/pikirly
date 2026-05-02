@@ -5,6 +5,7 @@ import type { AIProvider } from './types.js';
 vi.mock('../../config.js', () => ({
   config: {
     AI_PROVIDER: 'straico',
+    AI_FALLBACK_PROVIDER: 'openai',
     OPENAI_API_KEY: 'test-key',
     STRAICO_API_KEY: 'test-key',
   },

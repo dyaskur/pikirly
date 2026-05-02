@@ -11,6 +11,7 @@ const envSchema = z.object({
   JWT_SECRET: z.string().optional(),
   SESSION_SECRET: z.string().optional(),
   AI_PROVIDER: z.enum(['straico', 'openai', 'openrouter']).default('straico'),
+  AI_FALLBACK_PROVIDER: z.enum(['straico', 'openai', 'openrouter']).default('openrouter'),
   OPENAI_API_KEY: z.string().optional(),
   STRAICO_API_KEY: z.string().optional(),
   OPENROUTER_API_KEY: z.string().optional(),

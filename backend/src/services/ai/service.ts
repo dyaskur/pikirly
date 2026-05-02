@@ -51,18 +51,19 @@ export class AIService {
     }
 
     const primaryProvider = config.AI_PROVIDER;
+    const fallbackProvider = config.AI_FALLBACK_PROVIDER;
 
     try {
       return await this.executeWithProvider(primaryProvider, options);
     } catch (err) {
-      console.warn(`[AIService] ${primaryProvider} generation failed, falling back to openai:`, err);
+      console.warn(`[AIService] ${primaryProvider} generation failed, falling back to ${fallbackProvider}:`, err);
       
-      // If the primary provider *was* openai, don't try it again.
-      if (primaryProvider === 'openai') {
+      // If the primary provider is the same as the fallback, don't try it again.
+      if (primaryProvider === fallbackProvider) {
         throw err;
       }
       
-      return await this.executeWithProvider('openai', options);
+      return await this.executeWithProvider(fallbackProvider, options);
     }
   }
 
