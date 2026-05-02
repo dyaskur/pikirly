@@ -12,7 +12,8 @@
     "rootDir": "src",
     "allowImportingTsExtensions": false,
     "noEmit": false,
-    "declaration": false
+    "declaration": false,
+    "types": ["node"]
   },
   "include": ["src/**/*"]
 }
