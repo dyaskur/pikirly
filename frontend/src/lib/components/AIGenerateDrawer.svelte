@@ -19,6 +19,11 @@
   let count = $state(5);
   let difficulty = $state<'easy' | 'medium' | 'hard' | undefined>(undefined);
 
+  function portal(el: HTMLElement) {
+    document.body.appendChild(el);
+    return { destroy() { el.remove(); } };
+  }
+
   function openDrawer() {
     open = true;
     error = null;
@@ -77,13 +82,14 @@
   Generate with AI
 </button>
 
-{#if open}
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div
-    class="drawer-overlay"
-    onclick={closeDrawer}
-    onkeydown={(e) => e.key === 'Escape' && closeDrawer()}
-  >
+  {#if open}
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div
+      class="drawer-overlay"
+      use:portal
+      onclick={closeDrawer}
+      onkeydown={(e) => e.key === 'Escape' && closeDrawer()}
+    >
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div class="drawer" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()}>
@@ -163,6 +169,7 @@
     justify-content: center;
     z-index: 1000;
     padding: 24px;
+    overflow-y: auto;
   }
 
   .drawer {
