@@ -50,11 +50,18 @@ export class AIService {
       return this.executeWithProvider(options.provider, options);
     }
 
-    // Default fallback chain: Straico -> OpenAI
+    const primaryProvider = config.AI_PROVIDER;
+
     try {
-      return await this.executeWithProvider('straico', options);
+      return await this.executeWithProvider(primaryProvider, options);
     } catch (err) {
-      console.warn('Straico generation failed, falling back to OpenAI:', err);
+      console.warn(`[AIService] ${primaryProvider} generation failed, falling back to openai:`, err);
+      
+      // If the primary provider *was* openai, don't try it again.
+      if (primaryProvider === 'openai') {
+        throw err;
+      }
+      
       return await this.executeWithProvider('openai', options);
     }
   }

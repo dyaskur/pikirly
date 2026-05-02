@@ -1,10 +1,9 @@
 import { GenericContainer, type StartedTestContainer } from 'testcontainers';
 import { execSync } from 'node:child_process';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import * as path from 'node:path';
 
-const here = path.dirname(fileURLToPath(import.meta.url));
-const backendRoot = path.resolve(here, '..');
+// Vitest runs with process.cwd() at the project root (backend/)
+const backendRoot = process.cwd();
 
 let container: StartedTestContainer | null = null;
 

@@ -35,7 +35,7 @@ Blank-slate creation is friction. Templates and AI generation lower the barrier 
   - `types.ts`: Define `AIProvider` interface and `GenerateQuestionsOptions`.
   - `service.ts`: Central `AIService` orchestrator.
   - `adapters/`: Provider-specific implementations using direct REST (`fetch`):
-    - `openai.ts`: OpenAI Chat Completions (REST).
+    - `openai-compatible.ts`: OpenAI Chat Completions (REST). Used for both OpenAI and OpenRouter.
     - `straico.ts`: Straico Native Prompt V1 (REST).
 - [ ] New REST endpoint `POST /ai/generate-questions`:
   - Auth: JWT (hosts only).
@@ -48,6 +48,7 @@ Blank-slate creation is friction. Templates and AI generation lower the barrier 
   - `AI_PROVIDER`: Default provider (e.g., `straico`).
   - `OPENAI_API_KEY`: API key for OpenAI.
   - `STRAICO_API_KEY`: API key for Straico.
+  - `OPENROUTER_API_KEY`: API key for OpenRouter.
 - [ ] Rate limit: 5 requests/min per user.
 - [ ] Frontend: "Generate with AI" button in quiz editor.
   - Drawer/modal: topic input + count slider (1–20) + difficulty select.

@@ -1,7 +1,7 @@
 // Manual verification script for AI Providers.
 // Run with: cd backend && npx tsx scripts/verify-ai.ts
 import { aiService } from '../src/services/ai/service.js';
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 
 // Load .env from the current working directory (backend/)
 dotenv.config();

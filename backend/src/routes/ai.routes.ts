@@ -7,7 +7,7 @@ const generateBodySchema = z.object({
   topic: z.string().min(1).max(200),
   count: z.number().int().min(1).max(20),
   difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
-  provider: z.string().optional(),
+  provider: z.enum(['straico', 'openai', 'openrouter']).optional(),
   model: z.string().optional(),
 });
 

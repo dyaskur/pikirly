@@ -207,6 +207,23 @@ Convention:
 
 See [testing.md](testing.md) for the full strategy.
 
+## D10 — Multi-provider REST abstraction over vendor SDKs for AI
+
+**Date**: 2026-04-30
+**Status**: Locked
+
+**Decision**: Use a custom `AIProvider` abstraction layer making direct REST (`fetch`) calls to AI models (Straico, OpenAI, OpenRouter) instead of installing vendor-specific SDKs (e.g., `@anthropic-ai/sdk`, `openai`).
+
+**Why**:
+- Prevents vendor lock-in; swapping or adding a provider only requires a new REST adapter class.
+- Keeps backend dependencies lean (no heavy SDK packages).
+- Many providers (like OpenRouter) natively support the OpenAI Chat Completions API schema, allowing a single generic adapter (`OpenAICompatibleProvider`) to handle multiple services.
+- Allows unified fallback logic (e.g., try Straico first, fallback to OpenAI) without juggling different error types from different SDKs.
+
+**Trade-offs accepted**:
+- Requires manually maintaining prompt structures and typing (though Zod handles response validation).
+- Features like streaming require custom implementations rather than using an SDK's convenience methods (though streaming isn't needed for the MVP).
+
 ## Adding a new decision
 
 Use this template:

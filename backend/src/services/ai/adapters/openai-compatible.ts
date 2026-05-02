@@ -60,13 +60,18 @@ Difficulty: ${options.difficulty || 'medium'}`;
     }
 
     const data = await response.json();
-    const content = data.choices[0]?.message?.content;
+    const content = data?.choices?.[0]?.message?.content;
     if (!content) {
-      throw new Error(`${this.id} returned empty content`);
+      throw new Error(`${this.id} returned empty or unexpected content shape: ${JSON.stringify(data)}`);
     }
 
     const jsonStr = content.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
     const parsed = JSON.parse(jsonStr);
-    return parsed.questions || [];
+
+    if (!Array.isArray(parsed.questions)) {
+      throw new Error(`${this.id} returned a malformed JSON payload: "questions" is not an array`);
+    }
+
+    return parsed.questions;
   }
 }

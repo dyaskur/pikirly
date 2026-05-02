@@ -38,6 +38,10 @@ Categories: **Added**, **Changed**, **Deprecated**, **Removed**, **Fixed**, **Se
 - Backend `data/quizzes.ts` is now a fallback / seed source only — no longer the authoritative quiz list
 
 ### Fixed
+- Backend test infrastructure: `testcontainers` import error resolved by using `GenericContainer`.
+- Database client SSL: Restored strict SSL verification for production while allowing `DATABASE_SSL=false` for local Docker testing, fixing MITM risk.
+- Fastify test boots: Isolated `app` instance per integration test to prevent 'Root plugin has already booted' errors.
+- TypeScript IDE Interop: Resolved `TS1259`, `TS1192`, and `TS1343` errors in PhpStorm by refactoring `dotenv` and `node:path` imports to namespaces and removing `import.meta` from setup scripts outside the `src/` directory.
 - Various Phase 2 review fixes before commit: type-check passes, no `as any` in WS create_game, quiz list shows correct question count, Vitest containers start once per run (not per file)
 
 ## [2026-04-30]

@@ -60,6 +60,11 @@ Difficulty: ${options.difficulty || 'medium'}`;
     // Clean up content if it's wrapped in markdown code blocks
     const jsonStr = content.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
     const parsed = JSON.parse(jsonStr);
-    return parsed.questions || [];
+
+    if (!Array.isArray(parsed.questions)) {
+      throw new Error(`Straico returned a malformed JSON payload: "questions" is not an array`);
+    }
+
+    return parsed.questions;
   }
 }
