@@ -1,17 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { OpenAIProvider } from './openai.js';
+import { OpenAICompatibleProvider } from './openai-compatible.js';
 
-vi.mock('../../../config.js', () => ({
-  config: {
-    OPENAI_API_KEY: 'test-key',
-  },
-}));
-
-describe('OpenAIProvider', () => {
-  let provider: OpenAIProvider;
+describe('OpenAICompatibleProvider', () => {
+  let provider: OpenAICompatibleProvider;
 
   beforeEach(() => {
-    provider = new OpenAIProvider();
+    provider = new OpenAICompatibleProvider({
+      id: 'test-provider',
+      apiKey: 'test-key',
+      endpoint: 'https://api.test.com/v1/chat',
+      defaultModel: 'test-model',
+      headers: { 'X-Custom': 'value' }
+    });
     vi.stubGlobal('fetch', vi.fn());
   });
 
@@ -38,11 +38,13 @@ describe('OpenAIProvider', () => {
     expect(questions).toHaveLength(1);
     expect(questions[0].text).toBe('Q1');
     expect(global.fetch).toHaveBeenCalledWith(
-      'https://api.openai.com/v1/chat/completions',
+      'https://api.test.com/v1/chat',
       expect.objectContaining({
         headers: expect.objectContaining({
           Authorization: 'Bearer test-key',
+          'X-Custom': 'value'
         }),
+        body: expect.stringContaining('"model":"test-model"')
       })
     );
   });
@@ -54,6 +56,18 @@ describe('OpenAIProvider', () => {
     });
 
     await expect(provider.generateQuestions({ topic: 'Math', count: 1 }))
-      .rejects.toThrow('OpenAI API error: Rate limit exceeded');
+      .rejects.toThrow('test-provider API error: Rate limit exceeded');
+  });
+
+  it('should throw error if apiKey is not configured', async () => {
+    const unconfiguredProvider = new OpenAICompatibleProvider({
+      id: 'no-key-provider',
+      apiKey: '',
+      endpoint: 'https://api.test.com/v1/chat',
+      defaultModel: 'test-model'
+    });
+
+    await expect(unconfiguredProvider.generateQuestions({ topic: 'Math', count: 1 }))
+      .rejects.toThrow('API Key for no-key-provider not configured');
   });
 });

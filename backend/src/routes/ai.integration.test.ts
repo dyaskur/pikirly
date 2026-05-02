@@ -20,18 +20,13 @@ vi.mock('../services/ai/service.js', () => ({
 }));
 
 describe('AI Routes Integration', () => {
-  const app = Fastify();
+  let app: any;
 
   beforeEach(async () => {
-    // Register required plugins and routes
-    if (!app.hasPlugin('@fastify/jwt')) {
-      await app.register(jwtPlugin, { secret: 'test-secret' });
-    }
-    // Note: In a real app, we might need a more complex setup,
-    // but for this test we focus on the AI routes.
+    app = Fastify();
+    await app.register(jwtPlugin, { secret: 'test-secret' });
     await app.register(aiRoutes);
   });
-
   it('should return 401 if not authenticated', async () => {
     const response = await app.inject({
       method: 'POST',

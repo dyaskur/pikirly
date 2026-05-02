@@ -41,13 +41,17 @@ Difficulty: ${options.difficulty || 'medium'}`;
       throw new Error(`Straico API error: ${error}`);
     }
 
-    const data = await response.json();
-    if (!data.success) {
-      throw new Error(`Straico API success=false: ${data.error || 'Unknown error'}`);
+    const payload = await response.json();
+    if (!payload.success) {
+      throw new Error(`Straico API success=false: ${payload.error || JSON.stringify(payload)}`);
     }
 
-    const completion = data.completions[model]?.completion;
-    const content = completion?.choices[0]?.message?.content;
+    if (!payload.data || !payload.data.completions || !payload.data.completions[model]) {
+      throw new Error(`Straico API returned unexpected format. Missing completions for model: ${JSON.stringify(payload)}`);
+    }
+
+    const completion = payload.data.completions[model]?.completion;
+    const content = completion?.choices?.[0]?.message?.content;
     
     if (!content) {
       throw new Error('Straico returned empty content');

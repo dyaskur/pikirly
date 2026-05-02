@@ -19,18 +19,20 @@ describe('StraicoProvider', () => {
     const model = 'openai/gpt-4o-mini';
     const mockResponse = {
       success: true,
-      completions: {
-        [model]: {
-          completion: {
-            choices: [{
-              message: {
-                content: JSON.stringify({
-                  questions: [
-                    { id: '2', text: 'Q2', choices: ['X', 'Y', 'Z', 'W'], correct: 1, limitMs: 15000 }
-                  ]
-                })
-              }
-            }]
+      data: {
+        completions: {
+          [model]: {
+            completion: {
+              choices: [{
+                message: {
+                  content: JSON.stringify({
+                    questions: [
+                      { id: '2', text: 'Q2', choices: ['X', 'Y', 'Z', 'W'], correct: 1, limitMs: 15000 }
+                    ]
+                  })
+                }
+              }]
+            }
           }
         }
       }
@@ -59,14 +61,16 @@ describe('StraicoProvider', () => {
     const model = 'openai/gpt-4o-mini';
     const mockResponse = {
       success: true,
-      completions: {
-        [model]: {
-          completion: {
-            choices: [{
-              message: {
-                content: '```json\n{"questions": []}\n```'
-              }
-            }]
+      data: {
+        completions: {
+          [model]: {
+            completion: {
+              choices: [{
+                message: {
+                  content: '```json\n{"questions": []}\n```'
+                }
+              }]
+            }
           }
         }
       }

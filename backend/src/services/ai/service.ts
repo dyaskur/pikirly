@@ -2,8 +2,8 @@ import { z } from 'zod';
 import type { Question } from '@kahoot/shared';
 import { config } from '../../config.js';
 import type { AIProvider, GenerateQuestionsOptions } from './types.js';
-import { OpenAIProvider } from './adapters/openai.js';
 import { StraicoProvider } from './adapters/straico.js';
+import { OpenAICompatibleProvider } from './adapters/openai-compatible.js';
 
 const aiQuestionSchema = z.object({
   id: z.string(),
@@ -19,7 +19,22 @@ export class AIService {
   private providers: Map<string, AIProvider> = new Map();
 
   constructor() {
-    this.registerProvider(new OpenAIProvider());
+    this.registerProvider(new OpenAICompatibleProvider({
+      id: 'openai',
+      apiKey: config.OPENAI_API_KEY || '',
+      endpoint: 'https://api.openai.com/v1/chat/completions',
+      defaultModel: 'gpt-4o-mini',
+    }));
+    this.registerProvider(new OpenAICompatibleProvider({
+      id: 'openrouter',
+      apiKey: config.OPENROUTER_API_KEY || '',
+      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+      defaultModel: 'openai/gpt-4o-mini',
+      headers: {
+        'HTTP-Referer': 'https://pikirly.app',
+        'X-Title': 'Pikirly',
+      },
+    }));
     this.registerProvider(new StraicoProvider());
   }
 

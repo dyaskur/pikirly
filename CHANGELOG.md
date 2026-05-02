@@ -10,8 +10,8 @@ Categories: **Added**, **Changed**, **Deprecated**, **Removed**, **Fixed**, **Se
 
 ### Added
 - **Phase 3: AI-assisted Quiz Generation**
-  - Multi-provider AI abstraction layer with support for OpenAI and Straico
-  - Pluggable adapter architecture (`backend/src/services/ai/adapters/`)
+  - Multi-provider AI abstraction layer with support for Straico, OpenAI, and OpenRouter
+  - Pluggable adapter architecture using a generic \`OpenAICompatibleProvider\` and custom \`StraicoProvider\`
   - Configurable AI fallback logic (Straico -> OpenAI)
   - Zod-validated AI response schema for consistent question generation
 - `CHANGELOG.md` — this file. All future changes land here under `[Unreleased]` until a release is cut.

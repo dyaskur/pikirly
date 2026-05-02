@@ -1,16 +1,27 @@
 import type { Question } from '@kahoot/shared';
 import type { AIProvider, GenerateQuestionsOptions } from '../types.js';
-import { config } from '../../../config.js';
 
-export class OpenAIProvider implements AIProvider {
-  id = 'openai';
+export interface OpenAICompatibleConfig {
+  id: string;
+  apiKey: string;
+  endpoint: string;
+  defaultModel: string;
+  headers?: Record<string, string>;
+}
+
+export class OpenAICompatibleProvider implements AIProvider {
+  id: string;
+
+  constructor(private config: OpenAICompatibleConfig) {
+    this.id = config.id;
+  }
 
   async generateQuestions(options: GenerateQuestionsOptions): Promise<Question[]> {
-    if (!config.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY not configured');
+    if (!this.config.apiKey) {
+      throw new Error(`API Key for ${this.id} not configured`);
     }
 
-    const model = options.model || 'gpt-4o-mini';
+    const model = options.model || this.config.defaultModel;
     const systemPrompt = `You are a quiz generator. Return a JSON object with a "questions" array.
 Each question must match this interface:
 {
@@ -24,12 +35,15 @@ Topic: ${options.topic}
 Count: ${options.count}
 Difficulty: ${options.difficulty || 'medium'}`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${this.config.apiKey}`,
+      ...(this.config.headers || {}),
+    };
+
+    const response = await fetch(this.config.endpoint, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${config.OPENAI_API_KEY}`,
-      },
+      headers,
       body: JSON.stringify({
         model,
         messages: [
@@ -42,16 +56,17 @@ Difficulty: ${options.difficulty || 'medium'}`;
 
     if (!response.ok) {
       const error = await response.text();
-      throw new Error(`OpenAI API error: ${error}`);
+      throw new Error(`${this.id} API error: ${error}`);
     }
 
     const data = await response.json();
     const content = data.choices[0]?.message?.content;
     if (!content) {
-      throw new Error('OpenAI returned empty content');
+      throw new Error(`${this.id} returned empty content`);
     }
 
-    const parsed = JSON.parse(content);
+    const jsonStr = content.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
+    const parsed = JSON.parse(jsonStr);
     return parsed.questions || [];
   }
 }

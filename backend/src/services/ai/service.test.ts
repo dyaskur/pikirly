@@ -68,7 +68,8 @@ describe('AIService', () => {
     const invalidQuestions = [{ id: '1', text: 'Q1' }]; // missing fields
     (mockStraico.generateQuestions as any).mockResolvedValue(invalidQuestions);
 
-    await expect(service.generateQuestions({ topic: 'Test', count: 1 }))
+    // Specify provider to avoid fallback chain for this specific validation test
+    await expect(service.generateQuestions({ topic: 'Test', count: 1, provider: 'straico' }))
       .rejects.toThrow('AI generated invalid question format via straico');
   });
 

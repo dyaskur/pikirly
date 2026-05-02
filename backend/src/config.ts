@@ -12,6 +12,7 @@ const envSchema = z.object({
   AI_PROVIDER: z.string().default('straico'),
   OPENAI_API_KEY: z.string().optional(),
   STRAICO_API_KEY: z.string().optional(),
+  OPENROUTER_API_KEY: z.string().optional(),
 });
 
 export const config = envSchema.parse(process.env);
