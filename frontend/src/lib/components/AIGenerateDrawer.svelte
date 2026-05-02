@@ -25,6 +25,7 @@
   }
 
   function closeDrawer() {
+    if (generating) return;
     open = false;
     error = null;
     topic = '';
@@ -87,63 +88,67 @@
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div class="drawer" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()}>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-        <h3 style="margin: 0;">Generate with AI</h3>
-        <button class="btn-secondary" style="width: auto; padding: 8px 14px;" onclick={closeDrawer}>Close</button>
-      </div>
-
-      {#if error}
-        <div class="error" style="margin-bottom: 1rem;">{error}</div>
-      {/if}
-
-      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-        <div>
-          <label for="ai-topic" style="display: block; font-weight: bold; margin-bottom: 0.5rem;">Topic</label>
-          <input
-            id="ai-topic"
-            type="text"
-            bind:value={topic}
-            placeholder="e.g., World War II, Space Exploration"
-            disabled={generating}
-          />
-        </div>
-
-        <div>
-          <label for="ai-count" style="display: block; font-weight: bold; margin-bottom: 0.5rem;">
-            Number of Questions: {count}
-          </label>
-          <input
-            id="ai-count"
-            type="range"
-            min="1"
-            max="20"
-            bind:value={count}
-            disabled={generating}
-            style="width: 100%; padding: 0;"
-          />
-          <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--muted);">
-            <span>1</span>
-            <span>20</span>
-          </div>
-        </div>
-
-        <div>
-          <label for="ai-difficulty" style="display: block; font-weight: bold; margin-bottom: 0.5rem;">Difficulty (optional)</label>
-          <select id="ai-difficulty" bind:value={difficulty} disabled={generating}>
-            <option value={undefined}>Any</option>
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-          </select>
-        </div>
-
-        <button class="btn-primary" onclick={generate} disabled={generating || !topic.trim()}>
-          {generating ? 'Generating...' : 'Generate Questions'}
-        </button>
-
-        {#if generating}
-          <p class="muted" style="text-align: center; font-size: 0.9rem;">This may take a few seconds...</p>
+        <h3 style="margin: 0;">{generating ? 'Generating...' : 'Generate with AI'}</h3>
+        {#if !generating}
+          <button class="btn-secondary" style="width: auto; padding: 8px 14px;" onclick={closeDrawer}>Close</button>
         {/if}
       </div>
+
+      {#if generating}
+        <div class="generating-state">
+          <div class="spinner"></div>
+          <p style="font-weight: 600; font-size: 1.05rem;">Creating {count} question{count > 1 ? 's' : ''} about {topic}</p>
+          <p class="muted">Usually takes 5–15 seconds, sometimes longer</p>
+        </div>
+      {:else}
+        {#if error}
+          <div class="error" style="margin-bottom: 1rem;">{error}</div>
+        {/if}
+
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+          <div>
+            <label for="ai-topic" style="display: block; font-weight: bold; margin-bottom: 0.5rem;">Topic</label>
+            <input
+              id="ai-topic"
+              type="text"
+              bind:value={topic}
+              placeholder="e.g., World War II, Space Exploration"
+            />
+          </div>
+
+          <div>
+            <label for="ai-count" style="display: block; font-weight: bold; margin-bottom: 0.5rem;">
+              Number of Questions: {count}
+            </label>
+            <input
+              id="ai-count"
+              type="range"
+              min="1"
+              max="20"
+              bind:value={count}
+              style="width: 100%; padding: 0;"
+            />
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--muted);">
+              <span>1</span>
+              <span>20</span>
+            </div>
+          </div>
+
+          <div>
+            <label for="ai-difficulty" style="display: block; font-weight: bold; margin-bottom: 0.5rem;">Difficulty (optional)</label>
+            <select id="ai-difficulty" bind:value={difficulty}>
+              <option value={undefined}>Any</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+
+          <button class="btn-primary" onclick={generate} disabled={!topic.trim()}>
+            Generate Questions
+          </button>
+        </div>
+      {/if}
     </div>
   </div>
 {/if}
@@ -169,6 +174,28 @@
     width: 100%;
     max-width: 480px;
     animation: fadeIn 0.2s ease both;
+  }
+
+  .generating-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem 0;
+    text-align: center;
+  }
+
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #e5e7eb;
+    border-top-color: var(--brand);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
   }
 
   @keyframes fadeIn {
