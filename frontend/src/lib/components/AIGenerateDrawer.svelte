@@ -1,13 +1,6 @@
 <script lang="ts">
   import { api } from '$lib/api';
-
-  interface Question {
-    id: string;
-    text: string;
-    choices: string[];
-    correct: number;
-    limitMs: number;
-  }
+  import type { Question } from '@kahoot/shared';
 
   let { onGenerate = (_questions: Question[]) => {} } = $props();
 
@@ -69,6 +62,7 @@
 
       const questions: Question[] = await res.json();
       onGenerate(questions);
+      generating = false;
       closeDrawer();
     } catch (e) {
       error = 'Error generating questions. Please try again.';
@@ -92,7 +86,7 @@
     >
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div class="drawer" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()}>
+    <div class="drawer" onclick={(e) => e.stopPropagation()} onkeydown={(e) => { if (e.key !== 'Escape') e.stopPropagation(); }}>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <h3 style="margin: 0;">{generating ? 'Generating...' : 'Generate with AI'}</h3>
         {#if !generating}
@@ -131,7 +125,7 @@
               type="range"
               min="1"
               max="20"
-              bind:value={count}
+              oninput={(e) => { count = Number(e.currentTarget.value); }}
               style="width: 100%; padding: 0;"
             />
             <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--muted);">
