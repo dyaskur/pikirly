@@ -14,6 +14,7 @@ Categories: **Added**, **Changed**, **Deprecated**, **Removed**, **Fixed**, **Se
   - Pluggable adapter architecture using a generic \`OpenAICompatibleProvider\` and custom \`StraicoProvider\`
   - Configurable AI fallback logic (Straico -> OpenAI)
   - Zod-validated AI response schema for consistent question generation
+  - AI Generate Drawer in quiz editor: topic, question count (range), and difficulty inputs with loading/error states
 - `CHANGELOG.md` — this file. All future changes land here under `[Unreleased]` until a release is cut.
 - **Phase 2: Postgres + Google OAuth + Quiz editor**
   - Drizzle ORM schema for `users`, `quizzes`, `games`, `game_results` (`backend/src/db/schema.ts`)
@@ -33,6 +34,7 @@ Categories: **Added**, **Changed**, **Deprecated**, **Removed**, **Fixed**, **Se
   - Socket.IO handshake middleware decodes JWT cookie → `socket.data.user`
 
 ### Changed
+- Quiz editor now includes an "AI" button that opens the AI Generate Drawer for creating questions from a topic
 - `create_game` payload `quizId` is now required for non-default quizzes; DB-backed quizzes verify owner
 - `/auth/me` returns the user object directly (was nested under `{ user }`)
 - Backend `data/quizzes.ts` is now a fallback / seed source only — no longer the authoritative quiz list
