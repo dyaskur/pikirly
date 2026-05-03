@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { api } from '$lib/api';
   import { goto } from '$app/navigation';
+  import AIGenerateDrawer from './AIGenerateDrawer.svelte';
 
   interface Question {
     id: string;
@@ -55,6 +56,10 @@
 
   function removeQuestion(index: number) {
     questions = questions.filter((_, i) => i !== index);
+  }
+
+  function onAIGenerate(generated: Question[]) {
+    questions = [...questions, ...generated].slice(0, 50);
   }
 
   async function save() {
@@ -131,8 +136,11 @@
 
         <div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h3 style="margin: 0;">Questions</h3>
-            <button class="btn-secondary" onclick={addQuestion}>+ Add Question</button>
+            <h3 style="margin: 0;">Questions ({questions.length}/50)</h3>
+            <div style="display: flex; gap: 0.5rem;">
+              <AIGenerateDrawer onGenerate={onAIGenerate} />
+              <button class="btn-secondary" onclick={addQuestion}>+ Add Question</button>
+            </div>
           </div>
 
           {#if questions.length === 0}
