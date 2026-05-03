@@ -59,7 +59,7 @@
   }
 
   function onAIGenerate(generated: Question[]) {
-    questions = [...questions, ...generated];
+    questions = [...questions, ...generated].slice(0, 50);
   }
 
   async function save() {
@@ -136,7 +136,7 @@
 
         <div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h3 style="margin: 0;">Questions</h3>
+            <h3 style="margin: 0;">Questions ({questions.length}/50)</h3>
             <div style="display: flex; gap: 0.5rem;">
               <AIGenerateDrawer onGenerate={onAIGenerate} />
               <button class="btn-secondary" onclick={addQuestion}>+ Add Question</button>

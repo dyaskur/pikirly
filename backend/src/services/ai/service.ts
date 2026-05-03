@@ -69,14 +69,16 @@ export class AIService {
 
   private async executeWithProvider(
     providerId: string,
-    options: GenerateQuestionsOptions
+    options: GenerateQuestionsOptions,
   ): Promise<Question[]> {
     const provider = this.providers.get(providerId);
     if (!provider) {
       throw new Error(`AI Provider "${providerId}" not found`);
     }
 
-    const rawQuestions = await provider.generateQuestions(options);
+    const overRequest = { ...options, count: options.count + 3 };
+
+    const rawQuestions = await provider.generateQuestions(overRequest);
     
     // Validate with Zod
     const result = aiResponseSchema.safeParse(rawQuestions);
@@ -85,7 +87,7 @@ export class AIService {
       throw new Error(`AI generated invalid question format via ${providerId}`);
     }
 
-    return result.data;
+    return result.data.slice(0, options.count);
   }
 }
 
