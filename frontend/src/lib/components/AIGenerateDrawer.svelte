@@ -125,6 +125,7 @@
               type="range"
               min="1"
               max="20"
+              value={count}
               oninput={(e) => { count = Number(e.currentTarget.value); }}
               style="width: 100%; padding: 0;"
             />
