@@ -50,6 +50,13 @@ describe('extractJSON', () => {
     expect(JSON.parse(extractJSON(input)).text).toBe('say "hello" with {braces}');
   });
 
+  it('handles complex nested structure inside a string', () => {
+    const input = 'Pre: {"data": "A string with { brackets } and \\"escaped quotes\\" inside."} Post';
+    const extracted = extractJSON(input);
+    expect(extracted).toBe('{"data": "A string with { brackets } and \\"escaped quotes\\" inside."}');
+    expect(() => JSON.parse(extracted)).not.toThrow();
+  });
+
   it('extracts JSON with braces in strings from text with preamble', () => {
     const input = 'Here you go:\n{"text":"use {curly} braces"}\nEnjoy!';
     expect(extractJSON(input)).toBe('{"text":"use {curly} braces"}');
