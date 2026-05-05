@@ -29,8 +29,8 @@ describe('lifecycle', () => {
 
     state = createGameState(quiz, 'game-1', 'db-quiz-id', 'host-user');
     // Add some players
-    state.players.set('p1', { playerId: 'p1', nickname: 'Alice', score: 0, connected: true, joinedAt: 100, socketId: 's1' });
-    state.players.set('p2', { playerId: 'p2', nickname: 'Bob', score: 0, connected: true, joinedAt: 100, socketId: 's2' });
+    state.players.set('p1', { playerId: 'p1', playerToken: 't1', nickname: 'Alice', score: 0, connected: true, joinedAt: 100, socketId: 's1' });
+    state.players.set('p2', { playerId: 'p2', playerToken: 't2', nickname: 'Bob', score: 0, connected: true, joinedAt: 100, socketId: 's2' });
   });
 
   afterEach(() => {

@@ -40,7 +40,7 @@
     const reJoin = () => {
       socket.emit(
         'join_game',
-        { gameId, nickname: sess.nickname, playerId: sess.playerId },
+        { gameId, nickname: sess.nickname, playerId: sess.playerId, playerToken: sess.playerToken },
         (res) => {
           if (!res.ok) {
             connectionMsg = 'Could not rejoin: ' + res.error;
@@ -120,8 +120,6 @@
     myChoice = idx;
     phase = 'answered';
     socket.emit('submit_answer', {
-      gameId,
-      playerId: $playerSession.playerId,
       questionIndex: currentQuestion!.index,
       choice: idx,
       clientTs: Date.now(),

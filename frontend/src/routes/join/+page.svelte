@@ -31,7 +31,7 @@
         error = friendly(res.error);
         return;
       }
-      playerSession.set({ gameId: cleanPin, playerId: res.playerId, nickname: cleanNick });
+      playerSession.set({ gameId: cleanPin, playerId: res.playerId, playerToken: res.playerToken, nickname: cleanNick });
       goto(`/play/${cleanPin}`);
     });
   }

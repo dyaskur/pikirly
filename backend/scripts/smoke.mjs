@@ -47,13 +47,13 @@ async function run() {
   p1.on('question', (q) => {
     qi = q.index;
     setTimeout(
-      () => p1.emit('submit_answer', { gameId, playerId: j1.playerId, questionIndex: q.index, choice: Math.floor(Math.random() * q.choices.length), clientTs: Date.now() }),
+      () => p1.emit('submit_answer', { questionIndex: q.index, choice: Math.floor(Math.random() * q.choices.length), clientTs: Date.now() }),
       400 + Math.random() * 1200,
     );
   });
   p2.on('question', (q) => {
     setTimeout(
-      () => p2.emit('submit_answer', { gameId, playerId: j2.playerId, questionIndex: q.index, choice: 1, clientTs: Date.now() }),
+      () => p2.emit('submit_answer', { questionIndex: q.index, choice: 1, clientTs: Date.now() }),
       300 + Math.random() * 800,
     );
   });

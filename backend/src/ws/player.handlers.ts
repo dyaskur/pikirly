@@ -4,7 +4,7 @@ import { publicPlayers } from '../services/game/engine.js';
 import { maybeEndEarly, recordAnswer, roomOf } from '../services/game/lifecycle.js';
 import { getGame } from '../services/game/store.js';
 import { randomUUID } from 'node:crypto';
-import { type IOSocket, setSession } from './session.js';
+import { getSession, type IOSocket, setSession } from './session.js';
 
 type IO = Server<ClientToServerEvents, ServerToClientEvents>;
 
@@ -21,26 +21,31 @@ export function registerPlayerHandlers(io: IO, socket: IOSocket) {
       return;
     }
 
-    // Reconnect path
-    if (payload.playerId && game.players.has(payload.playerId)) {
-      const existing = game.players.get(payload.playerId)!;
+    // Reconnect path — requires the secret playerToken issued at first join.
+    if (payload.playerId) {
+      const existing = game.players.get(payload.playerId);
+      if (!existing || !payload.playerToken || existing.playerToken !== payload.playerToken) {
+        cb({ ok: false, error: 'invalid_session' });
+        return;
+      }
       existing.connected = true;
       existing.socketId = socket.id;
-      
+
       setSession(socket, {
         role: 'player',
         gameId: game.gameId,
-        playerId: payload.playerId,
+        playerId: existing.playerId,
       });
 
       socket.join(roomOf(game.gameId));
       cb({
         ok: true,
         playerId: existing.playerId,
+        playerToken: existing.playerToken,
         players: publicPlayers(game),
         status: game.status,
       });
-      
+
       // Re-emit current question
       if (game.status === 'in_question' && game.currentQuestionIndex >= 0) {
         const q = game.quiz.questions[game.currentQuestionIndex];
@@ -72,8 +77,10 @@ export function registerPlayerHandlers(io: IO, socket: IOSocket) {
     }
 
     const playerId = randomUUID();
+    const playerToken = randomUUID();
     game.players.set(playerId, {
       playerId,
+      playerToken,
       nickname,
       score: 0,
       connected: true,
@@ -94,17 +101,20 @@ export function registerPlayerHandlers(io: IO, socket: IOSocket) {
     cb({
       ok: true,
       playerId,
+      playerToken,
       players: publicPlayers(game),
       status: game.status,
     });
   });
 
   socket.on('submit_answer', (payload) => {
-    const game = getGame(payload.gameId);
+    const sess = getSession(socket);
+    if (sess.role !== 'player' || !sess.gameId || !sess.playerId) return;
+    const game = getGame(sess.gameId);
     if (!game) return;
     const result = recordAnswer(
       game,
-      payload.playerId,
+      sess.playerId,
       payload.questionIndex,
       payload.choice,
       payload.clientTs,
