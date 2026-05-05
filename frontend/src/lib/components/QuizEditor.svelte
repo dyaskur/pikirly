@@ -42,6 +42,7 @@
   });
 
   function addQuestion() {
+    if (questions.length >= 50) return;
     questions = [
       ...questions,
       {
@@ -139,7 +140,7 @@
             <h3 style="margin: 0;">Questions ({questions.length}/50)</h3>
             <div style="display: flex; gap: 0.5rem;">
               <AIGenerateDrawer onGenerate={onAIGenerate} />
-              <button class="btn-secondary" onclick={addQuestion}>+ Add Question</button>
+              <button class="btn-secondary" onclick={addQuestion} disabled={questions.length >= 50}>+ Add Question</button>
             </div>
           </div>
 
