@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:3001';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3001';
 
 export async function api(endpoint: string, options: RequestInit = {}) {
   const url = `${BASE_URL}${endpoint}`;

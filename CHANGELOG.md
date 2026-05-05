@@ -8,6 +8,12 @@ Categories: **Added**, **Changed**, **Deprecated**, **Removed**, **Fixed**, **Se
 
 ## [Unreleased]
 
+### Changed
+- Frontend backend URL is now configurable via `VITE_BACKEND_URL` (falls back to `http://localhost:3001`). Affects API calls and the Google sign-in link.
+
+### Fixed
+- Finished games are evicted from in-memory state 1 hour after `game_end`, and empty lobbies free their map slot on cleanup.
+
 ### Added
 - **Phase 3: AI-assisted Quiz Generation**
   - Multi-provider AI abstraction layer with support for Straico, OpenAI, and OpenRouter
