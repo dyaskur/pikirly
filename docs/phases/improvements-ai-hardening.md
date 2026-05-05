@@ -58,7 +58,7 @@ Phase 3 shipped multi-provider AI generation but the route is currently unbounde
 
 ## Files to touch
 
-```
+```text
 backend/
   src/server.ts                              # MODIFY — register rate-limit, helmet, drop TLS bypass
   src/routes/ai.routes.ts                    # MODIFY — per-route rate limit, timeout, tighter schema
