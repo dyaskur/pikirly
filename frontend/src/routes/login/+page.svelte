@@ -2,7 +2,7 @@
   import { auth } from '$lib/stores/auth';
   import { goto } from '$app/navigation';
   
-  const BACKEND = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3001';
+  const BACKEND = (import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3001').replace(/\/+$/, '');
 
   $effect(() => {
     if (!$auth.loading && $auth.user) {
