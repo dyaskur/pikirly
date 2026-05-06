@@ -56,7 +56,7 @@ export interface ClientToServerEvents {
   ) => void;
 
   start_game: (
-    payload: { gameId: string; hostToken: string },
+    payload: { gameId: string },
     cb: (res: { ok: true } | { ok: false; error: string }) => void,
   ) => void;
 

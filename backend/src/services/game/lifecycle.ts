@@ -50,6 +50,15 @@ export function startGame(io: IO, g: GameState): void {
   beginQuestion(io, g, 0);
 }
 
+export type StartGameResult = { ok: true } | { ok: false; error: 'already_started' | 'no_players' };
+
+export function tryStartGame(io: IO, g: GameState): StartGameResult {
+  if (g.status !== 'lobby') return { ok: false, error: 'already_started' };
+  if (g.players.size === 0) return { ok: false, error: 'no_players' };
+  startGame(io, g);
+  return { ok: true };
+}
+
 export function beginQuestion(io: IO, g: GameState, index: number): void {
   const q = g.quiz.questions[index];
   if (!q) {

@@ -1,9 +1,9 @@
 import type { Server } from 'socket.io';
 import type { ClientToServerEvents, ServerToClientEvents } from '@kahoot/shared';
 import { createGame } from '../services/game/createGame.js';
-import { hostRoomOf, roomOf, startGame } from '../services/game/lifecycle.js';
+import { hostRoomOf, roomOf, tryStartGame } from '../services/game/lifecycle.js';
 import { getGame } from '../services/game/store.js';
-import { type AuthedUser, type IOSocket, setSession } from './session.js';
+import { type AuthedUser, getSession, type IOSocket, setSession } from './session.js';
 
 type IO = Server<ClientToServerEvents, ServerToClientEvents>;
 
@@ -39,24 +39,17 @@ export function registerHostHandlers(io: IO, socket: IOSocket) {
   });
 
   socket.on('start_game', (payload, cb) => {
+    const sess = getSession(socket);
+    if (sess.role !== 'host' || sess.gameId !== payload.gameId) {
+      cb({ ok: false, error: 'forbidden' });
+      return;
+    }
     const game = getGame(payload.gameId);
     if (!game) {
       cb({ ok: false, error: 'game_not_found' });
       return;
     }
-    if (game.hostToken !== payload.hostToken) {
-      cb({ ok: false, error: 'forbidden' });
-      return;
-    }
-    if (game.status !== 'lobby') {
-      cb({ ok: false, error: 'already_started' });
-      return;
-    }
-    if (game.players.size === 0) {
-      cb({ ok: false, error: 'no_players' });
-      return;
-    }
-    cb({ ok: true });
-    startGame(io, game);
+    const result = tryStartGame(io, game);
+    cb(result);
   });
 }

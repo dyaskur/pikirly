@@ -17,6 +17,7 @@ Categories: **Added**, **Changed**, **Deprecated**, **Removed**, **Fixed**, **Se
 ### Security
 - `submit_answer` is now bound to the socket's authenticated session — client-supplied `gameId`/`playerId` are ignored, preventing players from submitting on behalf of others.
 - `join_game` reconnect requires a secret `playerToken` issued at first join. Knowing another player's `playerId` (which is broadcast in `player_joined`) is no longer sufficient to take over their session.
+- `start_game` now authorizes via the socket's host session instead of a client-supplied `hostToken`, so a leaked or guessed token from an unrelated socket cannot start a game.
 
 ### Added
 - **Phase 3: AI-assisted Quiz Generation**

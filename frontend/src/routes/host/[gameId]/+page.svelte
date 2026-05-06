@@ -98,7 +98,7 @@
     startError = null;
     socket.emit(
       'start_game',
-      { gameId, hostToken: $hostSession.hostToken },
+      { gameId },
       (res) => {
         starting = false;
         if (!res.ok) startError = res.error;

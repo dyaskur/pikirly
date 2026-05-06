@@ -62,7 +62,7 @@ async function run() {
   });
 
   await wait(500);
-  await emitAck(host, 'start_game', { gameId, hostToken });
+  await emitAck(host, 'start_game', { gameId });
   console.log('Game started');
 
   // Wait for game_end
