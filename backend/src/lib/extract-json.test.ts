@@ -3,28 +3,28 @@ import { extractJSON } from './extract-json.js';
 
 describe('extractJSON', () => {
   it('returns clean JSON as-is', () => {
-    const input = '{"questions":[]}';
-    expect(extractJSON(input)).toBe('{"questions":[]}');
+    const input = '{"title":"Geography","count":3}';
+    expect(extractJSON(input)).toBe('{"title":"Geography","count":3}');
   });
 
   it('extracts JSON from markdown code fence', () => {
-    const input = '```json\n{"questions":[]}\n```';
-    expect(extractJSON(input)).toBe('{"questions":[]}');
+    const inner = '{"questions":[{"text":"Capital of France?","correct":0}]}';
+    expect(extractJSON('```json\n' + inner + '\n```')).toBe(inner);
   });
 
   it('extracts JSON from code fence without language tag', () => {
-    const input = '```\n{"questions":[]}\n```';
-    expect(extractJSON(input)).toBe('{"questions":[]}');
+    const inner = '{"difficulty":"easy","tags":["history","ww2"]}';
+    expect(extractJSON('```\n' + inner + '\n```')).toBe(inner);
   });
 
   it('extracts JSON from text with preamble', () => {
-    const input = "Here's a JSON object for you:\n{\"questions\":[]}";
-    expect(extractJSON(input)).toBe('{"questions":[]}');
+    const inner = '{"meta":{"model":"gpt-4","tokens":127}}';
+    expect(extractJSON("Here's a JSON object for you:\n" + inner)).toBe(inner);
   });
 
   it('extracts JSON from text with preamble and postamble', () => {
-    const input = "Sure! Here it is:\n{\"questions\":[]}\nHope that helps!";
-    expect(extractJSON(input)).toBe('{"questions":[]}');
+    const inner = '{"items":[1,2,3],"ok":true}';
+    expect(extractJSON('Sure! Here it is:\n' + inner + '\nHope that helps!')).toBe(inner);
   });
 
   it('throws when no JSON object found', () => {
