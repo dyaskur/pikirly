@@ -61,4 +61,37 @@ describe('extractJSON', () => {
     const input = 'Here you go:\n{"text":"use {curly} braces"}\nEnjoy!';
     expect(extractJSON(input)).toBe('{"text":"use {curly} braces"}');
   });
+
+  // Regressions for the AI provider adapters (commit f725b33).
+  // Both openai-compatible.ts and straico.ts previously stripped fences with
+  //   content.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim()
+  // which silently failed (and broke JSON.parse) on any of the inputs below.
+  describe('regression: AI adapter responses (openai-compatible / straico)', () => {
+    const quizPayload =
+      '{"questions":[{"text":"Capital of France?","choices":["Paris","Lyon","Nice","Lille"],"correct":0,"limitMs":20000}]}';
+
+    it('strips a leading "Here are your questions:" preamble (no fence)', () => {
+      const input = 'Here are your questions:\n' + quizPayload;
+      const out = extractJSON(input);
+      expect(JSON.parse(out).questions).toHaveLength(1);
+    });
+
+    it('strips a trailing "Hope this helps!" postamble (no fence)', () => {
+      const input = quizPayload + '\n\nHope this helps!';
+      const out = extractJSON(input);
+      expect(JSON.parse(out).questions).toHaveLength(1);
+    });
+
+    it('handles a code fence with surrounding chatter on both sides', () => {
+      const input = "Sure! Here's the quiz:\n```json\n" + quizPayload + '\n```\nLet me know if you want more.';
+      const out = extractJSON(input);
+      expect(JSON.parse(out).questions[0].text).toBe('Capital of France?');
+    });
+
+    it('handles a code fence without a json language tag', () => {
+      const input = '```\n' + quizPayload + '\n```';
+      const out = extractJSON(input);
+      expect(JSON.parse(out).questions[0].correct).toBe(0);
+    });
+  });
 });
