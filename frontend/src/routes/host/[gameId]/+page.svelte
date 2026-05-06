@@ -50,6 +50,18 @@
       return;
     }
 
+    // Bind the (possibly fresh) socket to the host's server-side session.
+    // Required after page refresh or Socket.IO reconnect — without this,
+    // start_game and other host-authorized events would return forbidden.
+    const rebind = () => {
+      if (!$hostSession) return;
+      socket.emit('host_resume', { gameId, hostToken: $hostSession.hostToken }, (res) => {
+        if (!res.ok) staleGame = true;
+      });
+    };
+    rebind();
+    socket.on('connect', rebind);
+
     socket.on('player_joined', (p) => {
       players = [...players, p];
     });
@@ -83,6 +95,7 @@
 
   onDestroy(() => {
     stopTimer();
+    socket.off('connect');
     socket.off('player_joined');
     socket.off('player_left');
     socket.off('game_started');

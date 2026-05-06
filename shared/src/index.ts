@@ -60,6 +60,11 @@ export interface ClientToServerEvents {
     cb: (res: { ok: true } | { ok: false; error: string }) => void,
   ) => void;
 
+  host_resume: (
+    payload: { gameId: string; hostToken: string },
+    cb: (res: { ok: true } | { ok: false; error: string }) => void,
+  ) => void;
+
   submit_answer: (payload: {
     questionIndex: number;
     choice: number;

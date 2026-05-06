@@ -38,6 +38,27 @@ export function registerHostHandlers(io: IO, socket: IOSocket) {
     cb({ ok: true, gameId: game.gameId, hostToken: game.hostToken });
   });
 
+  socket.on('host_resume', (payload, cb) => {
+    const game = getGame(payload.gameId);
+    if (!game) {
+      cb({ ok: false, error: 'game_not_found' });
+      return;
+    }
+    if (game.hostToken !== payload.hostToken) {
+      cb({ ok: false, error: 'forbidden' });
+      return;
+    }
+    setSession(socket, {
+      role: 'host',
+      gameId: game.gameId,
+      hostToken: game.hostToken,
+    });
+    game.hostSocketId = socket.id;
+    socket.join(roomOf(game.gameId));
+    socket.join(hostRoomOf(game.gameId));
+    cb({ ok: true });
+  });
+
   socket.on('start_game', (payload, cb) => {
     const sess = getSession(socket);
     if (sess.role !== 'host' || sess.gameId !== payload.gameId) {
