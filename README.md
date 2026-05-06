@@ -7,10 +7,13 @@ A Kahoot-style quiz platform. Hosts create and manage quizzes, start real-time g
 - **Real-time Gameplay**: Questions broadcast instantly to all players using Socket.IO.
 - **Scoring**: Kahoot-style time-decay scoring (faster correct answers earn more points).
 - **Host Dashboard**: Create, edit, and delete custom quizzes.
+- **AI Question Generation**: Generate quizzes from a topic, length, and difficulty via a multi-provider AI layer (Straico, OpenAI, OpenRouter) with automatic fallback.
 - **Authentication**: Secure login via Google OAuth 2.0.
 - **Persistence**: Quizzes and game history saved to PostgreSQL.
 - **Live Leaderboard**: Real-time rank updates after every question.
 - **Podium**: Final winners revealed at the end of the game.
+- **Configurable backend URL**: Frontend reads `VITE_BACKEND_URL` so the API origin can be swapped per environment.
+- **Session-bound socket events**: `submit_answer` and `start_game` authorize via the socket session; `join_game` reconnect requires a secret per-player token.
 
 ## Tech Stack
 
@@ -101,8 +104,15 @@ Detailed documentation is available in the `docs/` directory:
 
 1. ✅ **Phase 1**: Minimal playable loop (In-memory)
 2. ✅ **Phase 2**: Persistence (Postgres) + Auth (Google) + Quiz Editor
-3. 🔜 **Phase 3**: Templates + AI Quiz Generation
+3. 🚧 **Phase 3**: Templates + AI Quiz Generation — *AI generation shipped; quiz templates pending*
 4. 🔜 **Phase 4**: Google Meet Add-on
 5. 🔜 **Phase 5**: Google Slides Add-on
 6. 🔜 **Phase 6**: Advanced Question Types (True/False, Poll, etc.)
 7. 🔜 **Phase 9**: UX Polish & Deployment
+
+### TODO (next up)
+
+- [ ] Quiz template library (`backend/src/data/templates.ts`) + `GET /templates` endpoints
+- [ ] "Start from template" flow in the quiz editor
+- [ ] Host-side reconnect using the existing `hostToken` (so a host refresh during lobby resumes the game)
+- [ ] Production build path for the backend (replace `tsx` runtime with a `tsc` build)
