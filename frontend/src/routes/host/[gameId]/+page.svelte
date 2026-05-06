@@ -27,6 +27,7 @@
 
   let socket = getSocket();
   let tick: ReturnType<typeof setInterval> | null = null;
+  let rebind: (() => void) | null = null;
 
   function startTimer() {
     if (tick) clearInterval(tick);
@@ -53,7 +54,7 @@
     // Bind the (possibly fresh) socket to the host's server-side session.
     // Required after page refresh or Socket.IO reconnect — without this,
     // start_game and other host-authorized events would return forbidden.
-    const rebind = () => {
+    rebind = () => {
       if (!$hostSession) return;
       socket.emit('host_resume', { gameId, hostToken: $hostSession.hostToken }, (res) => {
         if (!res.ok) staleGame = true;
@@ -95,7 +96,8 @@
 
   onDestroy(() => {
     stopTimer();
-    socket.off('connect');
+    if (rebind) socket.off('connect', rebind);
+    rebind = null;
     socket.off('player_joined');
     socket.off('player_left');
     socket.off('game_started');
