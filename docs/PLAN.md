@@ -28,6 +28,7 @@ This file is the entry point. For detail, follow links.
 | WebSocket event contract | [EVENTS.md](EVENTS.md) |
 | Testing strategy | [testing.md](testing.md) |
 | Decisions log (why we picked X over Y) | [decisions.md](decisions.md) |
+| Future architectural considerations | [future-considerations.md](future-considerations.md) |
 
 ## Locked product decisions
 

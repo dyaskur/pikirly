@@ -12,7 +12,6 @@ A Kahoot-style quiz platform. Hosts create and manage quizzes, start real-time g
 - **Persistence**: Quizzes and game history saved to PostgreSQL.
 - **Live Leaderboard**: Real-time rank updates after every question.
 - **Podium**: Final winners revealed at the end of the game.
-- **Configurable backend URL**: Frontend reads `VITE_BACKEND_URL` so the API origin can be swapped per environment.
 - **Session-bound socket events**: `submit_answer` and `start_game` authorize via the socket session; `join_game` reconnect requires a secret per-player token.
 
 ## Tech Stack
