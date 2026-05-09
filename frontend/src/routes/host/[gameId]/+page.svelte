@@ -37,18 +37,23 @@
   }
   function stopTimer() { if (tick) { clearInterval(tick); tick = null; } }
 
-  onMount(async () => {
-    if (!$hostSession || $hostSession.gameId !== gameId) {
-      goto('/');
-      return;
-    }
+  onMount(() => {
+    const init = async () => {
+      if (!$hostSession || $hostSession.gameId !== gameId) {
+        goto('/');
+        return;
+      }
 
-    // Verify the game still exists (backend may have restarted).
-    const check = await fetch(`${BACKEND}/games/${gameId}`).catch(() => null);
-    if (!check || !check.ok) {
-      staleGame = true;
-      return;
-    }
+      // Verify the game still exists (backend may have restarted).
+      const check = await fetch(`${BACKEND}/games/${gameId}`).catch(() => null);
+      if (!check || !check.ok) {
+        staleGame = true;
+        return;
+      }
+      
+      // Initial bind
+      handlers.connect();
+    };
 
     const handlers: Record<string, any> = {
       connect: () => {
@@ -88,8 +93,7 @@
       }
     };
 
-    // Initial bind
-    handlers.connect();
+    void init();
 
     // Register handlers
     for (const [event, fn] of Object.entries(handlers)) {
@@ -100,7 +104,7 @@
       stopTimer();
       // Unregister ONLY our handlers
       for (const [event, fn] of Object.entries(handlers)) {
-        socket.off(event, fn);
+        socket.off(event as any, fn);
       }
     };
   });

@@ -110,7 +110,7 @@
       stopTimer();
       // Unregister ONLY our handlers
       for (const [event, fn] of Object.entries(handlers)) {
-        socket.off(event, fn);
+        socket.off(event as any, fn);
       }
     };
   });
