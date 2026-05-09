@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount } from 'svelte';
   import { getSocket } from '$lib/socket';
   import { hostSession } from '$lib/stores/host';
   import { goto } from '$app/navigation';
@@ -27,7 +27,6 @@
 
   let socket = getSocket();
   let tick: ReturnType<typeof setInterval> | null = null;
-  let rebind: (() => void) | null = null;
 
   function startTimer() {
     if (tick) clearInterval(tick);
@@ -51,61 +50,62 @@
       return;
     }
 
-    // Bind the (possibly fresh) socket to the host's server-side session.
-    // Required after page refresh or Socket.IO reconnect — without this,
-    // start_game and other host-authorized events would return forbidden.
-    rebind = () => {
-      if (!$hostSession) return;
-      socket.emit('host_resume', { gameId, hostToken: $hostSession.hostToken }, (res) => {
-        if (!res.ok) staleGame = true;
-      });
+    const handlers: Record<string, any> = {
+      connect: () => {
+        if (!$hostSession) return;
+        socket.emit('host_resume', { gameId, hostToken: $hostSession.hostToken }, (res) => {
+          if (!res.ok) staleGame = true;
+        });
+      },
+      player_joined: (p: any) => {
+        players = [...players, p];
+      },
+      player_left: ({ playerId }: any) => {
+        players = players.filter((p) => p.playerId !== playerId);
+      },
+      game_started: () => {
+        phase = 'in_question';
+      },
+      question: (q: any) => {
+        currentQuestion = q;
+        timeLeftMs = Math.max(0, q.deadlineMs - Date.now());
+        phase = 'in_question';
+        reveal = null;
+        startTimer();
+      },
+      question_end: (e: any) => {
+        reveal = { correctChoice: e.correctChoice, distribution: e.distribution };
+        phase = 'reveal';
+        stopTimer();
+      },
+      leaderboard_update: ({ top }: any) => {
+        leaderboard = top;
+      },
+      game_end: ({ finalLeaderboard }: any) => {
+        final = finalLeaderboard;
+        phase = 'ended';
+        stopTimer();
+      }
     };
-    rebind();
-    socket.on('connect', rebind);
 
-    socket.on('player_joined', (p) => {
-      players = [...players, p];
-    });
-    socket.on('player_left', ({ playerId }) => {
-      players = players.filter((p) => p.playerId !== playerId);
-    });
-    socket.on('game_started', () => {
-      phase = 'in_question';
-    });
-    socket.on('question', (q) => {
-      currentQuestion = q;
-      timeLeftMs = Math.max(0, q.deadlineMs - Date.now());
-      phase = 'in_question';
-      reveal = null;
-      startTimer();
-    });
-    socket.on('question_end', (e) => {
-      reveal = { correctChoice: e.correctChoice, distribution: e.distribution };
-      phase = 'reveal';
+    // Initial bind
+    handlers.connect();
+
+    // Register handlers
+    for (const [event, fn] of Object.entries(handlers)) {
+      socket.on(event as any, fn);
+    }
+
+    return () => {
       stopTimer();
-    });
-    socket.on('leaderboard_update', ({ top }) => {
-      leaderboard = top;
-    });
-    socket.on('game_end', ({ finalLeaderboard }) => {
-      final = finalLeaderboard;
-      phase = 'ended';
-      stopTimer();
-    });
+      // Unregister ONLY our handlers
+      for (const [event, fn] of Object.entries(handlers)) {
+        socket.off(event, fn);
+      }
+    };
   });
 
-  onDestroy(() => {
-    stopTimer();
-    if (rebind) socket.off('connect', rebind);
-    rebind = null;
-    socket.off('player_joined');
-    socket.off('player_left');
-    socket.off('game_started');
-    socket.off('question');
-    socket.off('question_end');
-    socket.off('leaderboard_update');
-    socket.off('game_end');
-  });
+  // Remove the old onDestroy if it exists
 
   function start() {
     if (!$hostSession) return;

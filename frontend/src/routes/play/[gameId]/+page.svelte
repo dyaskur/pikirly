@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount } from 'svelte';
   import { getSocket } from '$lib/socket';
   import { playerSession } from '$lib/stores/player';
   import type { QuestionPublic } from '@kahoot/shared';
@@ -52,67 +52,67 @@
       );
     };
 
-    if (socket.connected) reJoin();
-    socket.on('connect', () => { connectionMsg = null; reJoin(); });
-    socket.on('disconnect', () => { connectionMsg = 'Reconnecting…'; });
-
-    socket.on('game_started', () => {
-      phase = 'in_question';
-    });
-    socket.on('question', (q) => {
-      currentQuestion = q;
-      timeLeftMs = Math.max(0, q.deadlineMs - Date.now());
-      phase = 'in_question';
-      myChoice = null;
-      revealResult = null;
-      startTimer();
-    });
-    socket.on('answer_ack', (ack) => {
-      if (!ack.accepted) {
-        // Allow retry on duplicate/wrong_question; show message on late.
-        if (ack.reason === 'late') {
-          connectionMsg = 'Too slow on that one!';
-          setTimeout(() => connectionMsg = null, 1800);
-        } else if (ack.reason === 'duplicate') {
-          // ignore — we already have UI state for it
-        } else {
-          myChoice = null;
-          phase = 'in_question';
+    const handlers = {
+      connect: () => { connectionMsg = null; reJoin(); },
+      disconnect: () => { connectionMsg = 'Reconnecting…'; },
+      game_started: () => { phase = 'in_question'; },
+      question: (q: QuestionPublic) => {
+        currentQuestion = q;
+        timeLeftMs = Math.max(0, q.deadlineMs - Date.now());
+        phase = 'in_question';
+        myChoice = null;
+        revealResult = null;
+        startTimer();
+      },
+      answer_ack: (ack: any) => {
+        if (!ack.accepted) {
+          if (ack.reason === 'late') {
+            connectionMsg = 'Too slow on that one!';
+            setTimeout(() => connectionMsg = null, 1800);
+          } else if (ack.reason === 'duplicate') {
+            // ignore
+          } else {
+            myChoice = null;
+            phase = 'in_question';
+          }
         }
+      },
+      question_end: (e: any) => {
+        revealResult = {
+          correct: e.yourCorrect ?? false,
+          earned: e.yourScore ?? 0,
+          total: e.totalScore ?? 0,
+        };
+        phase = 'reveal';
+        stopTimer();
+      },
+      leaderboard_update: ({ top }: any) => {
+        const me = top.find((t: any) => t.playerId === sess.playerId);
+        myRank = me?.rank ?? null;
+      },
+      game_end: ({ finalLeaderboard }: any) => {
+        const me = finalLeaderboard.find((t: any) => t.playerId === sess.playerId);
+        myFinalScore = me?.score ?? 0;
+        myRank = me?.rank ?? null;
+        phase = 'ended';
+        stopTimer();
       }
-    });
-    socket.on('question_end', (e) => {
-      revealResult = {
-        correct: e.yourCorrect ?? false,
-        earned: e.yourScore ?? 0,
-        total: e.totalScore ?? 0,
-      };
-      phase = 'reveal';
-      stopTimer();
-    });
-    socket.on('leaderboard_update', ({ top }) => {
-      const me = top.find((t) => t.playerId === sess.playerId);
-      myRank = me?.rank ?? null;
-    });
-    socket.on('game_end', ({ finalLeaderboard }) => {
-      const me = finalLeaderboard.find((t) => t.playerId === sess.playerId);
-      myFinalScore = me?.score ?? 0;
-      myRank = me?.rank ?? null;
-      phase = 'ended';
-      stopTimer();
-    });
-  });
+    };
 
-  onDestroy(() => {
-    stopTimer();
-    socket.off('connect');
-    socket.off('disconnect');
-    socket.off('game_started');
-    socket.off('question');
-    socket.off('answer_ack');
-    socket.off('question_end');
-    socket.off('leaderboard_update');
-    socket.off('game_end');
+    if (socket.connected) reJoin();
+
+    // Register handlers
+    for (const [event, fn] of Object.entries(handlers)) {
+      socket.on(event as any, fn);
+    }
+
+    return () => {
+      stopTimer();
+      // Unregister ONLY our handlers
+      for (const [event, fn] of Object.entries(handlers)) {
+        socket.off(event, fn);
+      }
+    };
   });
 
   function pick(idx: number) {
