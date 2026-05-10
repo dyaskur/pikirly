@@ -65,7 +65,7 @@
       const data = await res.json();
 
       if (!res.ok || !data.ok) {
-        createError = data.message || 'Failed to create game (Server error)';
+        createError = data.message || `Failed to create game (Error: ${data.error || 'unknown'})`;
         creatingGame = false;
         return;
       }

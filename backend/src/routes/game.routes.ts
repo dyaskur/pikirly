@@ -46,8 +46,12 @@ export async function gameRoutes(app: FastifyInstance) {
     }
 
     if (!quiz) {
-      console.log('[GAME-V6] Quiz not found or not owned');
-      return reply.send({ ok: false, error: 'quiz_not_found' });
+      console.log(`[GAME-V6] Quiz not found or not owned. User: ${user.id}, Quiz: ${hostQuizId}`);
+      return reply.send({ 
+        ok: false, 
+        error: 'quiz_not_found', 
+        message: `Quiz not found or not owned by your current account (${user.email})` 
+      });
     }
 
     // 3. Create new game
