@@ -9,7 +9,7 @@ import { Server as IOServer } from 'socket.io';
 import type { ClientToServerEvents, ServerToClientEvents } from '@kahoot/shared';
 import { registerHandlers } from './ws/index.js';
 import { getGame } from './services/game/store.js';
-import { db } from './db/client.js';
+import { db, pool } from './db/client.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { quizRoutes } from './routes/quiz.routes.js';
 import { aiRoutes } from './routes/ai.routes.js';
@@ -60,12 +60,23 @@ async function main() {
 
   app.get('/health', async () => {
     try {
-      // Test DB connection with a simple query
-      await db.execute(sql`SELECT 1`);
+      // Test DB connection with a raw query to get better error messages
+      const client = await pool.connect();
+      try {
+        await client.query('SELECT 1');
+      } finally {
+        client.release();
+      }
       return { ok: true, db: true, ts: Date.now() };
     } catch (err: any) {
       console.error('[DB-CHECK] Failed:', err.message);
-      return { ok: true, db: false, error: err.message, ts: Date.now() };
+      return { 
+        ok: true, 
+        db: false, 
+        error: err.message, 
+        code: err.code, // Postgres error code (if any)
+        ts: Date.now() 
+      };
     }
   });
 
