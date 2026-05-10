@@ -29,7 +29,7 @@ This document explains how to register and test the Pikirly Meet add-on.
         "supportsScreenSharing": true,
         "addOnOrigins": [
           "https://your-domain.com",
-          "http://localhost:  5173"
+          "http://localhost:5173"
         ],
         "logoUrl": "https://absolute-spin.yaskur.com/assets/logo_128x128.gif"
       }

@@ -68,13 +68,15 @@ async function main() {
         client.release();
       }
       return { ok: true, db: true, ts: Date.now() };
-    } catch (err: any) {
-      console.error('[DB-CHECK] Failed:', err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      const code = (err as any)?.code; // Optional code check
+      console.error('[DB-CHECK] Failed:', message);
       return { 
         ok: true, 
         db: false, 
-        error: err.message, 
-        code: err.code, // Postgres error code (if any)
+        error: message, 
+        code, // Postgres error code (if any)
         ts: Date.now() 
       };
     }

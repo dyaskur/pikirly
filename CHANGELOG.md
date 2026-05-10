@@ -10,7 +10,7 @@ Categories: **Added**, **Changed**, **Deprecated**, **Removed**, **Fixed**, **Se
 
 ### Added
 - **Phase 4: Google Meet Add-on**
-  - Google Meet Add-ons SDK integration (`@google/meet-addons-sdk`)
+  - Google Meet Add-ons SDK integration (`@googleworkspace/meet-addons`)
   - Identity reconciliation: participants join using their Meet identity (automatic `playerId` mapping)
   - New REST endpoints: `POST /games/by-meeting` and `GET /games/by-meeting/:meetingCode`
   - Meet bootstrap logic: `mode=meet` detects meeting context and surface (`side` vs `stage`)

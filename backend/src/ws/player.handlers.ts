@@ -40,7 +40,7 @@ export function registerPlayerHandlers(io: IO, socket: IOSocket) {
     // Reconnect path — requires the secret playerToken issued at first join.
     if (playerId) {
       const existing = game.players.get(playerId);
-      if (!existing || (playerToken && existing.playerToken !== playerToken)) {
+      if (!existing || existing.playerToken !== playerToken) {
         cb({ ok: false, error: 'invalid_session' });
         return;
       }
