@@ -70,7 +70,9 @@
         const sdk = await import('@googleworkspace/meet-addons');
         const meet = sdk.meet || sdk;
         const addon = meet.addon || meet;
-        const session = await addon.createAddonSession();
+        const session = await addon.createAddonSession({
+          cloudProjectNumber: '798042367810'
+        });
         const sidePanelClient = await session.createSidePanelClient();
         
         await sidePanelClient.startActivity({

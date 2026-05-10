@@ -31,7 +31,10 @@ export async function getMeetContext(): Promise<MeetContext | null> {
       }
 
       // 1. Establish the session
-      const session = await addon.createAddonSession();
+      // Using project number from GOOGLE_CLIENT_ID (798042367810)
+      const session = await addon.createAddonSession({
+        cloudProjectNumber: '798042367810'
+      });
       
       // 2. Create the appropriate client based on the surface
       if (surface === 'stage') {
