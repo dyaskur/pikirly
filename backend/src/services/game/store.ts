@@ -15,7 +15,7 @@ export function setGame(game: GameState) {
   }
 }
 
-export function cleanupGame(gameId: string) {
+export function deleteGame(gameId: string) {
   const g = games.get(gameId);
   if (g?.meetingId) {
     meetingsToGames.delete(g.meetingId);
