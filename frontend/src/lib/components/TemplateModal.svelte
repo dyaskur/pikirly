@@ -250,27 +250,45 @@
 
   .template-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
   }
 
   .template-card {
     background: white;
     border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 16px;
+    border-radius: 12px;
+    padding: 20px;
     text-align: left;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
     height: 100%;
+    position: relative;
+    overflow: hidden;
   }
 
   .template-card:hover {
     border-color: var(--brand);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-4px);
+  }
+
+  .template-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--brand);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .template-card:hover::before {
+    opacity: 1;
   }
 
   .template-card.selected {
@@ -280,8 +298,9 @@
 
   .template-info strong {
     display: block;
-    margin-bottom: 4px;
-    font-size: 1rem;
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+    color: #1f2937;
   }
 
   .description {
