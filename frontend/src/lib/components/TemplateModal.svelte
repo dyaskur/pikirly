@@ -3,7 +3,12 @@
   import { api } from '$lib/api';
   import type { TemplateStub, Template } from '@kahoot/shared';
 
-  let { onSelect = (_template: Template) => {}, onClose = () => {} } = $props();
+  interface Props {
+    onSelect?: (template: Template) => void;
+    onClose?: () => void;
+  }
+
+  let { onSelect = () => {}, onClose = () => {} }: Props = $props();
 
   let loading = $state(true);
   let error = $state<string | null>(null);
