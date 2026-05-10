@@ -1,5 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
+import { eq } from 'drizzle-orm';
+import { db } from '../db/client.js';
+import { pairingCodes } from '../db/schema.js';
 import { userRepo } from '../db/repositories/userRepo.js';
 import { verifyJwt } from '../auth/middleware.js';
 
@@ -8,17 +11,6 @@ const googleUserInfoSchema = z.object({
   email: z.string(),
   name: z.string().optional(),
 });
-
-// In-memory store for temporary pairing codes (used for iframe-safe auth)
-const pairingStore = new Map<string, { token: string; expires: number }>();
-
-// Cleanup expired pairing codes every minute
-setInterval(() => {
-  const now = Date.now();
-  for (const [code, data] of pairingStore.entries()) {
-    if (now > data.expires) pairingStore.delete(code);
-  }
-}, 60000);
 
 export async function authRoutes(app: FastifyInstance) {
   // GET /auth/google - handled by oauth2 plugin directly because of startRedirectPath
@@ -93,10 +85,15 @@ export async function authRoutes(app: FastifyInstance) {
     let redirectUrl = `${frontendUrl}/login/callback?token=${jwtToken}`;
     if (pairingCode) {
       console.log(`[AUTH-V7] Linking token to pairingCode: ${pairingCode}`);
-      pairingStore.set(pairingCode, {
-        token: jwtToken,
-        expires: Date.now() + 5 * 60000, // 5 minutes
-      });
+      try {
+        await db.insert(pairingCodes).values({
+          code: pairingCode,
+          token: jwtToken,
+          expiresAt: new Date(Date.now() + 5 * 60000), // 5 minutes
+        });
+      } catch (err) {
+        console.error('Failed to save pairing code to db:', err);
+      }
       redirectUrl += `&pairingCode=${pairingCode}`;
     }
     reply.redirect(redirectUrl);
@@ -113,16 +110,17 @@ export async function authRoutes(app: FastifyInstance) {
 
   app.get('/auth/pairing/poll/:code', async (req, reply) => {
     const { code } = req.params as { code: string };
-    const data = pairingStore.get(code);
+    const records = await db.select().from(pairingCodes).where(eq(pairingCodes.code, code));
+    const data = records[0];
 
     if (!data) return reply.status(404).send({ error: 'not_found' });
-    if (Date.now() > data.expires) {
-      pairingStore.delete(code);
+    if (Date.now() > data.expiresAt.getTime()) {
+      await db.delete(pairingCodes).where(eq(pairingCodes.code, code));
       return reply.status(410).send({ error: 'expired' });
     }
 
     // Return the token and remove it (single-use)
-    pairingStore.delete(code);
+    await db.delete(pairingCodes).where(eq(pairingCodes.code, code));
     return { token: data.token };
   });
 }
