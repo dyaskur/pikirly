@@ -19,45 +19,46 @@ Blank-slate creation is friction. Templates and AI generation lower the barrier 
 
 ### 1. Question templates
 
-- [ ] Define built-in template library in `backend/src/data/templates.ts`:
-  - Each template: `{ id, name, description, questions: Question[] }`
-  - Starter set: General Knowledge, True/False Sampler, Ice Breaker, Tech Trivia
-- [ ] `GET /templates` — returns list of template stubs (id, name, description, question count)
-- [ ] `GET /templates/:id` — returns full template with questions
-- [ ] Frontend: "Start from template" button on `/host` dashboard
-  - Modal or page listing templates with preview
-  - On select → pre-populate quiz editor with template questions (editable)
-- [ ] Templates are read-only system data — not stored in DB, no CRUD
+- [x] Define built-in template library in `backend/src/data/templates.ts`:
+  - Each template: `{ id, name, description, category, subcategory, questions: Question[] }`
+  - Starter categories: "Education", "Corporate", "Entertainment", "Technology"
+  - Starter set: General Knowledge (Entertainment), Tech Trivia (Technology), Ice Breakers (Corporate), Math Basics (Education)
+- [x] `GET /templates` — returns list of template stubs (id, name, description, category, subcategory, question count)
+- [x] `GET /templates/:id` — returns full template with questions
+- [x] Frontend: "Start from template" button on `/host` dashboard
+  - [x] Modal or page listing templates with preview, grouped by category/subcategory
+  - [x] On select → pre-populate quiz editor with template questions (editable)
+- [x] Templates are read-only system data — not stored in DB, no CRUD
 
 ### 2. AI question generation (Multi-provider)
 
-- [ ] Design pluggable AI service architecture in `backend/src/services/ai/`:
-  - `types.ts`: Define `AIProvider` interface and `GenerateQuestionsOptions`.
-  - `service.ts`: Central `AIService` orchestrator.
-  - `adapters/`: Provider-specific implementations using direct REST (`fetch`):
-    - `openai-compatible.ts`: OpenAI Chat Completions (REST). Used for both OpenAI and OpenRouter.
-    - `straico.ts`: Straico Native Prompt V1 (REST).
-- [ ] New REST endpoint `POST /ai/generate-questions`:
-  - Auth: JWT (hosts only).
-  - Body: `{ topic: string, count: number (1–20), difficulty?: 'easy' | 'medium' | 'hard', provider?: string }`.
-  - Calls `AIService.generateQuestions(options)`.
-- [ ] Prompt design & Validation:
-  - System prompt for valid JSON array of `Question` objects.
-  - Zod validation of AI output before returning to client.
-- [ ] Environment Variables:
-  - `AI_PROVIDER`: Default provider (e.g., `straico`).
-  - `AI_FALLBACK_PROVIDER`: Fallback provider if the primary fails (e.g., `openrouter`).
-  - `OPENAI_API_KEY`: API key for OpenAI.
-  - `STRAICO_API_KEY`: API key for Straico.
-  - `OPENROUTER_API_KEY`: API key for OpenRouter.
+- [x] Design pluggable AI service architecture in `backend/src/services/ai/`:
+  - [x] `types.ts`: Define `AIProvider` interface and `GenerateQuestionsOptions`.
+  - [x] `service.ts`: Central `AIService` orchestrator.
+  - [x] `adapters/`: Provider-specific implementations using direct REST (`fetch`):
+    - [x] `openai-compatible.ts`: OpenAI Chat Completions (REST). Used for both OpenAI and OpenRouter.
+    - [x] `straico.ts`: Straico Native Prompt V1 (REST).
+- [x] New REST endpoint `POST /ai/generate-questions`:
+  - [x] Auth: JWT (hosts only).
+  - [x] Body: `{ topic: string, count: number (1–20), difficulty?: 'easy' | 'medium' | 'hard', provider?: string }`.
+  - [x] Calls `AIService.generateQuestions(options)`.
+- [x] Prompt design & Validation:
+  - [x] System prompt for valid JSON array of `Question` objects.
+  - [x] Zod validation of AI output before returning to client.
+- [x] Environment Variables:
+  - [x] `AI_PROVIDER`: Default provider (e.g., `straico`).
+  - [x] `AI_FALLBACK_PROVIDER`: Fallback provider if the primary fails (e.g., `openrouter`).
+  - [x] `OPENAI_API_KEY`: API key for OpenAI.
+  - [x] `STRAICO_API_KEY`: API key for Straico.
+  - [x] `OPENROUTER_API_KEY`: API key for OpenRouter.
 - [ ] Rate limit: 5 requests/min per user.
-- [ ] Frontend: "Generate with AI" button in quiz editor.
-  - Drawer/modal: topic input + count slider (1–20) + difficulty select.
-  - Error state for rate limit / API failure.
+- [x] Frontend: "Generate with AI" button in quiz editor.
+  - [x] Drawer/modal: topic input + count slider (1–20) + difficulty select.
+  - [ ] Error state for rate limit / API failure.
 
 ### 3. Template + AI polish
 
-- [ ] Validate generated questions server-side with zod before returning (safety net)
+- [x] Validate generated questions server-side with zod before returning (safety net)
 - [ ] Deduplicate: if generated question text matches existing question in quiz, skip
 - [ ] "Regenerate" button per question in editor (re-generates single question with same topic)
 

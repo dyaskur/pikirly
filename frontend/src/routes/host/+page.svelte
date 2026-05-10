@@ -1,9 +1,10 @@
 <script lang="ts">
   import { api } from '$lib/api';
   import { auth } from '$lib/stores/auth';
-  import { goto } from '$app/navigation';
+  import { goto, pushState } from '$app/navigation';
   import { getSocket } from '$lib/socket';
   import { hostSession } from '$lib/stores/host';
+  import TemplateModal from '$lib/components/TemplateModal.svelte';
 
   interface QuizListItem {
     id: string;
@@ -75,6 +76,13 @@
     await auth.logout();
     goto('/');
   }
+
+  let showTemplateModal = $state(false);
+
+  function handleTemplateSelect(template: any) {
+    showTemplateModal = false;
+    goto(`/host/quiz/new?templateId=${template.id}`);
+  }
 </script>
 
 <div class="center" style="align-items: flex-start; padding-top: 4rem;">
@@ -87,6 +95,7 @@
         {/if}
       </div>
       <div style="display: flex; gap: 0.5rem;">
+        <button class="btn-secondary" onclick={() => showTemplateModal = true}>Start from template</button>
         <button class="btn-primary" onclick={() => goto('/host/quiz/new')}>Create new quiz</button>
         <button class="btn-secondary" onclick={logout}>Logout</button>
       </div>
@@ -120,3 +129,10 @@
     {/if}
   </div>
 </div>
+
+{#if showTemplateModal}
+  <TemplateModal 
+    onSelect={handleTemplateSelect} 
+    onClose={() => showTemplateModal = false} 
+  />
+{/if}

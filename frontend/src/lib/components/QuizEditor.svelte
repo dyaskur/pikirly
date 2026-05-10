@@ -12,14 +12,18 @@
     limitMs: number;
   }
 
-  let { quizId = null as string | null } = $props();
+  let { 
+    quizId = null as string | null, 
+    templateId = null as string | null,
+    initialData = null as { title: string, questions: Question[] } | null 
+  } = $props();
 
   let loading = $state(false);
   let saving = $state(false);
   let error = $state<string | null>(null);
 
-  let title = $state('');
-  let questions = $state<Question[]>([]);
+  let title = $state(initialData?.title ?? '');
+  let questions = $state<Question[]>(initialData?.questions ?? []);
 
   onMount(async () => {
     if (quizId) {
@@ -35,6 +39,26 @@
         }
       } catch (e) {
         error = 'Error loading quiz';
+      } finally {
+        loading = false;
+      }
+    } else if (templateId) {
+      loading = true;
+      try {
+        const res = await api(`/templates/${templateId}`);
+        if (res.ok) {
+          const data = await res.json();
+          title = data.name;
+          // Important: template questions need fresh IDs so they don't collide
+          questions = data.questions.map((q: any) => ({
+            ...q,
+            id: crypto.randomUUID()
+          }));
+        } else {
+          error = 'Failed to load template';
+        }
+      } catch (e) {
+        error = 'Error loading template';
       } finally {
         loading = false;
       }

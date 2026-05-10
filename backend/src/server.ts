@@ -10,6 +10,7 @@ import { getGame } from './services/game/store.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { quizRoutes } from './routes/quiz.routes.js';
 import { aiRoutes } from './routes/ai.routes.js';
+import { templateRoutes } from './routes/template.routes.js';
 
 // Bypass self-signed certificate errors for local development behind corporate proxies
 if (process.env.NODE_ENV !== 'production') {
@@ -52,6 +53,7 @@ async function main() {
   await app.register(authRoutes);
   await app.register(quizRoutes);
   await app.register(aiRoutes);
+  await app.register(templateRoutes);
 
   app.get('/games/:gameId', async (req, reply) => {
     const { gameId } = req.params as { gameId: string };
