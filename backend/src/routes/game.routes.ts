@@ -99,7 +99,25 @@ export async function gameRoutes(app: FastifyInstance) {
       ok: true,
       gameId: game.gameId, 
       status: game.status, 
-      playerCount: game.players.size 
+      playerCount: game.players.size,
+      hostUserId: game.hostUserId
     });
+  });
+
+  // Reclaim host session (for Main Stage recovery)
+  app.post('/games/:gameId/reclaim', { preHandler: [verifyJwt] }, async (req, reply) => {
+    const { gameId } = req.params as { gameId: string };
+    const user = req.user;
+    const game = getGame(gameId);
+
+    if (!game) {
+      return reply.code(404).send({ ok: false, error: 'game_not_found' });
+    }
+
+    if (game.hostUserId !== user.id) {
+      return reply.code(403).send({ ok: false, error: 'forbidden' });
+    }
+
+    return reply.send({ ok: true, hostToken: game.hostToken });
   });
 }

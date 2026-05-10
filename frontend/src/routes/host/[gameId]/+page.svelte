@@ -29,6 +29,7 @@
   let tick: ReturnType<typeof setInterval> | null = null;
 
   let isMeet = $derived($page.url.searchParams.get('mode') === 'meet');
+  let isSidePanel = $derived($page.url.searchParams.get('surface') === 'side');
 
   async function promoteToMeet() {
     try {
@@ -42,9 +43,15 @@
       } else {
         throw new Error('Meet client not initialized correctly');
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error('Failed to promote to Meet:', e);
-      alert('Failed to show on main stage. Ensure you are in a Meet call.');
+      // If error contains 'already hosting' or similar, we can ignore it or inform the user
+      const msg = e?.message || '';
+      if (msg.includes('already hosting') || msg.includes('one add-on at a time')) {
+        console.log('Activity already running on main stage.');
+      } else {
+        alert('Failed to show on main stage. Ensure you are in a Meet call.');
+      }
     }
   }
 
@@ -179,7 +186,7 @@
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px;">
             <h2 style="margin:0;">Players ({players.length})</h2>
             <div style="display:flex; gap: 0.5rem;">
-              {#if isMeet}
+              {#if isMeet && isSidePanel}
                 <button
                   class="btn-secondary"
                   style="width:auto;"

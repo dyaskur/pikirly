@@ -28,14 +28,24 @@
       const data = await res.json();
       
       if (res.ok && data.ok) {
-        const { gameId } = data;
+        const { gameId, hostUserId } = data;
         const { navigateMeet } = await import('$lib/meet');
         
         // Stop polling if we found a game
         if (pollInterval) clearInterval(pollInterval);
 
-        // If we are signed in, we might be the host
-        if ($auth.user && $hostSession?.gameId === gameId) {
+        // Check if we are the host of this game
+        if ($auth.user && $auth.user.id === hostUserId) {
+          // If we don't have the token in this iframe (partitioning), try to reclaim it
+          if (!$hostSession || $hostSession.gameId !== gameId) {
+            console.log('[STAGE] Reclaiming host session for game:', gameId);
+            const reclaimRes = await api(`/games/${gameId}/reclaim`, { method: 'POST' });
+            const reclaimData = await reclaimRes.json();
+            if (reclaimRes.ok && reclaimData.ok) {
+              const { hostSession: hostSessionStore } = await import('$lib/stores/host');
+              hostSessionStore.set({ gameId, hostToken: reclaimData.hostToken });
+            }
+          }
           await navigateMeet(`/host/${gameId}`);
           return;
         }
