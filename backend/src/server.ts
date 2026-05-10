@@ -4,6 +4,7 @@ import oauthPlugin from '@fastify/oauth2';
 import jwtPlugin from '@fastify/jwt';
 import cookiePlugin from '@fastify/cookie';
 import { z } from 'zod';
+import { sql } from 'drizzle-orm';
 import { Server as IOServer } from 'socket.io';
 import type { ClientToServerEvents, ServerToClientEvents } from '@kahoot/shared';
 import { registerHandlers } from './ws/index.js';
@@ -56,7 +57,16 @@ async function main() {
     scope: ['profile', 'email'],
   });
 
-  app.get('/health', async () => ({ ok: true, ts: Date.now() }));
+  app.get('/health', async () => {
+    try {
+      // Test DB connection with a simple query
+      await db.execute(sql`SELECT 1`);
+      return { ok: true, db: true, ts: Date.now() };
+    } catch (err: any) {
+      console.error('[DB-CHECK] Failed:', err.message);
+      return { ok: true, db: false, error: err.message, ts: Date.now() };
+    }
+  });
 
   // Register game routes early to prevent shadowing
   console.log('[GAME-V3] Registering game routes...');
