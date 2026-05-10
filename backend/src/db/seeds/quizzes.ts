@@ -1,4 +1,4 @@
-import type { Quiz } from '../types/quiz.js';
+import type { Quiz } from '../../types/quiz.js';
 
 // Phase 1 hard-coded quiz. Used by the smoke test path and as a seed source.
 export const QUIZZES: Record<string, Quiz> = {
