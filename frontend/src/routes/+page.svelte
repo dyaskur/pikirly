@@ -15,15 +15,19 @@
 
   let meetContext = $state<MeetContext | null>(null);
   let mode = $derived(page.url.searchParams.get('mode'));
+  let bootstrapping = $state(true);
+  let activeGameFound = $state(false);
 
   async function bootstrapStage() {
     if (!meetContext) return;
     
     // Check if game already exists for this meeting
     try {
+      const { api } = await import('$lib/api');
       const res = await api(`/games/by-meeting/${meetContext.meetingCode}`);
       if (res.ok) {
         const { gameId } = await res.json();
+        activeGameFound = true;
         
         // If we are signed in, we might be the host
         if ($auth.user) {
@@ -36,9 +40,12 @@
         
         // Otherwise, we are a player
         goto(`/join?pin=${gameId}&mode=meet`);
+      } else {
+        bootstrapping = false;
       }
     } catch (e) {
       console.error('Stage bootstrap error:', e);
+      bootstrapping = false;
     }
   }
 
@@ -46,8 +53,12 @@
     if (mode === 'meet') {
       meetContext = await getMeetContext();
       if (meetContext?.surface === 'stage') {
-        void bootstrapStage();
+        await bootstrapStage();
+      } else {
+        bootstrapping = false;
       }
+    } else {
+      bootstrapping = false;
     }
   });
 
@@ -68,15 +79,35 @@
 </script>
 
 {#if mode === 'meet'}
-  {#if meetContext}
+  {#if bootstrapping}
+    <div class="center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+      <p class="muted">Initializing Pikirly for Meet...</p>
+    </div>
+  {:else if meetContext}
     {#if meetContext.surface === 'side'}
       <MeetBootstrap />
     {:else}
-      <MeetStage {meetContext} />
+      {#if $auth.user}
+        <MeetStage {meetContext} />
+      {:else}
+        <div class="center">
+          <div class="card p-12 text-center max-w-lg">
+            <div class="text-6xl mb-6">🎮</div>
+            <h1 class="text-3xl font-bold mb-4">Pikirly for Meet</h1>
+            <p class="text-lg muted mb-8">Waiting for the host to start a game in the side panel...</p>
+            <div class="animate-pulse flex justify-center">
+              <div class="h-2 w-32 bg-primary/20 rounded"></div>
+            </div>
+          </div>
+        </div>
+      {/if}
     {/if}
   {:else}
     <div class="center">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div class="card bg-error/10 p-8">
+        <p class="text-error font-bold">Failed to connect to Google Meet SDK.</p>
+      </div>
     </div>
   {/if}
 {:else}
