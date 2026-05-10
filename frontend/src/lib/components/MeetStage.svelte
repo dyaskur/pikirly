@@ -62,7 +62,17 @@
         })
       });
 
-      const data = await res.json();
+      console.log('[DEBUG] Server response status:', res.status);
+      let data;
+      try {
+        data = await res.json();
+        console.log('[DEBUG] Server response body:', data);
+      } catch (jsonErr) {
+        console.error('[DEBUG] Failed to parse JSON:', jsonErr);
+        createError = 'Server returned an invalid response (not JSON).';
+        creatingGame = false;
+        return;
+      }
 
       if (!res.ok || !data.ok) {
         createError = data.message || `Failed to create game (Error: ${data.error || 'unknown'})`;
