@@ -4,6 +4,7 @@ import type { GameStatus, LeaderboardEntry, PlayerPublic } from '@kahoot/shared'
 
 export interface PlayerState {
   playerId: string;
+  playerToken: string;
   nickname: string;
   score: number;
   connected: boolean;

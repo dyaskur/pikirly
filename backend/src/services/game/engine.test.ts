@@ -50,9 +50,9 @@ describe('engine', () => {
 
     it('returns players sorted by score then join time', () => {
       const state = createGameState(quiz, 'game-1');
-      state.players.set('p1', { playerId: 'p1', nickname: 'Alice', score: 100, connected: true, joinedAt: 100, socketId: 's1' });
-      state.players.set('p2', { playerId: 'p2', nickname: 'Bob', score: 200, connected: true, joinedAt: 200, socketId: 's2' });
-      state.players.set('p3', { playerId: 'p3', nickname: 'Charlie', score: 100, connected: true, joinedAt: 50, socketId: 's3' });
+      state.players.set('p1', { playerId: 'p1', playerToken: 't1', nickname: 'Alice', score: 100, connected: true, joinedAt: 100, socketId: 's1' });
+      state.players.set('p2', { playerId: 'p2', playerToken: 't2', nickname: 'Bob', score: 200, connected: true, joinedAt: 200, socketId: 's2' });
+      state.players.set('p3', { playerId: 'p3', playerToken: 't3', nickname: 'Charlie', score: 100, connected: true, joinedAt: 50, socketId: 's3' });
 
       const leaderboard = topLeaderboard(state);
       expect(leaderboard).toEqual([
@@ -64,9 +64,9 @@ describe('engine', () => {
 
     it('respects the limit', () => {
       const state = createGameState(quiz, 'game-1');
-      state.players.set('p1', { playerId: 'p1', nickname: 'Alice', score: 100, connected: true, joinedAt: 100, socketId: 's1' });
-      state.players.set('p2', { playerId: 'p2', nickname: 'Bob', score: 200, connected: true, joinedAt: 200, socketId: 's2' });
-      state.players.set('p3', { playerId: 'p3', nickname: 'Charlie', score: 300, connected: true, joinedAt: 50, socketId: 's3' });
+      state.players.set('p1', { playerId: 'p1', playerToken: 't1', nickname: 'Alice', score: 100, connected: true, joinedAt: 100, socketId: 's1' });
+      state.players.set('p2', { playerId: 'p2', playerToken: 't2', nickname: 'Bob', score: 200, connected: true, joinedAt: 200, socketId: 's2' });
+      state.players.set('p3', { playerId: 'p3', playerToken: 't3', nickname: 'Charlie', score: 300, connected: true, joinedAt: 50, socketId: 's3' });
 
       const leaderboard = topLeaderboard(state, 2);
       expect(leaderboard).toHaveLength(2);

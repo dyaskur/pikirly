@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount } from 'svelte';
   import { getSocket } from '$lib/socket';
   import { hostSession } from '$lib/stores/host';
   import { goto } from '$app/navigation';
@@ -37,60 +37,79 @@
   }
   function stopTimer() { if (tick) { clearInterval(tick); tick = null; } }
 
-  onMount(async () => {
-    if (!$hostSession || $hostSession.gameId !== gameId) {
-      goto('/');
-      return;
+  onMount(() => {
+    const init = async () => {
+      if (!$hostSession || $hostSession.gameId !== gameId) {
+        goto('/');
+        return;
+      }
+
+      // Verify the game still exists (backend may have restarted).
+      const check = await fetch(`${BACKEND}/games/${gameId}`).catch(() => null);
+      if (!check || !check.ok) {
+        staleGame = true;
+        return;
+      }
+      
+      // Initial bind
+      handlers.connect();
+    };
+
+    const handlers: Record<string, any> = {
+      connect: () => {
+        if (!$hostSession) return;
+        socket.emit('host_resume', { gameId, hostToken: $hostSession.hostToken }, (res) => {
+          if (!res.ok) staleGame = true;
+        });
+      },
+      player_joined: (p: any) => {
+        players = [...players, p];
+      },
+      player_left: ({ playerId }: any) => {
+        players = players.filter((p) => p.playerId !== playerId);
+      },
+      game_started: () => {
+        phase = 'in_question';
+      },
+      question: (q: any) => {
+        currentQuestion = q;
+        timeLeftMs = Math.max(0, q.deadlineMs - Date.now());
+        phase = 'in_question';
+        reveal = null;
+        startTimer();
+      },
+      question_end: (e: any) => {
+        reveal = { correctChoice: e.correctChoice, distribution: e.distribution };
+        phase = 'reveal';
+        stopTimer();
+      },
+      leaderboard_update: ({ top }: any) => {
+        leaderboard = top;
+      },
+      game_end: ({ finalLeaderboard }: any) => {
+        final = finalLeaderboard;
+        phase = 'ended';
+        stopTimer();
+      }
+    };
+
+    void init();
+
+    // Register handlers
+    for (const [event, fn] of Object.entries(handlers)) {
+      socket.on(event as any, fn);
     }
 
-    // Verify the game still exists (backend may have restarted).
-    const check = await fetch(`${BACKEND}/games/${gameId}`).catch(() => null);
-    if (!check || !check.ok) {
-      staleGame = true;
-      return;
-    }
-
-    socket.on('player_joined', (p) => {
-      players = [...players, p];
-    });
-    socket.on('player_left', ({ playerId }) => {
-      players = players.filter((p) => p.playerId !== playerId);
-    });
-    socket.on('game_started', () => {
-      phase = 'in_question';
-    });
-    socket.on('question', (q) => {
-      currentQuestion = q;
-      timeLeftMs = Math.max(0, q.deadlineMs - Date.now());
-      phase = 'in_question';
-      reveal = null;
-      startTimer();
-    });
-    socket.on('question_end', (e) => {
-      reveal = { correctChoice: e.correctChoice, distribution: e.distribution };
-      phase = 'reveal';
+    return () => {
       stopTimer();
-    });
-    socket.on('leaderboard_update', ({ top }) => {
-      leaderboard = top;
-    });
-    socket.on('game_end', ({ finalLeaderboard }) => {
-      final = finalLeaderboard;
-      phase = 'ended';
-      stopTimer();
-    });
+      // Unregister ONLY our handlers
+      for (const [event, fn] of Object.entries(handlers)) {
+        socket.off(event as any, fn);
+      }
+    };
   });
 
-  onDestroy(() => {
-    stopTimer();
-    socket.off('player_joined');
-    socket.off('player_left');
-    socket.off('game_started');
-    socket.off('question');
-    socket.off('question_end');
-    socket.off('leaderboard_update');
-    socket.off('game_end');
-  });
+  // Remove the old onDestroy if it exists
 
   function start() {
     if (!$hostSession) return;
@@ -98,7 +117,7 @@
     startError = null;
     socket.emit(
       'start_game',
-      { gameId, hostToken: $hostSession.hostToken },
+      { gameId },
       (res) => {
         starting = false;
         if (!res.ok) startError = res.error;

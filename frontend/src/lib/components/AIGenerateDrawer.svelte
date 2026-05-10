@@ -12,9 +12,39 @@
   let count = $state(5);
   let difficulty = $state<'easy' | 'medium' | 'hard' | undefined>(undefined);
 
+  let drawerEl = $state<HTMLElement | null>(null);
+
   function portal(el: HTMLElement) {
     document.body.appendChild(el);
     return { destroy() { el.remove(); } };
+  }
+
+  function focusableIn(root: HTMLElement): HTMLElement[] {
+    const sel = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    return Array.from(root.querySelectorAll<HTMLElement>(sel)).filter(el => !el.hasAttribute('aria-hidden'));
+  }
+
+  $effect(() => {
+    if (open && drawerEl) {
+      const first = drawerEl.querySelector<HTMLElement>('#ai-topic') ?? focusableIn(drawerEl)[0];
+      first?.focus();
+    }
+  });
+
+  function trapTab(e: KeyboardEvent) {
+    if (e.key !== 'Tab' || !drawerEl) return;
+    const items = focusableIn(drawerEl);
+    if (items.length === 0) return;
+    const first = items[0];
+    const last = items[items.length - 1];
+    const active = document.activeElement as HTMLElement | null;
+    if (e.shiftKey && (active === first || !drawerEl.contains(active))) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && active === last) {
+      e.preventDefault();
+      first.focus();
+    }
   }
 
   function openDrawer() {
@@ -86,9 +116,21 @@
     >
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div class="drawer" onclick={(e) => e.stopPropagation()} onkeydown={(e) => { if (e.key !== 'Escape') e.stopPropagation(); }}>
+    <div
+      class="drawer"
+      bind:this={drawerEl}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="ai-drawer-title"
+      tabindex="-1"
+      onclick={(e) => e.stopPropagation()}
+      onkeydown={(e) => {
+        if (e.key === 'Tab') { trapTab(e); return; }
+        if (e.key !== 'Escape') e.stopPropagation();
+      }}
+    >
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-        <h3 style="margin: 0;">{generating ? 'Generating...' : 'Generate with AI'}</h3>
+        <h3 id="ai-drawer-title" style="margin: 0;">{generating ? 'Generating...' : 'Generate with AI'}</h3>
         {#if !generating}
           <button class="btn-secondary" style="width: auto; padding: 8px 14px;" onclick={closeDrawer}>Close</button>
         {/if}
@@ -125,6 +167,7 @@
               type="range"
               min="1"
               max="20"
+              value={count}
               oninput={(e) => { count = Number(e.currentTarget.value); }}
               style="width: 100%; padding: 0;"
             />

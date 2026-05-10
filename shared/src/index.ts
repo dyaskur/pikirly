@@ -47,22 +47,25 @@ export interface ClientToServerEvents {
   ) => void;
 
   join_game: (
-    payload: { gameId: string; nickname: string; playerId?: string },
+    payload: { gameId: string; nickname: string; playerId?: string; playerToken?: string },
     cb: (
       res:
-        | { ok: true; playerId: string; players: PlayerPublic[]; status: GameStatus }
+        | { ok: true; playerId: string; playerToken: string; players: PlayerPublic[]; status: GameStatus }
         | { ok: false; error: string },
     ) => void,
   ) => void;
 
   start_game: (
+    payload: { gameId: string },
+    cb: (res: { ok: true } | { ok: false; error: string }) => void,
+  ) => void;
+
+  host_resume: (
     payload: { gameId: string; hostToken: string },
     cb: (res: { ok: true } | { ok: false; error: string }) => void,
   ) => void;
 
   submit_answer: (payload: {
-    gameId: string;
-    playerId: string;
     questionIndex: number;
     choice: number;
     clientTs: number;

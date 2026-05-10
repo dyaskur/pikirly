@@ -3,6 +3,7 @@ import { writable } from 'svelte/store';
 export interface PlayerSession {
   gameId: string;
   playerId: string;
+  playerToken: string;
   nickname: string;
 }
 

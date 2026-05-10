@@ -19,7 +19,7 @@ ADR-style. Why we picked X over Y. Append new decisions; don't rewrite history.
 **Why not raw WebSocket**:
 - No built-in rooms, ack callbacks, reconnection, transport fallback. Reinventing Socket.IO.
 
-**Trade-off accepted**: We hand-roll Redis pub/sub adapter when/if multi-instance.
+**Trade-off accepted**: We hand-roll Redis pub/sub adapter when/if multi-instance. See [future-considerations.md](future-considerations.md) for potential future shifts to Rust-based transport (Sockudo).
 
 ---
 

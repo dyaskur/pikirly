@@ -6,13 +6,14 @@ import {
   answerDistribution,
   topLeaderboard,
 } from './engine.js';
-import { setGame } from './store.js';
+import { deleteGame, setGame } from './store.js';
 import { gameRepo } from '../../db/repositories/gameRepo.js';
 
 type IO = Server<ClientToServerEvents, ServerToClientEvents>;
 
 const BETWEEN_QUESTION_MS = 5_000;
 const REVEAL_DELAY_MS = 3_000;
+const GAME_CLEANUP_DELAY_MS = 1000 * 60 * 60; // 1 hour
 
 const timers = new Map<string, NodeJS.Timeout>();
 
@@ -47,6 +48,15 @@ export function startGame(io: IO, g: GameState): void {
   if (g.status !== 'lobby') return;
   io.to(roomOf(g.gameId)).emit('game_started');
   beginQuestion(io, g, 0);
+}
+
+export type StartGameResult = { ok: true } | { ok: false; error: 'already_started' | 'no_players' };
+
+export function tryStartGame(io: IO, g: GameState): StartGameResult {
+  if (g.status !== 'lobby') return { ok: false, error: 'already_started' };
+  if (g.players.size === 0) return { ok: false, error: 'no_players' };
+  startGame(io, g);
+  return { ok: true };
 }
 
 export function beginQuestion(io: IO, g: GameState, index: number): void {
@@ -188,6 +198,11 @@ function endGame(io: IO, g: GameState) {
   if (g.dbQuizId && g.hostUserId) {
     void persistGame(g);
   }
+
+  // Schedule final cleanup of in-memory state.
+  scheduleNext(g.gameId, GAME_CLEANUP_DELAY_MS, () => {
+    deleteGame(g.gameId);
+  });
 }
 
 async function persistGame(g: GameState): Promise<void> {
@@ -212,4 +227,5 @@ async function persistGame(g: GameState): Promise<void> {
 
 export function cleanupGame(gameId: string) {
   clearGameTimer(gameId);
+  deleteGame(gameId);
 }

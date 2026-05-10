@@ -8,6 +8,18 @@ Categories: **Added**, **Changed**, **Deprecated**, **Removed**, **Fixed**, **Se
 
 ## [Unreleased]
 
+### Changed
+- Frontend backend URL is now configurable via `VITE_BACKEND_URL` (falls back to `http://localhost:3001`). Affects API calls and the Google sign-in link.
+
+### Fixed
+- Finished games are evicted from in-memory state 1 hour after `game_end`, and empty lobbies free their map slot on cleanup.
+
+### Security
+- `submit_answer` is now bound to the socket's authenticated session — client-supplied `gameId`/`playerId` are ignored, preventing players from submitting on behalf of others.
+- `join_game` reconnect requires a secret `playerToken` issued at first join. Knowing another player's `playerId` (which is broadcast in `player_joined`) is no longer sufficient to take over their session.
+- `start_game` now authorizes via the socket's host session instead of a client-supplied `hostToken`, so a leaked or guessed token from an unrelated socket cannot start a game.
+- New `host_resume` event lets the host page rebind a fresh socket to the server-side host session after refresh or Socket.IO reconnect, using the persisted `hostToken` to authenticate exactly once per connection.
+
 ### Added
 - **Phase 3: AI-assisted Quiz Generation**
   - Multi-provider AI abstraction layer with support for Straico, OpenAI, and OpenRouter
