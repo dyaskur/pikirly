@@ -3,6 +3,16 @@ import { templates, templateCategories } from '../schema.js';
 import { eq, aliasedTable } from 'drizzle-orm';
 import type { Template, TemplateStub, Question } from '@kahoot/shared';
 
+// Explicit type for the joined query result to help TS inference
+interface TemplateJoinResult {
+  id: string;
+  name: string;
+  description: string;
+  questions?: Question[];
+  category: string | null;
+  subcategory: string;
+}
+
 export const templateRepo = {
   async list(): Promise<TemplateStub[]> {
     const sub = aliasedTable(templateCategories, 'sub');
@@ -21,17 +31,18 @@ export const templateRepo = {
       .leftJoin(parent, eq(sub.parentId, parent.id));
 
     // Get full questions just to count them
-    const fullTemplates = await db.select({ id: templates.id, questions: templates.questions }).from(templates);
+    const questionsRows = await db.select({ id: templates.id, questions: templates.questions }).from(templates);
     
-    return results.map(r => {
-      const full = fullTemplates.find(f => f.id === r.id);
+    // Explicitly cast or handle types to avoid 'never'
+    return (results as TemplateJoinResult[]).map(r => {
+      const qRow = questionsRows.find(f => f.id === r.id);
       return {
         id: r.id,
         name: r.name,
         description: r.description,
-        category: r.category || r.subcategory, // If no parent, the subcategory is the main category
+        category: r.category || r.subcategory, 
         subcategory: r.category ? r.subcategory : '', 
-        questionCount: full?.questions?.length ?? 0
+        questionCount: qRow?.questions?.length ?? 0
       };
     });
   },
@@ -40,7 +51,7 @@ export const templateRepo = {
     const sub = aliasedTable(templateCategories, 'sub');
     const parent = aliasedTable(templateCategories, 'parent');
 
-    const [result] = await db
+    const queryResults = await db
       .select({
         id: templates.id,
         name: templates.name,
@@ -55,15 +66,17 @@ export const templateRepo = {
       .where(eq(templates.id, id))
       .limit(1);
     
-    if (!result) return null;
+    if (queryResults.length === 0) return null;
+    
+    const r = queryResults[0] as TemplateJoinResult;
 
     return {
-      id: result.id,
-      name: result.name,
-      description: result.description,
-      questions: result.questions,
-      category: result.category || result.subcategory,
-      subcategory: result.category ? result.subcategory : '',
+      id: r.id,
+      name: r.name,
+      description: r.description,
+      questions: r.questions || [],
+      category: r.category || r.subcategory,
+      subcategory: r.category ? r.subcategory : '',
     };
   },
 
