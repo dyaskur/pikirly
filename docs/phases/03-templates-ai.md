@@ -1,6 +1,6 @@
 # Phase 3 — Templates + AI Generation
 
-**Status**: Next
+**Status**: ✅ Done
 **Depends on**: Phase 2 (quiz CRUD + editor)
 **Goal**: Hosts can start from a template instead of a blank quiz, and can generate quiz questions automatically by giving a prompt + question count to an AI.
 
@@ -17,49 +17,60 @@ Blank-slate creation is friction. Templates and AI generation lower the barrier 
 
 ## Deliverables
 
-### 1. Question templates
+### 1. Question templates (Database Persistent)
 
-- [ ] Define built-in template library in `backend/src/data/templates.ts`:
-  - Each template: `{ id, name, description, questions: Question[] }`
-  - Starter set: General Knowledge, True/False Sampler, Ice Breaker, Tech Trivia
-- [ ] `GET /templates` — returns list of template stubs (id, name, description, question count)
-- [ ] `GET /templates/:id` — returns full template with questions
-- [ ] Frontend: "Start from template" button on `/host` dashboard
-  - Modal or page listing templates with preview
-  - On select → pre-populate quiz editor with template questions (editable)
-- [ ] Templates are read-only system data — not stored in DB, no CRUD
+- [x] Define template structure: `{ id, name, description, category, subcategory, questions: Question[] }`
+- [x] Database Schema: Add `templates` and `template_categories` tables to Postgres.
+- [x] Migration: Seed the tables with expanded starter set (10 questions per template).
+- [x] `GET /templates` — returns list of template stubs from DB with question counts.
+- [x] `GET /templates/:id` — returns full template with questions from DB.
+- [x] Frontend: "Start from template" button on `/host` dashboard.
+- [x] Frontend: `TemplateModal` with category grouping and mobile-responsive unified grid.
+- [x] Frontend: Real-time search filtering in Template Modal.
+- [ ] (Future/Phase 10) Admin Panel: UI for admins to add/edit/delete system templates.
 
 ### 2. AI question generation (Multi-provider)
 
-- [ ] Design pluggable AI service architecture in `backend/src/services/ai/`:
-  - `types.ts`: Define `AIProvider` interface and `GenerateQuestionsOptions`.
-  - `service.ts`: Central `AIService` orchestrator.
-  - `adapters/`: Provider-specific implementations using direct REST (`fetch`):
-    - `openai-compatible.ts`: OpenAI Chat Completions (REST). Used for both OpenAI and OpenRouter.
-    - `straico.ts`: Straico Native Prompt V1 (REST).
-- [ ] New REST endpoint `POST /ai/generate-questions`:
-  - Auth: JWT (hosts only).
-  - Body: `{ topic: string, count: number (1–20), difficulty?: 'easy' | 'medium' | 'hard', provider?: string }`.
-  - Calls `AIService.generateQuestions(options)`.
-- [ ] Prompt design & Validation:
-  - System prompt for valid JSON array of `Question` objects.
-  - Zod validation of AI output before returning to client.
-- [ ] Environment Variables:
-  - `AI_PROVIDER`: Default provider (e.g., `straico`).
-  - `AI_FALLBACK_PROVIDER`: Fallback provider if the primary fails (e.g., `openrouter`).
-  - `OPENAI_API_KEY`: API key for OpenAI.
-  - `STRAICO_API_KEY`: API key for Straico.
-  - `OPENROUTER_API_KEY`: API key for OpenRouter.
+- [x] Design pluggable AI service architecture in `backend/src/services/ai/`:
+  - [x] `types.ts`: Define `AIProvider` interface and `GenerateQuestionsOptions`.
+  - [x] `service.ts`: Central `AIService` orchestrator.
+  - [x] `adapters/`: Provider-specific implementations using direct REST (`fetch`):
+    - [x] `openai-compatible.ts`: OpenAI Chat Completions (REST). Used for both OpenAI and OpenRouter.
+    - [x] `straico.ts`: Straico Native Prompt V1 (REST).
+- [x] New REST endpoint `POST /ai/generate-questions`:
+  - [x] Auth: JWT (hosts only).
+  - [x] Body: `{ topic: string, count: number (1–20), difficulty?: 'easy' | 'medium' | 'hard', provider?: string }`.
+  - [x] Calls `AIService.generateQuestions(options)`.
+- [x] Prompt design & Validation:
+  - [x] System prompt for valid JSON array of `Question` objects.
+  - [x] Zod validation of AI output before returning to client.
+- [x] Environment Variables:
+  - [x] `AI_PROVIDER`: Default provider (e.g., `straico`).
+  - [x] `AI_FALLBACK_PROVIDER`: Fallback provider if the primary fails (e.g., `openrouter`).
+  - [x] `OPENAI_API_KEY`: API key for OpenAI.
+  - [x] `STRAICO_API_KEY`: API key for Straico.
+  - [x] `OPENROUTER_API_KEY`: API key for OpenRouter.
 - [ ] Rate limit: 5 requests/min per user.
-- [ ] Frontend: "Generate with AI" button in quiz editor.
-  - Drawer/modal: topic input + count slider (1–20) + difficulty select.
-  - Error state for rate limit / API failure.
+- [x] Frontend: "Generate with AI" button in quiz editor.
+  - [x] Drawer/modal: topic input + count slider (1–20) + difficulty select.
+  - [ ] Error state for rate limit / API failure.
 
-### 3. Template + AI polish
+### 3. Template + AI polish (Deferred / Future Work)
 
-- [ ] Validate generated questions server-side with zod before returning (safety net)
-- [ ] Deduplicate: if generated question text matches existing question in quiz, skip
-- [ ] "Regenerate" button per question in editor (re-generates single question with same topic)
+The following items were identified as high-value polish but deferred to prioritize the core template system and database normalization:
+
+- [ ] **AI Rate Limiting**: Implement a 5 requests/min limit per user in the backend to prevent API cost spikes and abuse.
+- [ ] **AI Deduplication**: Add logic to the frontend or backend to skip generated questions that already exist (by text match) in the current quiz.
+- [ ] **Question Regeneration**: Add a "Regenerate" icon/button to each question row in the editor. Clicking it should call the AI service with the same topic to replace just that specific question.
+- [ ] **Template Search Deepening**: Expand search to include specific question content (currently limited to name/description/category).
+
+---
+
+## Technical Debt & Decisions
+
+1. **Normalization**: Moved from static code to a normalized `template_categories` + `templates` table structure to support a future Admin Panel.
+2. **Inference Workaround**: Used explicit interfaces in `templateRepo.ts` to solve Drizzle type-collapse issues. This should be reviewed if Drizzle updates its inference engine.
+3. **Seed Data Move**: Moved hardcoded data to `backend/src/db/seeds/` to keep live application bundles lean.
 
 ## Files to touch
 

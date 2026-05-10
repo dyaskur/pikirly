@@ -3,6 +3,7 @@ import cors from '@fastify/cors';
 import oauthPlugin from '@fastify/oauth2';
 import jwtPlugin from '@fastify/jwt';
 import cookiePlugin from '@fastify/cookie';
+import { z } from 'zod';
 import { Server as IOServer } from 'socket.io';
 import type { ClientToServerEvents, ServerToClientEvents } from '@kahoot/shared';
 import { registerHandlers } from './ws/index.js';
@@ -10,6 +11,7 @@ import { getGame } from './services/game/store.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { quizRoutes } from './routes/quiz.routes.js';
 import { aiRoutes } from './routes/ai.routes.js';
+import { templateRoutes } from './routes/template.routes.js';
 
 // Bypass self-signed certificate errors for local development behind corporate proxies
 if (process.env.NODE_ENV !== 'production') {
@@ -52,10 +54,20 @@ async function main() {
   await app.register(authRoutes);
   await app.register(quizRoutes);
   await app.register(aiRoutes);
+  await app.register(templateRoutes);
+
+  const gameIdParamsSchema = z.object({
+    gameId: z.string().length(6).regex(/^\d+$/),
+  });
 
   app.get('/games/:gameId', async (req, reply) => {
-    const { gameId } = req.params as { gameId: string };
-    const game = getGame(gameId);
+    const parseParams = gameIdParamsSchema.safeParse(req.params);
+    if (!parseParams.success) {
+      reply.code(400).send({ error: 'invalid_pin', message: 'Game PIN must be 6 digits' });
+      return;
+    }
+
+    const game = getGame(parseParams.data.gameId);
     if (!game) {
       reply.code(404).send({ exists: false });
       return;

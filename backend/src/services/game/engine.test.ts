@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createGameState, topLeaderboard, answerDistribution, type GameState, type PlayerState } from './engine.js';
 import { scoreAnswer } from '@kahoot/shared';
-import { QUIZZES } from '../../data/quizzes.js';
+import { QUIZZES } from '../../db/seeds/quizzes.js';
 
 describe('engine', () => {
   const quiz = QUIZZES['general-1'];

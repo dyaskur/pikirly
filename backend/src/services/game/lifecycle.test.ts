@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { startGame, beginQuestion, maybeEndEarly, recordAnswer, cleanupGame, roomOf } from './lifecycle.js';
 import { createGameState, type GameState } from './engine.js';
-import { QUIZZES } from '../../data/quizzes.js';
+import { QUIZZES } from '../../db/seeds/quizzes.js';
 import { Server } from 'socket.io';
 import { gameRepo } from '../../db/repositories/gameRepo.js';
 

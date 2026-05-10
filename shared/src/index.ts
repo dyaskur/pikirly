@@ -17,6 +17,24 @@ export interface Quiz {
   questions: Question[];
 }
 
+export interface Template {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  subcategory: string;
+  questions: Question[];
+}
+
+export interface TemplateStub {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  subcategory: string;
+  questionCount: number;
+}
+
 export interface PlayerPublic {
   playerId: string;
   nickname: string;

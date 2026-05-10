@@ -1,4 +1,3 @@
-import { DEFAULT_QUIZ_ID, QUIZZES } from '../../data/quizzes.js';
 import { quizRepo } from '../../db/repositories/quizRepo.js';
 import type { Quiz } from '../../types/quiz.js';
 import { createGameState, type GameState } from './engine.js';
@@ -16,22 +15,26 @@ export async function createGame(
   quizId: string | undefined,
   user: CreateGameUser | undefined,
 ): Promise<CreateGameResult> {
-  const id = quizId ?? DEFAULT_QUIZ_ID;
   let quiz: Quiz | null = null;
 
-  if (id === DEFAULT_QUIZ_ID) {
-    quiz = QUIZZES[DEFAULT_QUIZ_ID];
+  if (!quizId) {
+    // If no quizId provided (e.g. smoke tests), try to find ANY quiz or a specific "General Knowledge" one
+    // This removes the direct dependency on the seed file.
+    const allQuizzes = user ? await quizRepo.list(user.id) : [];
+    if (allQuizzes.length > 0) {
+      const first = await quizRepo.getById(allQuizzes[0].id, user!.id);
+      if (first) quiz = { id: first.id, title: first.title, questions: first.questions };
+    }
   } else {
     if (!user) return { ok: false, error: 'unauthorized' };
-    const row = await quizRepo.getById(id, user.id);
+    const row = await quizRepo.getById(quizId, user.id);
     if (row) quiz = { id: row.id, title: row.title, questions: row.questions };
   }
 
   if (!quiz) return { ok: false, error: 'unknown_quiz' };
 
   const gameId = generatePin();
-  const dbQuizId = id === DEFAULT_QUIZ_ID ? undefined : quiz.id;
-  const game = createGameState(quiz, gameId, dbQuizId, user?.id);
+  const game = createGameState(quiz, gameId, quiz.id, user?.id);
   setGame(game);
 
   return { ok: true, game };
