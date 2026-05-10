@@ -7,7 +7,7 @@ if (process.env.NODE_ENV !== 'production') {
 import { eq, and } from 'drizzle-orm';
 import { db } from '../src/db/client.js';
 import { users, quizzes, templates as templatesSchema, templateCategories } from '../src/db/schema.js';
-import { QUIZZES, DEFAULT_QUIZ_ID } from '../src/data/quizzes.js';
+import { QUIZZES, DEFAULT_QUIZ_ID } from '../src/db/seeds/quizzes.js';
 import { templates as starterTemplates } from '../src/db/seeds/templates.js';
 
 async function seed() {
