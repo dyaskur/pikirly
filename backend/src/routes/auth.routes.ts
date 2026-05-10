@@ -4,7 +4,7 @@ import { userRepo } from '../db/repositories/userRepo.js';
 import { verifyJwt } from '../auth/middleware.js';
 
 const googleUserInfoSchema = z.object({
-  id: z.string(),
+  id: z.union([z.string(), z.number()]),
   email: z.string(),
   name: z.string().optional(),
 });
@@ -46,7 +46,8 @@ export async function authRoutes(app: FastifyInstance) {
     const userInfo = parsed.data;
 
     // Force ID to string to prevent any DB type inference issues
-    const googleSub = String(userInfo.id);
+    const googleSub = String(userInfo.id).trim();
+    console.log('Processed googleSub for DB:', googleSub, 'Length:', googleSub.length);
 
     const user = await userRepo.findOrCreateByGoogleSub(
       googleSub,
