@@ -17,10 +17,21 @@ export async function getMeetContext(): Promise<MeetContext | null> {
 
   try {
     // Dynamically import to avoid issues in non-Meet environments
-    const { meet } = await import('@googleworkspace/meet-addons');
+    const sdk = await import('@googleworkspace/meet-addons');
+    const meet = sdk.meet || sdk; // Handle both named and default/direct exports
+
     if (!meetClient) {
+      // The SDK can be on meet.addon or meet directly depending on version/export
+      const addon = meet.addon || meet;
+      
+      console.log('Initializing Meet Add-on SDK...', { meet, addon });
+
+      if (typeof addon.createAddonSession !== 'function') {
+        throw new Error('createAddonSession not found on SDK object');
+      }
+
       // 1. Establish the session
-      const session = await meet.addon.createAddonSession();
+      const session = await addon.createAddonSession();
       
       // 2. Create the appropriate client based on the surface
       if (surface === 'stage') {

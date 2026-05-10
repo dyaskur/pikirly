@@ -67,8 +67,10 @@
 
       // For Google Meet: we must promote the app to the Main Stage
       try {
-        const { meet } = await import('@googleworkspace/meet-addons');
-        const session = await meet.addon.createAddonSession();
+        const sdk = await import('@googleworkspace/meet-addons');
+        const meet = sdk.meet || sdk;
+        const addon = meet.addon || meet;
+        const session = await addon.createAddonSession();
         const sidePanelClient = await session.createSidePanelClient();
         
         await sidePanelClient.startActivity({
