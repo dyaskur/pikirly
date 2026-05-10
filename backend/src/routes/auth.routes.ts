@@ -89,7 +89,7 @@ export async function authRoutes(app: FastifyInstance) {
       maxAge: 60 * 60 * 24 * 7, // 1 week
     });
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/host\/?$/, '').replace(/\/+$/, '');
     let redirectUrl = `${frontendUrl}/login/callback?token=${jwtToken}`;
     if (pairingCode) {
       redirectUrl += `&pairingCode=${pairingCode}`;
