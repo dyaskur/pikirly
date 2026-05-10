@@ -10,64 +10,96 @@
   let loading = $state(true);
   let activeGameId = $state<string | null>(null);
 
-  onMount(async () => {
-    // Wait a bit for auth to initialize
-    if ($auth.loading) {
-      await new Promise(resolve => {
-        const unsubscribe = auth.subscribe(s => {
-          if (!s.loading) {
-            unsubscribe();
-            resolve(null);
-          }
+  let loginPollInterval: ReturnType<typeof setInterval> | null = null;
+  let loginMessageListener: ((e: MessageEvent) => void) | null = null;
+
+  function cleanupLogin() {
+    if (loginPollInterval) {
+      clearInterval(loginPollInterval);
+      loginPollInterval = null;
+    }
+    if (loginMessageListener) {
+      window.removeEventListener('message', loginMessageListener);
+      loginMessageListener = null;
+    }
+  }
+
+  onMount(() => {
+    const init = async () => {
+      // Wait a bit for auth to initialize
+      if ($auth.loading) {
+        await new Promise(resolve => {
+          const unsubscribe = auth.subscribe(s => {
+            if (!s.loading) {
+              unsubscribe();
+              resolve(null);
+            }
+          });
         });
-      });
-    }
-
-    meetContext = await getMeetContext();
-    if (!meetContext) {
-      error = 'Could not initialize Google Meet context.';
-      loading = false;
-      return;
-    }
-
-    // Check if game already exists for this meeting
-    try {
-      const res = await api(`/games/by-meeting/${meetContext.meetingCode}`);
-      const data = await res.json();
-      if (res.ok && data.ok) {
-        activeGameId = data.gameId;
       }
-    } catch (e) {
-      console.error('Bootstrap check error:', e);
-    } finally {
-      loading = false;
-    }
+
+      meetContext = await getMeetContext();
+      if (!meetContext) {
+        error = 'Could not initialize Google Meet context.';
+        loading = false;
+        return;
+      }
+
+      // Check if game already exists for this meeting
+      try {
+        const res = await api(`/games/by-meeting/${meetContext.meetingCode}`);
+        const data = await res.json();
+        if (res.ok && data.ok) {
+          activeGameId = data.gameId;
+        }
+      } catch (e) {
+        console.error('Bootstrap check error:', e);
+      } finally {
+        loading = false;
+      }
+    };
+
+    void init();
+
+    return () => {
+      cleanupLogin();
+    };
   });
 
   async function handleLogin() {
+    cleanupLogin(); // Clear any previous attempt
     const backendUrl = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3001';
     
     // Generate a unique pairing code for this login attempt
     const pairingCode = crypto.randomUUID();
     
     // Open the login popup with the pairing code in the state parameter
-    // fastify-oauth2 will preserve this state and return it to us
     const popup = window.open(`${backendUrl}/auth/google?state=${pairingCode}`, '_blank', 'width=500,height=600');
     
-    const handleMessage = async (event: MessageEvent) => {
+    loginMessageListener = async (event: MessageEvent) => {
+      // Security: Validate the origin matches our own frontend
+      if (event.origin !== window.location.origin) return;
+      
       if (event.data?.type === 'pikirly-auth-success' && event.data.token) {
         console.log('Token received via postMessage');
         const { setAuthToken } = await import('$lib/api');
         setAuthToken(event.data.token);
         await auth.init();
-        window.removeEventListener('message', handleMessage);
+        cleanupLogin();
       }
     };
-    window.addEventListener('message', handleMessage);
+    window.addEventListener('message', loginMessageListener);
 
-    // Robust Polling: Check the backend for the token associated with this pairing code
+    // Robust Polling fallback
     console.log('Starting pairing code poll:', pairingCode);
-    const interval = setInterval(async () => {
+    loginPollInterval = setInterval(async () => {
+      if (popup?.closed) {
+        console.log('Login popup closed');
+        // Give it one last check then stop
+        setTimeout(cleanupLogin, 2000);
+        return;
+      }
+
       try {
         const res = await api(`/auth/pairing/poll/${pairingCode}`);
         if (res.ok) {
@@ -77,19 +109,10 @@
           const { setAuthToken } = await import('$lib/api');
           setAuthToken(token);
           await auth.init();
-          
-          clearInterval(interval);
-          window.removeEventListener('message', handleMessage);
-          return;
+          cleanupLogin();
         }
       } catch (e) {
         // ignore errors during poll
-      }
-      
-      if (popup?.closed) {
-        console.log('Login popup closed');
-        // Give it one last check
-        setTimeout(() => clearInterval(interval), 2000);
       }
     }, 2000);
   }

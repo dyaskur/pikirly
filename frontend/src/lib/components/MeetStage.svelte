@@ -23,8 +23,25 @@
   let creatingGame = $state(false);
   let createError = $state<string | null>(null);
 
-  onMount(async () => {
-    await auth.init();
+  let loginPollInterval: ReturnType<typeof setInterval> | null = null;
+  let loginMessageListener: ((e: MessageEvent) => void) | null = null;
+
+  function cleanupLogin() {
+    if (loginPollInterval) {
+      clearInterval(loginPollInterval);
+      loginPollInterval = null;
+    }
+    if (loginMessageListener) {
+      window.removeEventListener('message', loginMessageListener);
+      loginMessageListener = null;
+    }
+  }
+
+  onMount(() => {
+    auth.init();
+    return () => {
+      cleanupLogin();
+    };
   });
 
   $effect(() => {
@@ -108,6 +125,7 @@
   }
 
   async function handleLogin() {
+    cleanupLogin(); // Clear any previous attempt
     const backendUrl = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3001';
     
     // Generate a unique pairing code
@@ -115,20 +133,30 @@
     
     const popup = window.open(`${backendUrl}/auth/google?state=${pairingCode}`, '_blank', 'width=500,height=600');
     
-    const handleMessage = async (event: MessageEvent) => {
+    loginMessageListener = async (event: MessageEvent) => {
+      // Security: Validate the origin matches our own frontend
+      if (event.origin !== window.location.origin) return;
+
       if (event.data?.type === 'pikirly-auth-success' && event.data.token) {
         console.log('Token received via postMessage');
         const { setAuthToken } = await import('$lib/api');
         setAuthToken(event.data.token);
         await auth.init();
-        window.removeEventListener('message', handleMessage);
+        cleanupLogin();
       }
     };
-    window.addEventListener('message', handleMessage);
+    window.addEventListener('message', loginMessageListener);
 
     // Robust Polling fallback
     console.log('Starting pairing code poll:', pairingCode);
-    const interval = setInterval(async () => {
+    loginPollInterval = setInterval(async () => {
+      if (popup?.closed) {
+        console.log('Login popup closed');
+        // Give it one last check then stop
+        setTimeout(cleanupLogin, 2000);
+        return;
+      }
+
       try {
         const res = await api(`/auth/pairing/poll/${pairingCode}`);
         if (res.ok) {
@@ -138,18 +166,10 @@
           const { setAuthToken } = await import('$lib/api');
           setAuthToken(token);
           await auth.init();
-          
-          clearInterval(interval);
-          window.removeEventListener('message', handleMessage);
-          return;
+          cleanupLogin();
         }
       } catch (e) {
         // ignore errors
-      }
-
-      if (popup?.closed) {
-        console.log('Login popup closed');
-        setTimeout(() => clearInterval(interval), 2000);
       }
     }, 2000);
   }
