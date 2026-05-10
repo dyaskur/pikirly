@@ -19,7 +19,15 @@ export async function getMeetContext(): Promise<MeetContext | null> {
     // Dynamically import to avoid issues in non-Meet environments
     const { meet } = await import('@googleworkspace/meet-addons');
     if (!meetClient) {
-      meetClient = await meet.createAddonClient();
+      // 1. Establish the session
+      const session = await meet.addon.createAddonSession();
+      
+      // 2. Create the appropriate client based on the surface
+      if (surface === 'stage') {
+        meetClient = await session.createMainStageClient();
+      } else {
+        meetClient = await session.createSidePanelClient();
+      }
     }
 
     const meetingContext = await meetClient.getMeetingContext();

@@ -64,6 +64,20 @@
       }
 
       const { gameId, hostToken } = await res.json();
+
+      // For Google Meet: we must promote the app to the Main Stage
+      try {
+        const { meet } = await import('@googleworkspace/meet-addons');
+        const session = await meet.addon.createAddonSession();
+        const sidePanelClient = await session.createSidePanelClient();
+        
+        await sidePanelClient.startActivity({
+          mainStageUrl: `${window.location.origin}/?mode=meet&surface=stage`
+        });
+      } catch (meetErr) {
+        console.error('Failed to promote to main stage:', meetErr);
+      }
+
       hostSession.set({ gameId, hostToken });
       goto(`/host/${gameId}`);
     } catch (err) {

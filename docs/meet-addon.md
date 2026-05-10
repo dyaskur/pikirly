@@ -21,22 +21,18 @@ This document explains how to register and test the Pikirly Meet add-on.
   "addOns": {
     "common": {
       "name": "Pikirly",
-      "logoUrl": "https://your-domain.com/favicon.svg"
+      "logoUrl": "https://absolute-spin.yaskur.com/assets/logo_128x128.gif"
     },
     "meet": {
       "web": {
-        "sidePanelUri": "https://your-domain.com/?mode=meet&surface=side",
-        "mainStageUri": "https://your-domain.com/?mode=meet&surface=stage",
+        "sidePanelUrl": "https://your-domain.com/?mode=meet&surface=side",
         "supportsScreenSharing": true,
-        "logoUrl": "https://your-domain.com/favicon.svg",
         "addOnOrigins": [
           "https://your-domain.com",
           "http://localhost:5173"
-        ]
+        ],
+        "logoUrl": "https://absolute-spin.yaskur.com/assets/logo_128x128.gif"
       }
-    },
-    "httpOptions": {
-      "granularOauthPermissionSupport": "OPT_OUT"
     }
   }
 }
