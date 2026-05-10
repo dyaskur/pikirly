@@ -13,6 +13,7 @@ export function setAuthToken(token: string | null) {
 
 export async function api(endpoint: string, options: RequestInit = {}) {
   const url = `${BASE_URL}${endpoint}`;
+  console.log(`[API] Calling ${endpoint}...`);
   
   const headers = new Headers(options.headers);
   if (!headers.has('Content-Type')) {
@@ -24,10 +25,28 @@ export async function api(endpoint: string, options: RequestInit = {}) {
     headers.set('Authorization', `Bearer ${token}`);
   }
 
+  // Add a 15s timeout to all API calls
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    console.warn(`[API] Request to ${endpoint} timed out after 15s`);
+    controller.abort();
+  }, 15000);
+
   const fetchOptions: RequestInit = {
     ...options,
     credentials: options.credentials ?? 'include',
     headers,
+    signal: controller.signal,
   };
-  return fetch(url, fetchOptions);
+
+  try {
+    const res = await fetch(url, fetchOptions);
+    console.log(`[API] ${endpoint} returned ${res.status}`);
+    return res;
+  } catch (err) {
+    console.error(`[API] ${endpoint} failed:`, err);
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }

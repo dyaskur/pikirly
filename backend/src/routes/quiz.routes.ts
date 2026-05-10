@@ -24,16 +24,19 @@ export async function quizRoutes(app: FastifyInstance) {
   app.addHook('preValidation', verifyJwt);
 
   app.get('/quizzes', async (req, reply) => {
+    console.log('[QUIZ-V5] GET /quizzes hit. User:', req.user.id);
     try {
       const quizzes = await quizRepo.list(req.user.id);
+      console.log('[QUIZ-V5] Found quizzes:', quizzes.length);
       reply.send(quizzes);
     } catch (err) {
-      req.log.error(err);
+      console.error('[QUIZ-V5] Failed to fetch quizzes:', err);
       reply.status(500).send({ error: 'internal_error', message: 'Failed to fetch quizzes' });
     }
   });
 
   app.get('/quizzes/:id', async (req, reply) => {
+    console.log('[QUIZ-V5] GET /quizzes/:id hit. ID:', (req.params as any).id);
     const parseParams = idParamSchema.safeParse(req.params);
     if (!parseParams.success) {
       reply.status(400).send({ error: 'invalid_id', message: 'ID must be a valid UUID' });

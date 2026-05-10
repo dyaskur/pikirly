@@ -5,13 +5,20 @@ import type { Question } from '@kahoot/shared';
 
 export const quizRepo = {
   async list(ownerId: string) {
-    const results = await db.select().from(quizzes).where(eq(quizzes.ownerUserId, ownerId));
-    return results.map(q => ({
-      id: q.id,
-      title: q.title,
-      questionCount: q.questions.length,
-      updatedAt: q.updatedAt,
-    }));
+    console.log('[QUIZ-REPO-V5] Listing quizzes for owner:', ownerId);
+    try {
+      const results = await db.select().from(quizzes).where(eq(quizzes.ownerUserId, ownerId));
+      console.log('[QUIZ-REPO-V5] Query finished. Count:', results.length);
+      return results.map(q => ({
+        id: q.id,
+        title: q.title,
+        questionCount: q.questions.length,
+        updatedAt: q.updatedAt,
+      }));
+    } catch (err) {
+      console.error('[QUIZ-REPO-V5] Query failed:', err);
+      throw err;
+    }
   },
 
   async getById(id: string, ownerId: string) {
