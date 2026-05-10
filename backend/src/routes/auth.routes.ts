@@ -92,6 +92,11 @@ export async function authRoutes(app: FastifyInstance) {
     const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/host\/?$/, '').replace(/\/+$/, '');
     let redirectUrl = `${frontendUrl}/login/callback?token=${jwtToken}`;
     if (pairingCode) {
+      console.log(`[AUTH-V7] Linking token to pairingCode: ${pairingCode}`);
+      pairingStore.set(pairingCode, {
+        token: jwtToken,
+        expires: Date.now() + 5 * 60000, // 5 minutes
+      });
       redirectUrl += `&pairingCode=${pairingCode}`;
     }
     reply.redirect(redirectUrl);
@@ -104,24 +109,6 @@ export async function authRoutes(app: FastifyInstance) {
 
   app.get('/auth/me', { preValidation: [verifyJwt] }, async (req, reply) => {
     reply.send(req.user);
-  });
-
-  // NEW: Support for pairing-code based auth (iframe-safe)
-  app.post('/auth/pairing/save', async (req, reply) => {
-    const schema = z.object({
-      pairingCode: z.string().min(10),
-      token: z.string().min(10),
-    });
-
-    const body = schema.safeParse(req.body);
-    if (!body.success) return reply.status(400).send({ error: 'invalid_params' });
-
-    pairingStore.set(body.data.pairingCode, {
-      token: body.data.token,
-      expires: Date.now() + 5 * 60000, // 5 minutes
-    });
-
-    return { ok: true };
   });
 
   app.get('/auth/pairing/poll/:code', async (req, reply) => {
