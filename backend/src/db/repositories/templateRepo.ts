@@ -3,6 +3,25 @@ import { templates, templateCategories } from '../schema.js';
 import { eq, aliasedTable, sql } from 'drizzle-orm';
 import type { Template, TemplateStub, Question } from '@kahoot/shared';
 
+// Define the exact shape returned by the complex joined queries
+interface TemplateListResult {
+  id: string;
+  name: string;
+  description: string;
+  subcategory: string;
+  category: string | null;
+  questionCount: number | null;
+}
+
+interface TemplateGetResult {
+  id: string;
+  name: string;
+  description: string;
+  questions: Question[];
+  subcategory: string;
+  category: string | null;
+}
+
 export const templateRepo = {
   async list(): Promise<TemplateStub[]> {
     const sub = aliasedTable(templateCategories, 'sub');
@@ -24,7 +43,11 @@ export const templateRepo = {
       .innerJoin(sub, eq(templates.categoryId, sub.id))
       .leftJoin(parent, eq(sub.parentId, parent.id));
 
-    return results.map(r => ({
+    // Type casting here is necessary because Drizzle inference can collapse to 'never' 
+    // on complex joins + aliased tables + sql fragments in strict mode.
+    const rows = results as TemplateListResult[];
+
+    return rows.map(r => ({
       id: r.id,
       name: r.name,
       description: r.description,
@@ -55,7 +78,7 @@ export const templateRepo = {
     
     if (results.length === 0) return null;
     
-    const r = results[0];
+    const r = results[0] as TemplateGetResult;
 
     return {
       id: r.id,
