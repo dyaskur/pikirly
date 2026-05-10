@@ -16,25 +16,41 @@ const quizBodySchema = z.object({
   questions: z.array(questionSchema).min(1).max(50),
 });
 
-interface IdParams {
-  id: string;
-}
+const idParamSchema = z.object({
+  id: z.string().uuid(),
+});
 
 export async function quizRoutes(app: FastifyInstance) {
   app.addHook('preValidation', verifyJwt);
 
   app.get('/quizzes', async (req, reply) => {
-    const quizzes = await quizRepo.list(req.user.id);
-    reply.send(quizzes);
+    try {
+      const quizzes = await quizRepo.list(req.user.id);
+      reply.send(quizzes);
+    } catch (err) {
+      req.log.error(err);
+      reply.status(500).send({ error: 'internal_error', message: 'Failed to fetch quizzes' });
+    }
   });
 
-  app.get<{ Params: IdParams }>('/quizzes/:id', async (req, reply) => {
-    const quiz = await quizRepo.getById(req.params.id, req.user.id);
-    if (!quiz) {
-      reply.status(404).send({ error: 'not_found', message: 'Quiz not found' });
+  app.get('/quizzes/:id', async (req, reply) => {
+    const parseParams = idParamSchema.safeParse(req.params);
+    if (!parseParams.success) {
+      reply.status(400).send({ error: 'invalid_id', message: 'ID must be a valid UUID' });
       return;
     }
-    reply.send(quiz);
+
+    try {
+      const quiz = await quizRepo.getById(parseParams.data.id, req.user.id);
+      if (!quiz) {
+        reply.status(404).send({ error: 'not_found', message: 'Quiz not found' });
+        return;
+      }
+      reply.send(quiz);
+    } catch (err) {
+      req.log.error(err);
+      reply.status(500).send({ error: 'internal_error', message: 'Failed to fetch quiz' });
+    }
   });
 
   app.post('/quizzes', async (req, reply) => {
@@ -43,30 +59,59 @@ export async function quizRoutes(app: FastifyInstance) {
       reply.status(400).send({ error: 'invalid_body', message: parseResult.error.message });
       return;
     }
-    const quiz = await quizRepo.create(req.user.id, parseResult.data);
-    reply.status(201).send(quiz);
+    
+    try {
+      const quiz = await quizRepo.create(req.user.id, parseResult.data);
+      reply.status(201).send(quiz);
+    } catch (err) {
+      req.log.error(err);
+      reply.status(500).send({ error: 'internal_error', message: 'Failed to create quiz' });
+    }
   });
 
-  app.put<{ Params: IdParams }>('/quizzes/:id', async (req, reply) => {
+  app.put('/quizzes/:id', async (req, reply) => {
+    const parseParams = idParamSchema.safeParse(req.params);
+    if (!parseParams.success) {
+      reply.status(400).send({ error: 'invalid_id', message: 'ID must be a valid UUID' });
+      return;
+    }
+
     const parseResult = quizBodySchema.safeParse(req.body);
     if (!parseResult.success) {
       reply.status(400).send({ error: 'invalid_body', message: parseResult.error.message });
       return;
     }
-    const quiz = await quizRepo.update(req.params.id, req.user.id, parseResult.data);
-    if (!quiz) {
-      reply.status(404).send({ error: 'not_found', message: 'Quiz not found' });
-      return;
+
+    try {
+      const quiz = await quizRepo.update(parseParams.data.id, req.user.id, parseResult.data);
+      if (!quiz) {
+        reply.status(404).send({ error: 'not_found', message: 'Quiz not found' });
+        return;
+      }
+      reply.send(quiz);
+    } catch (err) {
+      req.log.error(err);
+      reply.status(500).send({ error: 'internal_error', message: 'Failed to update quiz' });
     }
-    reply.send(quiz);
   });
 
-  app.delete<{ Params: IdParams }>('/quizzes/:id', async (req, reply) => {
-    const quiz = await quizRepo.remove(req.params.id, req.user.id);
-    if (!quiz) {
-      reply.status(404).send({ error: 'not_found', message: 'Quiz not found' });
+  app.delete('/quizzes/:id', async (req, reply) => {
+    const parseParams = idParamSchema.safeParse(req.params);
+    if (!parseParams.success) {
+      reply.status(400).send({ error: 'invalid_id', message: 'ID must be a valid UUID' });
       return;
     }
-    reply.status(204).send();
+
+    try {
+      const quiz = await quizRepo.remove(parseParams.data.id, req.user.id);
+      if (!quiz) {
+        reply.status(404).send({ error: 'not_found', message: 'Quiz not found' });
+        return;
+      }
+      reply.status(204).send();
+    } catch (err) {
+      req.log.error(err);
+      reply.status(500).send({ error: 'internal_error', message: 'Failed to delete quiz' });
+    }
   });
 }
