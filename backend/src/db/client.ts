@@ -4,9 +4,14 @@ import { config } from '../config.js';
 
 // Support both ?sslmode=... in URL and DATABASE_SSL env var
 const parsed = new URL(config.DATABASE_URL);
-const sslInUrl = parsed.searchParams.get('sslmode');
+// Remove SSL params from the URL string so they don't conflict with our Pool config
+parsed.searchParams.delete('sslmode');
+parsed.searchParams.delete('ssl');
+const sanitizedUrl = parsed.toString();
+
 const sslEnv = config.DATABASE_SSL === 'true' || process.env.NODE_ENV === 'production';
-const finalSsl = (sslInUrl || sslEnv) ? { rejectUnauthorized: false } : false;
+// FORCE rejectUnauthorized: false if SSL is requested at all
+const finalSsl = sslEnv ? { rejectUnauthorized: false } : false;
 
 console.log('[DB-INIT] Attempting connection to:', {
   host: parsed.hostname,
@@ -16,10 +21,10 @@ console.log('[DB-INIT] Attempting connection to:', {
 });
 
 const pool = new pg.Pool({
-  connectionString: config.DATABASE_URL,
+  connectionString: sanitizedUrl,
   max: 10,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000, // Increased to 10s
+  connectionTimeoutMillis: 10000,
   statement_timeout: 10000,
   ssl: finalSsl,
 });
