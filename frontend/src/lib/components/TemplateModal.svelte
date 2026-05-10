@@ -14,6 +14,7 @@
   let error = $state<string | null>(null);
   let templates = $state<TemplateStub[]>([]);
   let selectedId = $state<string | null>(null);
+  let searchTerm = $state('');
 
   onMount(async () => {
     try {
@@ -46,10 +47,20 @@
     }
   }
 
-  // Group templates by category then subcategory
+  // Filter and group templates by category then subcategory
   const grouped = $derived(() => {
+    const term = searchTerm.toLowerCase().trim();
+    const filtered = term 
+      ? templates.filter(t => 
+          t.name.toLowerCase().includes(term) || 
+          t.description.toLowerCase().includes(term) ||
+          t.category.toLowerCase().includes(term) ||
+          t.subcategory.toLowerCase().includes(term)
+        )
+      : templates;
+
     const groups: Record<string, Record<string, TemplateStub[]>> = {};
-    for (const t of templates) {
+    for (const t of filtered) {
       if (!groups[t.category]) groups[t.category] = {};
       if (!groups[t.category][t.subcategory]) groups[t.category][t.subcategory] = [];
       groups[t.category][t.subcategory].push(t);
@@ -60,9 +71,23 @@
 
 <div class="modal-overlay" onclick={onClose} onkeydown={(e) => e.key === 'Escape' && onClose()}>
   <div class="modal-content" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-    <div class="modal-header">
-      <h2>Start from Template</h2>
-      <button class="btn-secondary close-btn" onclick={onClose}>&times;</button>
+    <div class="modal-header" style="flex-direction: column; align-items: stretch; gap: 1rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="margin: 0;">Start from Template</h2>
+        <button class="btn-secondary close-btn" onclick={onClose}>&times;</button>
+      </div>
+      
+      <div class="search-container">
+        <input 
+          type="text" 
+          bind:value={searchTerm} 
+          placeholder="Search templates, categories, or topics..."
+          class="search-input"
+        />
+        {#if searchTerm}
+          <button class="clear-search" onclick={() => searchTerm = ''}>&times;</button>
+        {/if}
+      </div>
     </div>
 
     <div class="modal-body">
@@ -75,6 +100,11 @@
         <div class="error">{error}</div>
       {:else if templates.length === 0}
         <p class="muted center-state">No templates available yet.</p>
+      {:else if Object.keys(grouped()).length === 0}
+        <div class="center-state">
+          <p class="muted">No templates match "{searchTerm}"</p>
+          <button class="btn-secondary" onclick={() => searchTerm = ''}>Clear search</button>
+        </div>
       {:else}
         {#each Object.entries(grouped()) as [category, subcategories]}
           <div class="category-section">
@@ -148,6 +178,43 @@
     font-size: 1.5rem;
     padding: 4px 12px;
     line-height: 1;
+  }
+
+  .search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    padding-right: 2.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(var(--brand-rgb, 59, 130, 246), 0.1);
+  }
+
+  .clear-search {
+    position: absolute;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0 4px;
+  }
+
+  .clear-search:hover {
+    color: #4b5563;
   }
 
   .modal-body {
