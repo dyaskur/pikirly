@@ -29,17 +29,19 @@
         const { gameId } = await res.json();
         activeGameFound = true;
         
+        const { navigateMeet } = await import('$lib/meet');
+
         // If we are signed in, we might be the host
         if ($auth.user) {
           // Check if we have a host session for this game
           if ($hostSession?.gameId === gameId) {
-            goto(`/host/${gameId}?mode=meet`);
+            navigateMeet(`/host/${gameId}`);
             return;
           }
         }
         
         // Otherwise, we are a player
-        goto(`/join?pin=${gameId}&mode=meet`);
+        navigateMeet(`/join?pin=${gameId}`);
       } else {
         bootstrapping = false;
       }

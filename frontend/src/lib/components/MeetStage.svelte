@@ -73,24 +73,22 @@
 
       // For Google Meet: we must promote the app to the Main Stage
       try {
-        const sdk = await import('@googleworkspace/meet-addons');
-        const meet = sdk.meet || sdk;
-        const addon = meet.addon || meet;
-        const session = await addon.createAddonSession({
-          cloudProjectNumber: '798042367810'
-        });
-        const sidePanelClient = await session.createSidePanelClient();
+        const { getMeetClient } = await import('$lib/meet');
+        const client = await getMeetClient();
         
-        await sidePanelClient.startActivity({
-          mainStageUrl: `${window.location.origin}/?mode=meet&surface=stage`
-        });
+        if (client && typeof client.startActivity === 'function') {
+          await client.startActivity({
+            mainStageUrl: `${window.location.origin}/?mode=meet&surface=stage`
+          });
+        }
       } catch (meetErr) {
         console.error('Failed to promote to main stage:', meetErr);
-        // We don't return here because the game WAS created, the promotion just failed
       }
 
       hostSession.set({ gameId, hostToken });
-      goto(`/host/${gameId}?mode=meet`);
+      
+      const { navigateMeet } = await import('$lib/meet');
+      navigateMeet(`/host/${gameId}`);
     } catch (err) {
       console.error(err);
       createError = 'A network error occurred. Please try again.';

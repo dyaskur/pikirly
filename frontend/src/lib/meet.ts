@@ -8,6 +8,30 @@ export interface MeetContext {
 }
 
 let meetClient: any = null;
+let meetSession: any = null;
+
+export async function getMeetClient() {
+  if (!meetClient) {
+    await getMeetContext();
+  }
+  return meetClient;
+}
+
+/**
+ * Navigate while preserving Google Meet query parameters (especially meet_sdk)
+ */
+export function navigateMeet(path: string) {
+  const currentUrl = new URL(window.location.href);
+  const targetUrl = new URL(path, window.location.origin);
+  
+  // Copy all existing parameters
+  currentUrl.searchParams.forEach((value, key) => {
+    targetUrl.searchParams.set(key, value);
+  });
+
+  const { goto } = import('$app/navigation');
+  goto(targetUrl.pathname + targetUrl.search);
+}
 
 export async function getMeetContext(): Promise<MeetContext | null> {
   const mode = page.url.searchParams.get('mode');
@@ -16,31 +40,22 @@ export async function getMeetContext(): Promise<MeetContext | null> {
   if (mode !== 'meet') return null;
 
   try {
-    // Dynamically import to avoid issues in non-Meet environments
     const sdk = await import('@googleworkspace/meet-addons');
-    const meet = sdk.meet || sdk; // Handle both named and default/direct exports
+    const meet = (sdk as any).meet || sdk;
+    const addon = (meet as any).addon || meet;
 
-    if (!meetClient) {
-      // The SDK can be on meet.addon or meet directly depending on version/export
-      const addon = meet.addon || meet;
-      
-      console.log('Initializing Meet Add-on SDK...', { meet, addon });
-
-      if (typeof addon.createAddonSession !== 'function') {
-        throw new Error('createAddonSession not found on SDK object');
-      }
-
-      // 1. Establish the session
-      // Using project number from GOOGLE_CLIENT_ID (798042367810)
-      const session = await addon.createAddonSession({
+    if (!meetSession) {
+      console.log('Initializing Meet Add-on SDK session...');
+      meetSession = await addon.createAddonSession({
         cloudProjectNumber: '798042367810'
       });
-      
-      // 2. Create the appropriate client based on the surface
+    }
+
+    if (!meetClient) {
       if (surface === 'stage') {
-        meetClient = await session.createMainStageClient();
+        meetClient = await meetSession.createMainStageClient();
       } else {
-        meetClient = await session.createSidePanelClient();
+        meetClient = await meetSession.createSidePanelClient();
       }
     }
 

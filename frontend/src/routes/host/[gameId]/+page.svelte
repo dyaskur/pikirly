@@ -32,14 +32,16 @@
 
   async function promoteToMeet() {
     try {
-      const { meet } = await import('@googleworkspace/meet-addons');
-      const session = await meet.addon.createAddonSession({
-        cloudProjectNumber: '798042367810'
-      });
-      const sidePanelClient = await session.createSidePanelClient();
-      await sidePanelClient.startActivity({
-        mainStageUrl: `${window.location.origin}/?mode=meet&surface=stage`
-      });
+      const { getMeetClient } = await import('$lib/meet');
+      const client = await getMeetClient();
+      
+      if (client && typeof client.startActivity === 'function') {
+        await client.startActivity({
+          mainStageUrl: `${window.location.origin}/?mode=meet&surface=stage`
+        });
+      } else {
+        throw new Error('Meet client not initialized correctly');
+      }
     } catch (e) {
       console.error('Failed to promote to Meet:', e);
       alert('Failed to show on main stage. Ensure you are in a Meet call.');
