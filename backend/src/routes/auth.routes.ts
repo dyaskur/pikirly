@@ -24,24 +24,32 @@ export async function authRoutes(app: FastifyInstance) {
   // GET /auth/google - handled by oauth2 plugin directly because of startRedirectPath
 
   app.get('/auth/google/callback', async (req, reply) => {
+    // Extract pairing code from state parameter before the plugin might consume it
+    const pairingCode = (req.query as any).state;
+    console.log('OAuth callback received. Pairing code from state:', pairingCode);
+
     const token = await app.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
-    
-    // Check for pairing code in cookie (if we want to use cookies to track it through the flow)
-    // But for now, we'll just pass it through query params from the frontend if needed
-    const pairingCode = (req.query as any).state; // We'll use the 'state' param for the pairing code
 
     const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
       headers: { Authorization: `Bearer ${token.token.access_token}` },
     });
-    const parsed = googleUserInfoSchema.safeParse(await userInfoResponse.json());
+    
+    const rawUserInfo = await userInfoResponse.json();
+    console.log('Google UserInfo received. ID:', rawUserInfo.id, 'Type:', typeof rawUserInfo.id);
+    
+    const parsed = googleUserInfoSchema.safeParse(rawUserInfo);
     if (!parsed.success) {
-      reply.status(400).send({ error: 'oauth_failed', message: 'Failed to get user info' });
+      console.error('UserInfo validation failed:', parsed.error);
+      reply.status(400).send({ error: 'oauth_failed', message: 'Failed to validate user info' });
       return;
     }
     const userInfo = parsed.data;
 
+    // Force ID to string to prevent any DB type inference issues
+    const googleSub = String(userInfo.id);
+
     const user = await userRepo.findOrCreateByGoogleSub(
-      userInfo.id,
+      googleSub,
       userInfo.email,
       userInfo.name ?? userInfo.email,
     );

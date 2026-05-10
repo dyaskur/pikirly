@@ -60,8 +60,12 @@ This document explains how to register and test the Pikirly Meet add-on.
 ### Identity Reconciliation
 Participants are identified by their Google Meet participant ID. On first join, Pikirly maps this ID to an internal `playerId`. If the participant refreshes or reconnects, they are automatically restored to the same player session without needing a PIN or nickname.
 
-### Auth
-Hosts must be signed in to Pikirly via Google OAuth. If they launch the add-on without being authed, they will see a "Sign in" button that opens a popup.
+### Robust Auth (Pairing Code)
+To overcome iframe sandboxing and storage partitioning (where local storage is not shared between Meet and normal windows), Pikirly uses a pairing-code flow:
+1.  The side panel generates a `pairingCode` and passes it to the login popup via the `state` OAuth parameter.
+2.  Upon successful login, the popup sends the JWT token back to the backend linked to that `pairingCode`.
+3.  The side panel polls the backend for the token and logs the user in.
+4.  This flow works even if `window.opener` is blocked and `localStorage` is partitioned.
 
 ### URL Parameters
 - `mode=meet`: Triggers the Meet SDK initialization.
