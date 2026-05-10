@@ -16,9 +16,14 @@ export async function authRoutes(app: FastifyInstance) {
   // GET /auth/google - handled by oauth2 plugin directly because of startRedirectPath
 
   app.get('/auth/google/callback', async (req, reply) => {
-    // Extract pairing code from state parameter before the plugin might consume it
-    const pairingCode = (req.query as any).state;
-    console.log('OAuth callback received. Pairing code from state:', pairingCode);
+    // Validate state (pairingCode) strictly
+    const querySchema = z.object({
+      state: z.string().optional()
+    });
+    const query = querySchema.parse(req.query);
+    const pairingCode = query.state;
+    
+    console.log('[AUTH-V7] OAuth callback received. Pairing code:', pairingCode);
 
     const token = await app.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
 
@@ -49,7 +54,7 @@ export async function authRoutes(app: FastifyInstance) {
 
     // Force ID to string to prevent any DB type inference issues
     const googleSub = String(userInfo.id).trim();
-    console.log('[AUTH-V3] Processed googleSub for DB:', googleSub);
+    console.log('[AUTH-V7] Processed googleSub for DB:', googleSub);
 
     let user;
     try {
@@ -59,7 +64,7 @@ export async function authRoutes(app: FastifyInstance) {
         userInfo.name ?? userInfo.email,
       );
     } catch (dbErr) {
-      console.error('[AUTH-V3] DB Query Failed:', dbErr);
+      console.error('[AUTH-V7] DB Query Failed:', dbErr);
       return reply.status(500).send({ 
         error: 'database_error', 
         message: 'Failed to find or create user',
@@ -82,7 +87,11 @@ export async function authRoutes(app: FastifyInstance) {
     });
 
     const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/host\/?$/, '').replace(/\/+$/, '');
-    let redirectUrl = `${frontendUrl}/login/callback?token=${jwtToken}`;
+    
+    // SECURITY: Do not put JWT in the redirect query string to prevent leakage in logs/history.
+    // Instead, rely on the pairing flow (if pairingCode present) or httpOnly cookie.
+    let redirectUrl = `${frontendUrl}/login/callback`;
+    
     if (pairingCode) {
       console.log(`[AUTH-V7] Linking token to pairingCode: ${pairingCode}`);
       try {
@@ -91,10 +100,13 @@ export async function authRoutes(app: FastifyInstance) {
           token: jwtToken,
           expiresAt: new Date(Date.now() + 5 * 60000), // 5 minutes
         });
+        
+        // Append pairingCode to redirect so frontend knows it can close/notify
+        const sep = redirectUrl.includes('?') ? '&' : '?';
+        redirectUrl += `${sep}pairingCode=${encodeURIComponent(pairingCode)}`;
       } catch (err) {
         console.error('Failed to save pairing code to db:', err);
       }
-      redirectUrl += `&pairingCode=${pairingCode}`;
     }
     reply.redirect(redirectUrl);
   });

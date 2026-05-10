@@ -196,7 +196,7 @@
       </div>
 
       {#if createError}
-        <div class="card bg-error/10 p-4 mb-6">
+        <div class="p-4 mb-6 rounded-lg border-2 border-brand bg-white">
           <p class="text-error font-bold">{createError}</p>
         </div>
       {/if}

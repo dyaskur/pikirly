@@ -4,6 +4,7 @@
   import { api } from '$lib/api';
   import { auth } from '$lib/stores/auth';
   import MeetStage from './MeetStage.svelte';
+  import { playerSession } from '$lib/stores/player';
 
   let meetContext: MeetContext | null = $state(null);
   let error: string | null = $state(null);
@@ -80,12 +81,10 @@
       // Security: Validate the origin matches our own frontend
       if (event.origin !== window.location.origin) return;
       
-      if (event.data?.type === 'pikirly-auth-success' && event.data.token) {
-        console.log('Token received via postMessage');
-        const { setAuthToken } = await import('$lib/api');
-        setAuthToken(event.data.token);
+      if (event.data?.type === 'pikirly-auth-complete') {
+        console.log('Auth complete signal received via postMessage');
+        // The side panel is already polling, so we just wait for the poll to succeed
         await auth.init();
-        cleanupLogin();
       }
     };
     window.addEventListener('message', loginMessageListener);
@@ -144,9 +143,14 @@
     <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
     <p>Connecting to Pikirly...</p>
   {:else if error}
-    <div class="card bg-error/10 p-6 mb-4 w-full">
+    <div class="card p-6 mb-4 w-full" style="border: 2px solid var(--brand);">
       <p class="text-error font-bold">{error}</p>
     </div>
+    {#if error.includes('No active game found')}
+      <button class="btn btn-primary" onclick={() => { loading = true; error = null; activeGameId = null; onMount(); }}>
+        Retry
+      </button>
+    {/if}
   {:else if $auth.user}
     <!-- Host View -->
     <div class="w-full">
@@ -156,7 +160,7 @@
       </div>
       
       {#if activeGameId}
-        <div class="card bg-info/10 p-4 mb-4">
+        <div class="card p-6 mb-4 w-full" style="border: 2px solid var(--info);">
           <p class="font-bold">Game in progress!</p>
           <p class="text-sm muted mt-1">Activity is running on the main stage.</p>
           <button class="btn btn-primary btn-sm mt-4 w-full" onclick={handleManageActive}>

@@ -6,7 +6,6 @@
   let error: string | null = $state(null);
 
   onMount(async () => {
-    const token = page.url.searchParams.get('token');
     const pairingCode = page.url.searchParams.get('pairingCode');
     
     // Check if URL has error (e.g. from backend redirect)
@@ -15,33 +14,30 @@
       return;
     }
 
-    console.log('Login callback reached, token present:', !!token, 'pairing code:', !!pairingCode);
-    if (token) {
-      setAuthToken(token);
-
-      // Notify opener if exists (for standard iframe flow)
-      if (window.opener) {
-        console.log('Notifying opener...');
-        try {
-          window.opener.postMessage({ type: 'pikirly-auth-success', token }, window.location.origin);
-        } catch (e) {
-          console.error('Failed to postMessage to opener:', e);
-        }
+    console.log('Login callback reached, pairing code present:', !!pairingCode);
+    
+    // Notify opener if exists (for standard iframe flow)
+    if (window.opener) {
+      console.log('Notifying opener...');
+      try {
+        // We no longer send the token via postMessage to avoid leakage.
+        // The side panel will poll the backend for it.
+        window.opener.postMessage({ type: 'pikirly-auth-complete', pairingCode }, window.location.origin);
+      } catch (e) {
+        console.error('Failed to postMessage to opener:', e);
       }
-
-      // Give it a tiny bit of time before closing/redirecting
-      setTimeout(() => {
-        if (window.opener || pairingCode) {
-          console.log('Closing popup...');
-          window.close();
-        } else {
-          console.log('No opener found, redirecting to host dashboard');
-          window.location.href = '/host';
-        }
-      }, 1000);
-    } else {
-      error = 'No authentication token received.';
     }
+    
+    // Give it a tiny bit of time before closing/redirecting
+    setTimeout(() => {
+      if (window.opener || pairingCode) {
+        console.log('Closing popup...');
+        window.close();
+      } else {
+        console.log('No opener found, redirecting to host dashboard');
+        window.location.href = '/host';
+      }
+    }, 1000);
   });
 </script>
 
