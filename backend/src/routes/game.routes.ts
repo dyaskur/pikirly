@@ -9,7 +9,7 @@ export async function gameRoutes(app: FastifyInstance) {
   // New REST endpoint POST /games/by-meeting:
   // Create a new game tied to a Google Meet meeting
   app.post('/games/by-meeting', { preHandler: [verifyJwt] }, async (req, reply) => {
-    console.log('[GAME-V3] POST /games/by-meeting hit');
+    console.log('[GAME-V4] POST /games/by-meeting hit');
     const schema = z.object({
       meetingCode: z.string().min(1),
       hostQuizId: z.string().uuid(),
@@ -17,18 +17,17 @@ export async function gameRoutes(app: FastifyInstance) {
 
     const body = schema.safeParse(req.body);
     if (!body.success) {
-      console.log('[GAME-V3] Invalid request body', body.error);
       return reply.code(400).send({ error: 'invalid_request', message: body.error.message });
     }
 
     const { meetingCode, hostQuizId } = body.data;
     const user = req.user;
-    console.log('[GAME-V3] Creating game for meeting:', meetingCode, 'User:', user.id);
+    console.log('[GAME-V4] Context:', { meetingCode, hostQuizId, userId: user.id });
 
-    // Check if game already exists for this meeting
+    // 1. Optimized Check for existing game
     const existing = findByMeetingId(meetingCode);
     if (existing) {
-      console.log('[GAME-V3] Found existing game for meeting:', existing.gameId);
+      console.log('[GAME-V4] Found existing game:', existing.gameId);
       return reply.send({ 
         gameId: existing.gameId, 
         hostToken: existing.hostToken,
@@ -36,18 +35,26 @@ export async function gameRoutes(app: FastifyInstance) {
       });
     }
 
-    // Get quiz
-    const quiz = await quizRepo.getById(hostQuizId, user.id);
+    // 2. Fetch quiz from DB (potential bottleneck)
+    console.log('[GAME-V4] Fetching quiz from DB...');
+    let quiz;
+    try {
+      quiz = await quizRepo.getById(hostQuizId, user.id);
+    } catch (err) {
+      console.error('[GAME-V4] DB Fetch failed:', err);
+      return reply.status(500).send({ error: 'db_error' });
+    }
+    console.log('[GAME-V4] Quiz fetch result:', quiz ? 'found' : 'not_found');
+
     if (!quiz) {
-      console.log('[GAME-V3] Quiz not found or not owner:', hostQuizId);
       return reply.code(404).send({ error: 'quiz_not_found' });
     }
 
-    // Create new game
+    // 3. Create new game
     const gameId = generatePin();
     const gameState = createGameState(quiz, gameId, quiz.id, user.id, meetingCode);
     setGame(gameState);
-    console.log('[GAME-V3] Created game:', gameId);
+    console.log('[GAME-V4] Game created successfully:', gameId);
 
     return reply.send({ gameId, hostToken: gameState.hostToken });
   });
