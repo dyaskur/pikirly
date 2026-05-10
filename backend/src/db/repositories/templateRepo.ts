@@ -1,41 +1,70 @@
 import { db } from '../client.js';
-import { templates } from '../schema.js';
-import { eq } from 'drizzle-orm';
+import { templates, templateCategories } from '../schema.js';
+import { eq, aliasedTable } from 'drizzle-orm';
 import type { Template, TemplateStub } from '@kahoot/shared';
 
 export const templateRepo = {
   async list(): Promise<TemplateStub[]> {
+    const sub = aliasedTable(templateCategories, 'sub');
+    const parent = aliasedTable(templateCategories, 'parent');
+
     const results = await db
       .select({
         id: templates.id,
         name: templates.name,
         description: templates.description,
-        category: templates.category,
-        subcategory: templates.subcategory,
+        subcategory: sub.name,
+        category: parent.name,
       })
-      .from(templates);
+      .from(templates)
+      .innerJoin(sub, eq(templates.categoryId, sub.id))
+      .leftJoin(parent, eq(sub.parentId, parent.id));
 
-    // Get full questions just to count them (or we could use a raw count if needed)
-    // For now, we fetch all and count for simplicity as template count is low
+    // Get full questions just to count them
     const fullTemplates = await db.select({ id: templates.id, questions: templates.questions }).from(templates);
     
     return results.map(r => {
       const full = fullTemplates.find(f => f.id === r.id);
       return {
-        ...r,
+        id: r.id,
+        name: r.name,
+        description: r.description,
+        category: r.category || r.subcategory, // If no parent, the subcategory is the main category
+        subcategory: r.category ? r.subcategory : '', 
         questionCount: full?.questions?.length ?? 0
       };
     });
   },
 
   async getById(id: string): Promise<Template | null> {
+    const sub = aliasedTable(templateCategories, 'sub');
+    const parent = aliasedTable(templateCategories, 'parent');
+
     const [result] = await db
-      .select()
+      .select({
+        id: templates.id,
+        name: templates.name,
+        description: templates.description,
+        questions: templates.questions,
+        subcategory: sub.name,
+        category: parent.name,
+      })
       .from(templates)
+      .innerJoin(sub, eq(templates.categoryId, sub.id))
+      .leftJoin(parent, eq(sub.parentId, parent.id))
       .where(eq(templates.id, id))
       .limit(1);
     
-    return (result as Template) || null;
+    if (!result) return null;
+
+    return {
+      id: result.id,
+      name: result.name,
+      description: result.description,
+      questions: result.questions,
+      category: result.category || result.subcategory,
+      subcategory: result.category ? result.subcategory : '',
+    };
   },
 
   async create(data: Omit<Template, 'id'>) {

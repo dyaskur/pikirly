@@ -81,7 +81,9 @@
             <h3 class="category-title">{category}</h3>
             {#each Object.entries(subcategories) as [subcategory, items]}
               <div class="subcategory-section">
-                <h4 class="subcategory-title">{subcategory}</h4>
+                {#if subcategory}
+                  <h4 class="subcategory-title">{subcategory}</h4>
+                {/if}
                 <div class="template-grid">
                   {#each items as template}
                     <button 

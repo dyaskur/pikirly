@@ -6,14 +6,43 @@ if (process.env.NODE_ENV !== 'production') {
 
 import { eq, and } from 'drizzle-orm';
 import { db } from '../src/db/client.js';
-import { users, quizzes, templates as templatesSchema } from '../src/db/schema.js';
+import { users, quizzes, templates as templatesSchema, templateCategories } from '../src/db/schema.js';
 import { QUIZZES, DEFAULT_QUIZ_ID } from '../src/data/quizzes.js';
 import { templates as starterTemplates } from '../src/data/templates.js';
 
 async function seed() {
   console.log('Seeding database...');
 
-  // 1. Seed Templates (Idempotent by name)
+  // 1. Seed Template Categories
+  const categoryMap: Record<string, string> = {}; // Name -> ID
+
+  async function ensureCategory(name: string, parentId?: string): Promise<string> {
+    const [existing] = await db
+      .select({ id: templateCategories.id })
+      .from(templateCategories)
+      .where(eq(templateCategories.name, name))
+      .limit(1);
+
+    if (existing) return existing.id;
+
+    const [inserted] = await db
+      .insert(templateCategories)
+      .values({ name, parentId })
+      .returning();
+    
+    console.log(`Seeded category: ${name}`);
+    return inserted.id;
+  }
+
+  for (const template of starterTemplates) {
+    // Ensure parent category exists
+    const parentId = await ensureCategory(template.category);
+    // Ensure subcategory exists
+    const subCategoryId = await ensureCategory(template.subcategory, parentId);
+    categoryMap[`${template.category}:${template.subcategory}`] = subCategoryId;
+  }
+
+  // 2. Seed Templates (Idempotent by name)
   for (const template of starterTemplates) {
     const existing = await db
       .select({ id: templatesSchema.id })
@@ -25,8 +54,7 @@ async function seed() {
       await db.insert(templatesSchema).values({
         name: template.name,
         description: template.description,
-        category: template.category,
-        subcategory: template.subcategory,
+        categoryId: categoryMap[`${template.category}:${template.subcategory}`],
         questions: template.questions,
       });
       console.log(`Seeded template: ${template.name}`);
@@ -35,7 +63,7 @@ async function seed() {
     }
   }
 
-  // 2. Seed Test User
+  // 3. Seed Test User
   const userRows = await db.insert(users).values({
     googleSub: 'test-user-sub-123',
     email: 'test@example.com',
