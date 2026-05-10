@@ -142,7 +142,7 @@
         </div>
       {/if}
 
-      <MeetStage {meetContext} />
+      <MeetStage meetContext={meetContext!} />
     </div>
   {:else}
     <!-- Participant / Unauthenticated View -->

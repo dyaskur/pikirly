@@ -55,17 +55,21 @@
     }
   }
 
-  onMount(async () => {
-    if (mode === 'meet') {
-      meetContext = await getMeetContext();
-      if (meetContext?.surface === 'stage') {
-        await bootstrapStage();
+  onMount(() => {
+    const init = async () => {
+      if (mode === 'meet') {
+        meetContext = await getMeetContext();
+        if (meetContext?.surface === 'stage') {
+          await bootstrapStage();
+        } else {
+          bootstrapping = false;
+        }
       } else {
         bootstrapping = false;
       }
-    } else {
-      bootstrapping = false;
-    }
+    };
+
+    void init();
 
     return () => {
       if (pollInterval) clearInterval(pollInterval);

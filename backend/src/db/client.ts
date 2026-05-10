@@ -9,7 +9,7 @@ parsed.searchParams.delete('sslmode');
 parsed.searchParams.delete('ssl');
 const sanitizedUrl = parsed.toString();
 
-const sslEnv = config.DATABASE_SSL === 'true' || process.env.NODE_ENV === 'production';
+const sslEnv = config.DATABASE_SSL || process.env.NODE_ENV === 'production';
 // FORCE rejectUnauthorized: false if SSL is requested at all
 const finalSsl = sslEnv ? { rejectUnauthorized: false } : false;
 
