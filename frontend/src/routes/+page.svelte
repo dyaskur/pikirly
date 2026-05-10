@@ -16,9 +16,38 @@
   let meetContext = $state<MeetContext | null>(null);
   let mode = $derived(page.url.searchParams.get('mode'));
 
+  async function bootstrapStage() {
+    if (!meetContext) return;
+    
+    // Check if game already exists for this meeting
+    try {
+      const res = await api(`/games/by-meeting/${meetContext.meetingCode}`);
+      if (res.ok) {
+        const { gameId } = await res.json();
+        
+        // If we are signed in, we might be the host
+        if ($auth.user) {
+          // Check if we have a host session for this game
+          if ($hostSession?.gameId === gameId) {
+            goto(`/host/${gameId}?mode=meet`);
+            return;
+          }
+        }
+        
+        // Otherwise, we are a player
+        goto(`/join?pin=${gameId}&mode=meet`);
+      }
+    } catch (e) {
+      console.error('Stage bootstrap error:', e);
+    }
+  }
+
   onMount(async () => {
     if (mode === 'meet') {
       meetContext = await getMeetContext();
+      if (meetContext?.surface === 'stage') {
+        void bootstrapStage();
+      }
     }
   });
 

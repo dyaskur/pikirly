@@ -4,10 +4,54 @@
   import { getSocket } from '$lib/socket';
   import { playerSession } from '$lib/stores/player';
 
+  import { getMeetContext } from '$lib/meet';
+  import { onMount } from 'svelte';
+  import { auth } from '$lib/stores/auth';
+
   let pin = $state(($page.url.searchParams.get('pin') ?? '').slice(0, 6));
   let nickname = $state('');
   let joining = $state(false);
   let error = $state<string | null>(null);
+
+  onMount(async () => {
+    const mode = $page.url.searchParams.get('mode');
+    if (mode === 'meet') {
+      const meetContext = await getMeetContext();
+      if (meetContext) {
+        // If we have a signed in user, use their name
+        // Otherwise use meet displayName
+        const name = $auth.user?.name || meetContext.displayName;
+        if (name) {
+          nickname = name;
+          // Auto-join if PIN is present
+          if (pin) {
+            void performJoin(pin, name, meetContext.participantId);
+          }
+        }
+      }
+    }
+  });
+
+  async function performJoin(cleanPin: string, cleanNick: string, meetParticipantId?: string) {
+    joining = true;
+    const socket = getSocket();
+    socket.emit('join_game', { 
+      gameId: cleanPin, 
+      nickname: cleanNick,
+      meetParticipantId,
+      meetDisplayName: cleanNick
+    }, (res) => {
+      joining = false;
+      if (!res.ok) {
+        error = friendly(res.error);
+        return;
+      }
+      playerSession.set({ gameId: cleanPin, playerId: res.playerId, playerToken: res.playerToken, nickname: cleanNick });
+      
+      const mode = $page.url.searchParams.get('mode');
+      goto(`/play/${cleanPin}${mode === 'meet' ? '?mode=meet' : ''}`);
+    });
+  }
 
   function submit(e: Event) {
     e.preventDefault();
@@ -23,17 +67,7 @@
       return;
     }
 
-    joining = true;
-    const socket = getSocket();
-    socket.emit('join_game', { gameId: cleanPin, nickname: cleanNick }, (res) => {
-      joining = false;
-      if (!res.ok) {
-        error = friendly(res.error);
-        return;
-      }
-      playerSession.set({ gameId: cleanPin, playerId: res.playerId, playerToken: res.playerToken, nickname: cleanNick });
-      goto(`/play/${cleanPin}`);
-    });
+    void performJoin(cleanPin, cleanNick);
   }
 
   function friendly(code: string): string {

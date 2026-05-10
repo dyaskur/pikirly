@@ -9,7 +9,7 @@
   interface Props {
     meetContext: MeetContext;
   }
-  let { meetContext }: Props = $state();
+  let { meetContext }: Props = $props();
 
   interface QuizListItem {
     id: string;
