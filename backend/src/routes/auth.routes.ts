@@ -47,7 +47,7 @@ export async function authRoutes(app: FastifyInstance) {
 
     // Force ID to string to prevent any DB type inference issues
     const googleSub = String(userInfo.id).trim();
-    console.log('Processed googleSub for DB:', googleSub, 'Length:', googleSub.length);
+    console.log('[AUTH-V2] Processed googleSub for DB:', googleSub, 'Length:', googleSub.length);
 
     const user = await userRepo.findOrCreateByGoogleSub(
       googleSub,
