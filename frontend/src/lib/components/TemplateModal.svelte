@@ -71,11 +71,9 @@
 
 <div class="modal-overlay" onclick={onClose} onkeydown={(e) => e.key === 'Escape' && onClose()}>
   <div class="modal-content" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-    <div class="modal-header" style="flex-direction: column; align-items: stretch; gap: 1rem;">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h2 style="margin: 0;">Start from Template</h2>
-        <button class="btn-secondary close-btn" onclick={onClose}>&times;</button>
-      </div>
+    <div class="modal-header" style="display: flex; flex-direction: column; gap: 1.5rem;">
+      <h2 style="margin: 0;">Start from Template</h2>
+      <button class="btn-secondary close-btn" onclick={onClose}>&times;</button>
       
       <div class="search-container">
         <input 
@@ -151,31 +149,52 @@
   .modal-content {
     background: var(--card);
     width: 100%;
-    max-width: 800px;
+    max-width: 900px;
     max-height: 85vh;
-    border-radius: 12px;
+    border-radius: 20px;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+    position: relative;
+    --brand-rgb: 99, 102, 241; /* Indigo-500 equivalent */
   }
 
   .modal-header {
-    padding: 20px 24px;
-    border-bottom: 1px solid #e5e7eb;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: 32px 32px 24px 32px;
+    border-bottom: 1px solid #f3f4f6;
   }
 
   .modal-header h2 {
     margin: 0;
-    font-size: 1.5rem;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #111827;
   }
 
   .close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 1.5rem;
-    padding: 4px 12px;
     line-height: 1;
+    border-radius: 8px;
+    background: #f3f4f6;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 10;
+  }
+
+  .close-btn:hover {
+    background: #fee2e2;
+    color: #ef4444;
   }
 
   .search-container {
