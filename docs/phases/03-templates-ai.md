@@ -53,11 +53,22 @@ Blank-slate creation is friction. Templates and AI generation lower the barrier 
   - [x] Drawer/modal: topic input + count slider (1–20) + difficulty select.
   - [ ] Error state for rate limit / API failure.
 
-### 3. Template + AI polish
+### 3. Template + AI polish (Deferred / Future Work)
 
-- [x] Validate generated questions server-side with zod before returning (safety net)
-- [ ] Deduplicate: if generated question text matches existing question in quiz, skip
-- [ ] "Regenerate" button per question in editor (re-generates single question with same topic)
+The following items were identified as high-value polish but deferred to prioritize the core template system and database normalization:
+
+- [ ] **AI Rate Limiting**: Implement a 5 requests/min limit per user in the backend to prevent API cost spikes and abuse.
+- [ ] **AI Deduplication**: Add logic to the frontend or backend to skip generated questions that already exist (by text match) in the current quiz.
+- [ ] **Question Regeneration**: Add a "Regenerate" icon/button to each question row in the editor. Clicking it should call the AI service with the same topic to replace just that specific question.
+- [ ] **Template Search Deepening**: Expand search to include specific question content (currently limited to name/description/category).
+
+---
+
+## Technical Debt & Decisions
+
+1. **Normalization**: Moved from static code to a normalized `template_categories` + `templates` table structure to support a future Admin Panel.
+2. **Inference Workaround**: Used explicit interfaces in `templateRepo.ts` to solve Drizzle type-collapse issues. This should be reviewed if Drizzle updates its inference engine.
+3. **Seed Data Move**: Moved hardcoded data to `backend/src/db/seeds/` to keep live application bundles lean.
 
 ## Files to touch
 
