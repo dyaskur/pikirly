@@ -44,13 +44,22 @@ export async function getMeetContext(): Promise<MeetContext | null> {
       }
     }
 
-    const meetingContext = await meetClient.getMeetingContext();
-    const participantContext = await meetClient.getParticipantContext();
+    const meetingInfo = await meetClient.getMeetingInfo();
+
+    // Generate a stable visitorId for this user in this meeting if no identity provided by Meet
+    let visitorId = '';
+    if (typeof localStorage !== 'undefined') {
+      visitorId = localStorage.getItem('pikirly.visitorId') || '';
+      if (!visitorId) {
+        visitorId = crypto.randomUUID();
+        localStorage.setItem('pikirly.visitorId', visitorId);
+      }
+    }
 
     return {
-      meetingCode: meetingContext.meetingCode,
-      participantId: participantContext.participantId,
-      displayName: participantContext.displayName,
+      meetingCode: meetingInfo.meetingCode || meetingInfo.meetingId,
+      participantId: visitorId, 
+      displayName: '',   // Will be populated from auth store if available
       surface: surface || 'side'
     };
   } catch (err) {

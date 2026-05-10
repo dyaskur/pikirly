@@ -45,7 +45,8 @@ export async function authRoutes(app: FastifyInstance) {
       maxAge: 60 * 60 * 24 * 7, // 1 week
     });
 
-    reply.redirect(process.env.FRONTEND_URL || 'http://localhost:5173/host');
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    reply.redirect(`${frontendUrl}/login/callback?token=${jwtToken}`);
   });
 
   app.post('/auth/logout', async (req, reply) => {
