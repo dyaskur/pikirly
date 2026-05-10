@@ -10,6 +10,7 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
+    "@googleworkspace/meet-addons": "^1.1.0",
     "@kahoot/shared": "workspace:*",
     "socket.io-client": "^4.8.3"
   },

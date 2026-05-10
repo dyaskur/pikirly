@@ -15,16 +15,32 @@ export function registerPlayerHandlers(io: IO, socket: IOSocket) {
       cb({ ok: false, error: 'game_not_found' });
       return;
     }
-    const nickname = (payload.nickname ?? '').trim().slice(0, 24);
-    if (!nickname) {
+
+    // Identity reconciliation for Google Meet
+    let playerId = payload.playerId;
+    let playerToken = payload.playerToken;
+
+    if (payload.meetParticipantId && !playerId) {
+      const mappedPlayerId = game.meetParticipants.get(payload.meetParticipantId);
+      if (mappedPlayerId) {
+        const p = game.players.get(mappedPlayerId);
+        if (p) {
+          playerId = p.playerId;
+          playerToken = p.playerToken;
+        }
+      }
+    }
+
+    const nickname = (payload.nickname || payload.meetDisplayName || '').trim().slice(0, 24);
+    if (!nickname && !playerId) {
       cb({ ok: false, error: 'invalid_nickname' });
       return;
     }
 
     // Reconnect path — requires the secret playerToken issued at first join.
-    if (payload.playerId) {
-      const existing = game.players.get(payload.playerId);
-      if (!existing || !payload.playerToken || existing.playerToken !== payload.playerToken) {
+    if (playerId) {
+      const existing = game.players.get(playerId);
+      if (!existing || (playerToken && existing.playerToken !== playerToken)) {
         cb({ ok: false, error: 'invalid_session' });
         return;
       }
@@ -76,8 +92,8 @@ export function registerPlayerHandlers(io: IO, socket: IOSocket) {
       return;
     }
 
-    const playerId = randomUUID();
-    const playerToken = randomUUID();
+    playerId = randomUUID();
+    playerToken = randomUUID();
     game.players.set(playerId, {
       playerId,
       playerToken,
@@ -87,6 +103,10 @@ export function registerPlayerHandlers(io: IO, socket: IOSocket) {
       joinedAt: Date.now(),
       socketId: socket.id,
     });
+
+    if (payload.meetParticipantId) {
+      game.meetParticipants.set(payload.meetParticipantId, playerId);
+    }
 
     setSession(socket, {
       role: 'player',

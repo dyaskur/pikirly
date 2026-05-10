@@ -19,6 +19,12 @@ export function gameExists(gameId: string): boolean {
   return games.has(gameId);
 }
 
+export function findByMeetingId(meetingId: string): GameState | undefined {
+  return Array.from(games.values()).find(
+    (g) => g.meetingId === meetingId && (g.status === 'lobby' || g.status === 'in_question' || g.status === 'between')
+  );
+}
+
 // Generate a 6-digit PIN, retry on collision.
 export function generatePin(): string {
   for (let i = 0; i < 10; i++) {

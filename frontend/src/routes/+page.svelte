@@ -3,10 +3,24 @@
   import { getSocket } from '$lib/socket';
   import { hostSession } from '$lib/stores/host';
   import { auth } from '$lib/stores/auth';
+  import { page } from '$app/state';
+  import { onMount } from 'svelte';
+  import { getMeetContext, type MeetContext } from '$lib/meet';
+  import MeetBootstrap from '$lib/components/MeetBootstrap.svelte';
+  import MeetStage from '$lib/components/MeetStage.svelte';
 
   let pin = $state('');
   let creating = $state(false);
   let createError = $state<string | null>(null);
+
+  let meetContext = $state<MeetContext | null>(null);
+  let mode = $derived(page.url.searchParams.get('mode'));
+
+  onMount(async () => {
+    if (mode === 'meet') {
+      meetContext = await getMeetContext();
+    }
+  });
 
   function joinSubmit(e: Event) {
     e.preventDefault();
@@ -24,8 +38,21 @@
   }
 </script>
 
-<div class="center">
-  <div class="card fade-in" style="max-width: 480px;">
+{#if mode === 'meet'}
+  {#if meetContext}
+    {#if meetContext.surface === 'side'}
+      <MeetBootstrap />
+    {:else}
+      <MeetStage {meetContext} />
+    {/if}
+  {:else}
+    <div class="center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+    </div>
+  {/if}
+{:else}
+  <div class="center">
+    <div class="card fade-in" style="max-width: 480px;">
     <div style="text-align:center; margin-bottom:24px;">
       <div style="font-size: 2.6rem; font-weight: 900; color: var(--brand); letter-spacing: -0.02em;">Pikirly</div>
       <div class="muted" style="margin-top: 4px;">Real-time multiplayer quizzes</div>
@@ -63,3 +90,4 @@
     {/if}
   </div>
 </div>
+{/if}

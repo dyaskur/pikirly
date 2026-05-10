@@ -8,6 +8,17 @@ Categories: **Added**, **Changed**, **Deprecated**, **Removed**, **Fixed**, **Se
 
 ## [Unreleased]
 
+### Added
+- **Phase 4: Google Meet Add-on**
+  - Google Meet Add-ons SDK integration (`@google/meet-addons-sdk`)
+  - Identity reconciliation: participants join using their Meet identity (automatic `playerId` mapping)
+  - New REST endpoints: `POST /games/by-meeting` and `GET /games/by-meeting/:meetingCode`
+  - Meet bootstrap logic: `mode=meet` detects meeting context and surface (`side` vs `stage`)
+  - Auto-join for participants in the side panel (no PIN or nickname entry required)
+  - Quiz picker for hosts in the main stage with auto-auth handling
+  - UI adjustments: Game PIN and instructions hidden when running inside Meet
+  - `docs/meet-addon.md` documentation for registration and testing
+
 ### Changed
 - Frontend backend URL is now configurable via `VITE_BACKEND_URL` (falls back to `http://localhost:3001`). Affects API calls and the Google sign-in link.
 

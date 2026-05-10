@@ -147,11 +147,13 @@
       </div>
     {:else if phase === 'lobby'}
       <div class="fade-in" style="text-align:center; color:white;">
-        <div class="tag">Game PIN</div>
-        <div style="font-size: clamp(3rem, 12vw, 6rem); font-weight: 900; letter-spacing: 0.15em; margin: 8px 0 4px;">
-          {gameId}
-        </div>
-        <div style="opacity:0.85;">Players join at <strong>pikirly.app</strong> and enter the PIN</div>
+        {#if $page.url.searchParams.get('mode') !== 'meet'}
+          <div class="tag">Game PIN</div>
+          <div style="font-size: clamp(3rem, 12vw, 6rem); font-weight: 900; letter-spacing: 0.15em; margin: 8px 0 4px;">
+            {gameId}
+          </div>
+          <div style="opacity:0.85;">Players join at <strong>pikirly.app</strong> and enter the PIN</div>
+        {/if}
 
         <div class="card" style="margin-top: 28px; max-width: 720px; margin-inline: auto;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px;">

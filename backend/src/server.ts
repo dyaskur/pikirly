@@ -12,6 +12,7 @@ import { authRoutes } from './routes/auth.routes.js';
 import { quizRoutes } from './routes/quiz.routes.js';
 import { aiRoutes } from './routes/ai.routes.js';
 import { templateRoutes } from './routes/template.routes.js';
+import { gameRoutes } from './routes/game.routes.js';
 
 // Bypass self-signed certificate errors for local development behind corporate proxies
 if (process.env.NODE_ENV !== 'production') {
@@ -55,6 +56,7 @@ async function main() {
   await app.register(quizRoutes);
   await app.register(aiRoutes);
   await app.register(templateRoutes);
+  await app.register(gameRoutes);
 
   const gameIdParamsSchema = z.object({
     gameId: z.string().length(6).regex(/^\d+$/),

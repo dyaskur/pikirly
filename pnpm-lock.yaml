@@ -78,6 +78,9 @@ importers:
 
   frontend:
     dependencies:
+      '@googleworkspace/meet-addons':
+        specifier: ^1.1.0
+        version: 1.2.0
       '@kahoot/shared':
         specifier: workspace:*
         version: link:../shared
@@ -628,6 +631,9 @@ packages:
 
   '@fastify/proxy-addr@5.1.0':
     resolution: {integrity: sha512-INS+6gh91cLUjB+PVHfu1UqcB76Sqtpyp7bnL+FYojhjygvOPA9ctiD/JDKsyD9Xgu4hUhCSJBPig/w7duNajw==}
+
+  '@googleworkspace/meet-addons@1.2.0':
+    resolution: {integrity: sha512-UNyyJZ5x+NiD51OKATw7n6iUmVyaoTyLmMwKR+Bvwe9YkPw0Y45SZwa1Gev8YkJaiQJ/zo23Zhv0cH/QYnxuOQ==}
 
   '@grpc/grpc-js@1.14.3':
     resolution: {integrity: sha512-Iq8QQQ/7X3Sac15oB6p0FmUg/klxQvXLeileoqrTRGJYLV+/9tubbr9ipz0GKHjmXVsgFPo/+W+2cA8eNcR+XA==}
@@ -2678,6 +2684,8 @@ snapshots:
     dependencies:
       '@fastify/forwarded': 3.0.1
       ipaddr.js: 2.3.0
+
+  '@googleworkspace/meet-addons@1.2.0': {}
 
   '@grpc/grpc-js@1.14.3':
     dependencies:
