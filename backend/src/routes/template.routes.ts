@@ -1,25 +1,16 @@
 import type { FastifyInstance } from 'fastify';
-import type { TemplateStub } from '@kahoot/shared';
-import { templates } from '../data/templates.js';
+import { templateRepo } from '../db/repositories/templateRepo.js';
 
 export async function templateRoutes(app: FastifyInstance) {
-  // GET /templates - returns list of template stubs
+  // GET /templates - returns list of template stubs from DB
   app.get('/templates', async () => {
-    const stubs: TemplateStub[] = templates.map((t) => ({
-      id: t.id,
-      name: t.name,
-      description: t.description,
-      category: t.category,
-      subcategory: t.subcategory,
-      questionCount: t.questions.length,
-    }));
-    return stubs;
+    return await templateRepo.list();
   });
 
-  // GET /templates/:id - returns full template with questions
+  // GET /templates/:id - returns full template with questions from DB
   app.get('/templates/:id', async (req, reply) => {
     const { id } = req.params as { id: string };
-    const template = templates.find((t) => t.id === id);
+    const template = await templateRepo.getById(id);
     
     if (!template) {
       reply.status(404).send({ error: 'not_found', message: 'Template not found' });

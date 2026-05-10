@@ -6,12 +6,36 @@ if (process.env.NODE_ENV !== 'production') {
 
 import { eq, and } from 'drizzle-orm';
 import { db } from '../src/db/client.js';
-import { users, quizzes } from '../src/db/schema.js';
+import { users, quizzes, templates as templatesSchema } from '../src/db/schema.js';
 import { QUIZZES, DEFAULT_QUIZ_ID } from '../src/data/quizzes.js';
+import { templates as starterTemplates } from '../src/data/templates.js';
 
 async function seed() {
   console.log('Seeding database...');
 
+  // 1. Seed Templates (Idempotent by name)
+  for (const template of starterTemplates) {
+    const existing = await db
+      .select({ id: templatesSchema.id })
+      .from(templatesSchema)
+      .where(eq(templatesSchema.name, template.name))
+      .limit(1);
+
+    if (existing.length === 0) {
+      await db.insert(templatesSchema).values({
+        name: template.name,
+        description: template.description,
+        category: template.category,
+        subcategory: template.subcategory,
+        questions: template.questions,
+      });
+      console.log(`Seeded template: ${template.name}`);
+    } else {
+      console.log(`Template already exists: ${template.name}`);
+    }
+  }
+
+  // 2. Seed Test User
   const userRows = await db.insert(users).values({
     googleSub: 'test-user-sub-123',
     email: 'test@example.com',

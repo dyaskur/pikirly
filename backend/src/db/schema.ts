@@ -22,6 +22,19 @@ export const quizzes = pgTable('quizzes', {
   ownerIdx: index('quizzes_owner_idx').on(table.ownerUserId),
 }));
 
+export const templates = pgTable('templates', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  description: text('description').notNull(),
+  category: text('category').notNull(),
+  subcategory: text('subcategory').notNull(),
+  questions: jsonb('questions').$type<Question[]>().notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+}, (table) => ({
+  categoryIdx: index('templates_category_idx').on(table.category),
+}));
+
 export const games = pgTable('games', {
   id: uuid('id').primaryKey().defaultRandom(),
   quizId: uuid('quiz_id')

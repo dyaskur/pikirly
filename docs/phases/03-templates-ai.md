@@ -17,18 +17,15 @@ Blank-slate creation is friction. Templates and AI generation lower the barrier 
 
 ## Deliverables
 
-### 1. Question templates
+### 1. Question templates (Database Persistent)
 
-- [x] Define built-in template library in `backend/src/data/templates.ts`:
-  - Each template: `{ id, name, description, category, subcategory, questions: Question[] }`
-  - Starter categories: "Education", "Corporate", "Entertainment", "Technology"
-  - Starter set: General Knowledge (Entertainment), Tech Trivia (Technology), Ice Breakers (Corporate), Math Basics (Education)
-- [x] `GET /templates` — returns list of template stubs (id, name, description, category, subcategory, question count)
-- [x] `GET /templates/:id` — returns full template with questions
-- [x] Frontend: "Start from template" button on `/host` dashboard
-  - [x] Modal or page listing templates with preview, grouped by category/subcategory
-  - [x] On select → pre-populate quiz editor with template questions (editable)
-- [x] Templates are read-only system data — not stored in DB, no CRUD
+- [x] Define template structure: `{ id, name, description, category, subcategory, questions: Question[] }`
+- [ ] Database Schema: Add `templates` table to Postgres (read-only for hosts, writable by admins).
+- [ ] Migration: Seed the `templates` table with starter set (General Knowledge, Tech Trivia, etc.).
+- [ ] `GET /templates` — returns list of template stubs from DB.
+- [ ] `GET /templates/:id` — returns full template with questions from DB.
+- [ ] Frontend: "Start from template" button on `/host` dashboard.
+- [ ] (Future/Phase 9+) Admin Panel: UI for admins to add/edit/delete system templates.
 
 ### 2. AI question generation (Multi-provider)
 
