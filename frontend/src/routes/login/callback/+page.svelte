@@ -23,7 +23,7 @@
       if (window.opener) {
         console.log('Notifying opener...');
         try {
-          window.opener.postMessage({ type: 'pikirly-auth-success', token }, '*');
+          window.opener.postMessage({ type: 'pikirly-auth-success', token }, window.location.origin);
         } catch (e) {
           console.error('Failed to postMessage to opener:', e);
         }
