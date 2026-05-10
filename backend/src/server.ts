@@ -52,11 +52,14 @@ async function main() {
 
   app.get('/health', async () => ({ ok: true, ts: Date.now() }));
 
+  // Register game routes early to prevent shadowing
+  console.log('[GAME-V3] Registering game routes...');
+  await app.register(gameRoutes);
+
   await app.register(authRoutes);
   await app.register(quizRoutes);
   await app.register(aiRoutes);
   await app.register(templateRoutes);
-  await app.register(gameRoutes);
 
   const gameIdParamsSchema = z.object({
     gameId: z.string().length(6).regex(/^\d+$/),
