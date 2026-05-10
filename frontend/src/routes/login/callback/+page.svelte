@@ -19,7 +19,31 @@
     
     if (token) {
       setAuthToken(token);
-...
+      
+      // If pairing code exists, notify the backend so the side panel can poll it
+      if (pairingCode) {
+        console.log('Saving pairing code...');
+        try {
+          await api('/auth/pairing/save', {
+            method: 'POST',
+            body: JSON.stringify({ pairingCode, token })
+          });
+          console.log('Pairing code saved successfully.');
+        } catch (e) {
+          console.error('Failed to save pairing code:', e);
+        }
+      }
+      
+      // Notify opener if exists (for standard iframe flow)
+      if (window.opener) {
+        console.log('Notifying opener...');
+        try {
+          window.opener.postMessage({ type: 'pikirly-auth-success', token }, '*');
+        } catch (e) {
+          console.error('Failed to postMessage to opener:', e);
+        }
+      }
+
       setTimeout(() => {
         if (window.opener || pairingCode) {
           console.log('Closing popup...');
