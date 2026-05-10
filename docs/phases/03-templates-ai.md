@@ -1,6 +1,6 @@
 # Phase 3 — Templates + AI Generation
 
-**Status**: Next
+**Status**: ✅ Done
 **Depends on**: Phase 2 (quiz CRUD + editor)
 **Goal**: Hosts can start from a template instead of a blank quiz, and can generate quiz questions automatically by giving a prompt + question count to an AI.
 
@@ -20,11 +20,13 @@ Blank-slate creation is friction. Templates and AI generation lower the barrier 
 ### 1. Question templates (Database Persistent)
 
 - [x] Define template structure: `{ id, name, description, category, subcategory, questions: Question[] }`
-- [ ] Database Schema: Add `templates` table to Postgres (read-only for hosts, writable by admins).
-- [ ] Migration: Seed the `templates` table with starter set (General Knowledge, Tech Trivia, etc.).
-- [ ] `GET /templates` — returns list of template stubs from DB.
-- [ ] `GET /templates/:id` — returns full template with questions from DB.
-- [ ] Frontend: "Start from template" button on `/host` dashboard.
+- [x] Database Schema: Add `templates` and `template_categories` tables to Postgres.
+- [x] Migration: Seed the tables with expanded starter set (10 questions per template).
+- [x] `GET /templates` — returns list of template stubs from DB with question counts.
+- [x] `GET /templates/:id` — returns full template with questions from DB.
+- [x] Frontend: "Start from template" button on `/host` dashboard.
+- [x] Frontend: `TemplateModal` with category grouping and mobile-responsive unified grid.
+- [x] Frontend: Real-time search filtering in Template Modal.
 - [ ] (Future/Phase 9+) Admin Panel: UI for admins to add/edit/delete system templates.
 
 ### 2. AI question generation (Multi-provider)
