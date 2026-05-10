@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { verifyJwt } from '../auth/middleware.js';
-import { findByMeetingId, setGame, generatePin } from '../services/game/store.js';
+import { findByMeetingId, setGame, generatePin, getGame } from '../services/game/store.js';
 import { createGameState } from '../services/game/engine.js';
 import { quizRepo } from '../db/repositories/quizRepo.js';
 

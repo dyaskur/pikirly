@@ -25,42 +25,46 @@
     }
   }
 
-  onMount(() => {
-    const init = async () => {
-      // Wait a bit for auth to initialize
-      if ($auth.loading) {
-        await new Promise(resolve => {
-          const unsubscribe = auth.subscribe(s => {
-            if (!s.loading) {
-              unsubscribe();
-              resolve(null);
-            }
-          });
+  async function bootstrap() {
+    loading = true;
+    error = null;
+    activeGameId = null;
+
+    // Wait a bit for auth to initialize
+    if ($auth.loading) {
+      await new Promise(resolve => {
+        const unsubscribe = auth.subscribe(s => {
+          if (!s.loading) {
+            unsubscribe();
+            resolve(null);
+          }
         });
-      }
+      });
+    }
 
-      meetContext = await getMeetContext();
-      if (!meetContext) {
-        error = 'Could not initialize Google Meet context.';
-        loading = false;
-        return;
-      }
+    meetContext = await getMeetContext();
+    if (!meetContext) {
+      error = 'Could not initialize Google Meet context.';
+      loading = false;
+      return;
+    }
 
-      // Check if game already exists for this meeting
-      try {
-        const res = await api(`/games/by-meeting/${meetContext.meetingCode}`);
-        const data = await res.json();
-        if (res.ok && data.ok) {
-          activeGameId = data.gameId;
-        }
-      } catch (e) {
-        console.error('Bootstrap check error:', e);
-      } finally {
-        loading = false;
+    // Check if game already exists for this meeting
+    try {
+      const res = await api(`/games/by-meeting/${meetContext.meetingCode}`);
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        activeGameId = data.gameId;
       }
-    };
+    } catch (e) {
+      console.error('Bootstrap check error:', e);
+    } finally {
+      loading = false;
+    }
+  }
 
-    void init();
+  onMount(() => {
+    void bootstrap();
 
     return () => {
       cleanupLogin();
@@ -147,7 +151,7 @@
       <p class="text-error font-bold">{error}</p>
     </div>
     {#if error.includes('No active game found')}
-      <button class="btn btn-primary" onclick={() => { loading = true; error = null; activeGameId = null; onMount(); }}>
+      <button class="btn btn-primary" onclick={bootstrap}>
         Retry
       </button>
     {/if}
