@@ -90,12 +90,17 @@
     }
   }
 
-  function handleLogin() {
+  async function handleLogin() {
     const backendUrl = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3001';
-    const popup = window.open(`${backendUrl}/auth/google`, '_blank', 'width=500,height=600');
+    
+    // Generate a unique pairing code
+    const pairingCode = crypto.randomUUID();
+    
+    const popup = window.open(`${backendUrl}/auth/google?state=${pairingCode}`, '_blank', 'width=500,height=600');
     
     const handleMessage = async (event: MessageEvent) => {
       if (event.data?.type === 'pikirly-auth-success' && event.data.token) {
+        console.log('Token received via postMessage');
         const { setAuthToken } = await import('$lib/api');
         setAuthToken(event.data.token);
         await auth.init();
@@ -104,27 +109,32 @@
     };
     window.addEventListener('message', handleMessage);
 
-    // Fallback poll
+    // Robust Polling fallback
+    console.log('Starting pairing code poll:', pairingCode);
     const interval = setInterval(async () => {
-      // Check localStorage directly for the token
-      const { getAuthToken } = await import('$lib/api');
-      const token = getAuthToken();
-      
-      if (token || $auth.user) {
-        console.log('Token found via polling, initializing auth...');
-        await auth.init();
-        if ($auth.user) {
+      try {
+        const res = await api(`/auth/pairing/poll/${pairingCode}`);
+        if (res.ok) {
+          const { token } = await res.json();
+          console.log('Token received via pairing poll');
+          
+          const { setAuthToken } = await import('$lib/api');
+          setAuthToken(token);
+          await auth.init();
+          
           clearInterval(interval);
           window.removeEventListener('message', handleMessage);
+          return;
         }
+      } catch (e) {
+        // ignore errors
       }
 
       if (popup?.closed) {
         console.log('Login popup closed');
-        clearInterval(interval);
-        setTimeout(() => window.removeEventListener('message', handleMessage), 1000);
+        setTimeout(() => clearInterval(interval), 2000);
       }
-    }, 1000);
+    }, 2000);
   }
 </script>
 
