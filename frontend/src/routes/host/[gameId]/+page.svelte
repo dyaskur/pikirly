@@ -174,11 +174,17 @@
       </div>
     {:else if phase === 'lobby'}
       <div class="fade-in" style="text-align:center; color:white;">
-        {#if $page.url.searchParams.get('mode') !== 'meet'}
-          <div class="tag">Game PIN</div>
-          <div style="font-size: clamp(3rem, 12vw, 6rem); font-weight: 900; letter-spacing: 0.15em; margin: 8px 0 4px;">
-            {gameId}
+        <div class="tag">Game PIN</div>
+        <div style="font-size: clamp(3rem, 12vw, 6rem); font-weight: 900; letter-spacing: 0.15em; margin: 8px 0 4px;">
+          {gameId}
+        </div>
+        
+        {#if isMeet}
+          <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.15); padding: 4px 12px; border-radius:99px; font-size:0.9rem;">
+            <span style="color:#4ade80;">●</span> Meet Auto-Join Active
           </div>
+          <div style="opacity:0.75; font-size:0.85rem; margin-top:8px;">External players join at <strong>pikirly.app</strong></div>
+        {:else}
           <div style="opacity:0.85;">Players join at <strong>pikirly.app</strong> and enter the PIN</div>
         {/if}
 
