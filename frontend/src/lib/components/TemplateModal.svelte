@@ -109,28 +109,26 @@
         {#each Object.entries(grouped()) as [category, subcategories]}
           <div class="category-section">
             <h3 class="category-title">{category}</h3>
-            {#each Object.entries(subcategories) as [subcategory, items]}
-              <div class="subcategory-section">
-                {#if subcategory}
-                  <h4 class="subcategory-title">{subcategory}</h4>
-                {/if}
-                <div class="template-grid">
-                  {#each items as template}
-                    <button 
-                      class="template-card" 
-                      class:selected={selectedId === template.id}
-                      onclick={() => handleSelect(template.id)}
-                    >
-                      <div class="template-info">
-                        <strong>{template.name}</strong>
-                        <p class="description">{template.description}</p>
-                        <span class="q-count">{template.questionCount} Questions</span>
-                      </div>
-                    </button>
-                  {/each}
-                </div>
-              </div>
-            {/each}
+            <div class="template-grid">
+              {#each Object.entries(subcategories) as [subcategory, items]}
+                {#each items as template}
+                  <button 
+                    class="template-card" 
+                    class:selected={selectedId === template.id}
+                    onclick={() => handleSelect(template.id)}
+                  >
+                    <div class="template-info">
+                      {#if subcategory}
+                        <span class="subcategory-tag">{subcategory}</span>
+                      {/if}
+                      <strong>{template.name}</strong>
+                      <p class="description">{template.description}</p>
+                      <span class="q-count">{template.questionCount} Questions</span>
+                    </div>
+                  </button>
+                {/each}
+              {/each}
+            </div>
           </div>
         {/each}
       {/if}
@@ -232,18 +230,7 @@
     color: var(--brand);
     border-bottom: 2px solid var(--brand);
     padding-bottom: 0.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .subcategory-section {
-    margin-left: 1rem;
     margin-bottom: 1.5rem;
-  }
-
-  .subcategory-title {
-    font-size: 1rem;
-    color: #4b5563;
-    margin-bottom: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
@@ -267,6 +254,19 @@
     height: 100%;
     position: relative;
     overflow: hidden;
+  }
+
+  .subcategory-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--brand);
+    background: rgba(var(--brand-rgb, 59, 130, 246), 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    letter-spacing: 0.025em;
   }
 
   .template-card:hover {
