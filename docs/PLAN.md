@@ -17,6 +17,7 @@ This file is the entry point. For detail, follow links.
 | 7 | Poll / Vote + Open Ended + Word Cloud | 🔜 | [07-poll-openended-wordcloud.md](phases/07-poll-openended-wordcloud.md) |
 | 8 | Ordering / Ranking | 🔜 | [08-ordering-ranking.md](phases/08-ordering-ranking.md) |
 | 9 | UX polish + deploy | 🔜 | [09-polish-deploy.md](phases/09-polish-deploy.md) |
+| 10 | Admin Panel | 🔜 | [10-admin-panel.md](phases/10-admin-panel.md) |
 | — | Redis multi-instance scaling | ⏸ Deferred | [deferred-redis.md](phases/deferred-redis.md) |
 
 ## Reference docs

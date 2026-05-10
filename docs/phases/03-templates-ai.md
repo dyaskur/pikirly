@@ -27,7 +27,7 @@ Blank-slate creation is friction. Templates and AI generation lower the barrier 
 - [x] Frontend: "Start from template" button on `/host` dashboard.
 - [x] Frontend: `TemplateModal` with category grouping and mobile-responsive unified grid.
 - [x] Frontend: Real-time search filtering in Template Modal.
-- [ ] (Future/Phase 9+) Admin Panel: UI for admins to add/edit/delete system templates.
+- [ ] (Future/Phase 10) Admin Panel: UI for admins to add/edit/delete system templates.
 
 ### 2. AI question generation (Multi-provider)
 
