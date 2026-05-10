@@ -25,8 +25,10 @@
     try {
       const { api } = await import('$lib/api');
       const res = await api(`/games/by-meeting/${meetContext.meetingCode}`);
-      if (res.ok) {
-        const { gameId } = await res.json();
+      const data = await res.json();
+      
+      if (res.ok && data.ok) {
+        const { gameId } = data;
         const { navigateMeet } = await import('$lib/meet');
         
         // Stop polling if we found a game

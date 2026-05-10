@@ -33,9 +33,9 @@
     // Check if game already exists for this meeting
     try {
       const res = await api(`/games/by-meeting/${meetContext.meetingCode}`);
-      if (res.ok) {
-        const { gameId } = await res.json();
-        activeGameId = gameId;
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        activeGameId = data.gameId;
       }
     } catch (e) {
       console.error('Bootstrap check error:', e);

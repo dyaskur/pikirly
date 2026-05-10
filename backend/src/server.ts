@@ -26,7 +26,13 @@ const ORIGIN = process.env.CORS_ORIGIN ?? 'http://localhost:5173';
 async function main() {
   const app = Fastify({ logger: { level: 'info' } });
   
-  await app.register(cors, { origin: ORIGIN, credentials: true });
+  // Robust CORS for iframe/subdomain environments
+  await app.register(cors, { 
+    origin: [ORIGIN, 'https://pikirly.com', 'https://api.pikirly.com'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept']
+  });
   await app.register(cookiePlugin);
   await app.register(jwtPlugin, {
     secret: process.env.JWT_SECRET || 'supersecretdevjwt',

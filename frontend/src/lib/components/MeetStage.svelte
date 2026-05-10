@@ -62,14 +62,15 @@
         })
       });
 
-      if (!res.ok) {
-        const data = await res.json();
+      const data = await res.json();
+
+      if (!res.ok || !data.ok) {
         createError = data.message || 'Failed to create game (Server error)';
         creatingGame = false;
         return;
       }
 
-      const { gameId, hostToken } = await res.json();
+      const { gameId, hostToken } = data;
 
       // For Google Meet: we must promote the app to the Main Stage
       try {
