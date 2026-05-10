@@ -5,11 +5,20 @@ import { users } from '../schema.js';
 export const userRepo = {
   async findOrCreateByGoogleSub(sub: string, email: string, name: string) {
     const cleanSub = String(sub).trim();
-    console.log('[REPO-V2] findOrCreateByGoogleSub', { sub: cleanSub, len: cleanSub.length });
+    console.log('[REPO-V3] findOrCreateByGoogleSub', { sub: cleanSub });
     
     try {
-      const existing = await db.select().from(users).where(eq(users.googleSub, cleanSub));
-      if (existing[0]) return existing[0];
+      // Use raw SQL with explicit text binding to be 100% sure the driver doesn't try to parse it as a number
+      const existing = await db.execute(sql`
+        SELECT "id", "google_sub", "email", "name", "created_at" 
+        FROM "users" 
+        WHERE "google_sub" = ${cleanSub}::text
+        LIMIT 1
+      `);
+
+      if (existing.rows.length > 0) {
+        return existing.rows[0] as any;
+      }
       
       const inserted = await db.insert(users).values({
         googleSub: cleanSub,

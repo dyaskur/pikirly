@@ -57,13 +57,23 @@ export async function authRoutes(app: FastifyInstance) {
 
     // Force ID to string to prevent any DB type inference issues
     const googleSub = String(userInfo.id).trim();
-    console.log('[AUTH-V2] Processed googleSub for DB:', googleSub, 'Length:', googleSub.length);
+    console.log('[AUTH-V3] Processed googleSub for DB:', googleSub);
 
-    const user = await userRepo.findOrCreateByGoogleSub(
-      googleSub,
-      userInfo.email,
-      userInfo.name ?? userInfo.email,
-    );
+    let user;
+    try {
+      user = await userRepo.findOrCreateByGoogleSub(
+        googleSub,
+        userInfo.email,
+        userInfo.name ?? userInfo.email,
+      );
+    } catch (dbErr) {
+      console.error('[AUTH-V3] DB Query Failed:', dbErr);
+      return reply.status(500).send({ 
+        error: 'database_error', 
+        message: 'Failed to find or create user',
+        debug: googleSub 
+      });
+    }
 
     const jwtToken = await reply.jwtSign({
       id: user.id,
