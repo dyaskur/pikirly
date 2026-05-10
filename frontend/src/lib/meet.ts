@@ -46,8 +46,14 @@ export async function getMeetContext(): Promise<MeetContext | null> {
 
     if (!meetSession) {
       console.log('Initializing Meet Add-on SDK session...');
+      const projectNumber = import.meta.env.VITE_GOOGLE_PROJECT_NUMBER;
+      
+      if (!projectNumber) {
+        console.warn('VITE_GOOGLE_PROJECT_NUMBER is not defined. Meet SDK may fail to initialize.');
+      }
+
       meetSession = await addon.createAddonSession({
-        cloudProjectNumber: '798042367810'
+        cloudProjectNumber: projectNumber
       });
     }
 
