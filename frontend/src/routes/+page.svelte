@@ -125,8 +125,9 @@
     {/if}
   {:else}
     <div class="center">
-      <div class="card bg-error/10 p-8">
+      <div class="card p-8 border-2 border-brand bg-white text-center">
         <p class="text-error font-bold">Failed to connect to Google Meet SDK.</p>
+        <p class="muted mt-2">This app can only be used inside a Google Meet call.</p>
       </div>
     </div>
   {/if}
