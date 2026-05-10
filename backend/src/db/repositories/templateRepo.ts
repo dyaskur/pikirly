@@ -1,7 +1,7 @@
 import { db } from '../client.js';
 import { templates, templateCategories } from '../schema.js';
 import { eq, aliasedTable } from 'drizzle-orm';
-import type { Template, TemplateStub } from '@kahoot/shared';
+import type { Template, TemplateStub, Question } from '@kahoot/shared';
 
 export const templateRepo = {
   async list(): Promise<TemplateStub[]> {
@@ -67,10 +67,20 @@ export const templateRepo = {
     };
   },
 
-  async create(data: Omit<Template, 'id'>) {
+  async create(data: { 
+    name: string; 
+    description: string; 
+    categoryId: string; 
+    questions: Question[]; 
+  }) {
     const [result] = await db
       .insert(templates)
-      .values(data)
+      .values({
+        name: data.name,
+        description: data.description,
+        categoryId: data.categoryId,
+        questions: data.questions,
+      })
       .returning();
     return result;
   }
