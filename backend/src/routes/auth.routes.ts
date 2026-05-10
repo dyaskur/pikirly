@@ -30,11 +30,21 @@ export async function authRoutes(app: FastifyInstance) {
 
     const token = await app.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
 
-    const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-      headers: { Authorization: `Bearer ${token.token.access_token}` },
-    });
+    // Fetch user info with a 10s timeout to prevent hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
     
-    const rawUserInfo = await userInfoResponse.json();
+    let rawUserInfo;
+    try {
+      const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+        headers: { Authorization: `Bearer ${token.token.access_token}` },
+        signal: controller.signal,
+      });
+      rawUserInfo = await userInfoResponse.json();
+    } finally {
+      clearTimeout(timeoutId);
+    }
+    
     console.log('Google UserInfo received. ID:', rawUserInfo.id, 'Type:', typeof rawUserInfo.id);
     
     const parsed = googleUserInfoSchema.safeParse(rawUserInfo);

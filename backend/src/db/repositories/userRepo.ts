@@ -4,14 +4,15 @@ import { users } from '../schema.js';
 
 export const userRepo = {
   async findOrCreateByGoogleSub(sub: string, email: string, name: string) {
-    console.log('[REPO-V2] findOrCreateByGoogleSub', { sub });
+    const cleanSub = String(sub).trim();
+    console.log('[REPO-V2] findOrCreateByGoogleSub', { sub: cleanSub, len: cleanSub.length });
+    
     try {
-      // Use standard SQL CAST to force text comparison
-      const existing = await db.select().from(users).where(sql`${users.googleSub} = cast(${sub} as text)`);
+      const existing = await db.select().from(users).where(eq(users.googleSub, cleanSub));
       if (existing[0]) return existing[0];
       
       const inserted = await db.insert(users).values({
-        googleSub: sub,
+        googleSub: cleanSub,
         email,
         name,
       }).returning();
