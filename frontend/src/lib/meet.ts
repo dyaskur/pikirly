@@ -20,7 +20,7 @@ export async function getMeetClient() {
 /**
  * Navigate while preserving Google Meet query parameters (especially meet_sdk)
  */
-export function navigateMeet(path: string) {
+export async function navigateMeet(path: string) {
   const currentUrl = new URL(window.location.href);
   const targetUrl = new URL(path, window.location.origin);
   
@@ -29,8 +29,8 @@ export function navigateMeet(path: string) {
     targetUrl.searchParams.set(key, value);
   });
 
-  const { goto } = import('$app/navigation');
-  goto(targetUrl.pathname + targetUrl.search);
+  const { goto } = await import('$app/navigation');
+  return goto(targetUrl.pathname + targetUrl.search);
 }
 
 export async function getMeetContext(): Promise<MeetContext | null> {

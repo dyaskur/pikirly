@@ -89,7 +89,7 @@
       hostSession.set({ gameId, hostToken });
       
       const { navigateMeet } = await import('$lib/meet');
-      navigateMeet(`/host/${gameId}`);
+      await navigateMeet(`/host/${gameId}`);
     } catch (err) {
       console.error(err);
       createError = 'A network error occurred. Please try again.';

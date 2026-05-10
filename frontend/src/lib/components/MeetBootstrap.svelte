@@ -112,7 +112,7 @@
     }
     
     const { navigateMeet } = await import('$lib/meet');
-    navigateMeet(`/host/${activeGameId}`);
+    await navigateMeet(`/host/${activeGameId}`);
   }
 </script>
 

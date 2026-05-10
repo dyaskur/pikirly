@@ -36,12 +36,12 @@
 
         // If we are signed in, we might be the host
         if ($auth.user && $hostSession?.gameId === gameId) {
-          navigateMeet(`/host/${gameId}`);
+          await navigateMeet(`/host/${gameId}`);
           return;
         }
         
         // Otherwise, we are a player
-        navigateMeet(`/join?pin=${gameId}`);
+        await navigateMeet(`/join?pin=${gameId}`);
       } else {
         bootstrapping = false;
         // Start polling if no game found yet
