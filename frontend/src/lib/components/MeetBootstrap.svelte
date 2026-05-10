@@ -93,6 +93,27 @@
       }
     }, 2000);
   }
+
+  async function handleManageActive() {
+    if (!activeGameId) return;
+    
+    // Attempt to promote to main stage again just in case it closed
+    try {
+      const { getMeetClient } = await import('$lib/meet');
+      const client = await getMeetClient();
+      if (client && typeof client.startActivity === 'function') {
+        console.log('[BOOTSTRAP] Re-promoting active game to Main Stage:', activeGameId);
+        await client.startActivity({
+          mainStageUrl: `${window.location.origin}/?mode=meet&surface=stage`
+        });
+      }
+    } catch (e) {
+      console.error('[BOOTSTRAP] Failed to re-promote:', e);
+    }
+    
+    const { navigateMeet } = await import('$lib/meet');
+    navigateMeet(`/host/${activeGameId}`);
+  }
 </script>
 
 <div class="flex flex-col items-center justify-center p-4 text-center min-h-[400px]">
@@ -115,7 +136,7 @@
         <div class="card bg-info/10 p-4 mb-4">
           <p class="font-bold">Game in progress!</p>
           <p class="text-sm muted mt-1">Activity is running on the main stage.</p>
-          <button class="btn btn-primary btn-sm mt-4 w-full" onclick={() => goto(`/host/${activeGameId}?mode=meet`)}>
+          <button class="btn btn-primary btn-sm mt-4 w-full" onclick={handleManageActive}>
             Manage Active Game
           </button>
         </div>
