@@ -9,7 +9,7 @@ export async function gameRoutes(app: FastifyInstance) {
   // New REST endpoint POST /games/by-meeting:
   // Create a new game tied to a Google Meet meeting
   app.post('/games/by-meeting', { preHandler: [verifyJwt] }, async (req, reply) => {
-    console.log('[GAME-V4] POST /games/by-meeting hit');
+    console.log('[GAME-V5] POST /games/by-meeting hit');
     const schema = z.object({
       meetingCode: z.string().min(1),
       hostQuizId: z.string().uuid(),
@@ -17,17 +17,18 @@ export async function gameRoutes(app: FastifyInstance) {
 
     const body = schema.safeParse(req.body);
     if (!body.success) {
+      console.log('[GAME-V5] Validation failed', body.error.format());
       return reply.code(400).send({ error: 'invalid_request', message: body.error.message });
     }
 
     const { meetingCode, hostQuizId } = body.data;
     const user = req.user;
-    console.log('[GAME-V4] Context:', { meetingCode, hostQuizId, userId: user.id });
+    console.log('[GAME-V5] Context:', { meetingCode, hostQuizId, userId: user.id });
 
-    // 1. Optimized Check for existing game
+    // 1. Check for existing game
     const existing = findByMeetingId(meetingCode);
     if (existing) {
-      console.log('[GAME-V4] Found existing game:', existing.gameId);
+      console.log('[GAME-V5] Found existing game:', existing.gameId);
       return reply.send({ 
         gameId: existing.gameId, 
         hostToken: existing.hostToken,
@@ -35,18 +36,20 @@ export async function gameRoutes(app: FastifyInstance) {
       });
     }
 
-    // 2. Fetch quiz from DB (potential bottleneck)
-    console.log('[GAME-V4] Fetching quiz from DB...');
+    // 2. Fetch quiz from DB
+    console.log('[GAME-V5] Fetching quiz from DB...');
     let quiz;
     try {
+      // Use the repo with correct arguments
       quiz = await quizRepo.getById(hostQuizId, user.id);
+      console.log('[GAME-V5] Quiz query finished. Found:', !!quiz);
     } catch (err) {
-      console.error('[GAME-V4] DB Fetch failed:', err);
+      console.error('[GAME-V5] DB Fetch failed:', err);
       return reply.status(500).send({ error: 'db_error' });
     }
-    console.log('[GAME-V4] Quiz fetch result:', quiz ? 'found' : 'not_found');
 
     if (!quiz) {
+      console.log('[GAME-V5] Quiz not found or not owned by user');
       return reply.code(404).send({ error: 'quiz_not_found' });
     }
 
@@ -54,14 +57,14 @@ export async function gameRoutes(app: FastifyInstance) {
     const gameId = generatePin();
     const gameState = createGameState(quiz, gameId, quiz.id, user.id, meetingCode);
     setGame(gameState);
-    console.log('[GAME-V4] Game created successfully:', gameId);
+    console.log('[GAME-V5] Game created successfully:', gameId);
 
     return reply.send({ gameId, hostToken: gameState.hostToken });
   });
 
   // New REST endpoint GET /games/by-meeting/:meetingCode
   app.get('/games/by-meeting/:meetingCode', async (req, reply) => {
-    console.log('[GAME-V3] GET /games/by-meeting/:code hit', (req.params as any).meetingCode);
+    console.log('[GAME-V5] GET /games/by-meeting hit for code:', (req.params as any).meetingCode);
     const paramsSchema = z.object({
       meetingCode: z.string().min(1),
     });

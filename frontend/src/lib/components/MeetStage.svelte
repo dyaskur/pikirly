@@ -20,6 +20,8 @@
   let quizzes = $state<QuizListItem[]>([]);
   let loading = $state(true);
   let error = $state<string | null>(null);
+  let creatingGame = $state(false);
+  let createError = $state<string | null>(null);
 
   onMount(async () => {
     await auth.init();
@@ -49,6 +51,9 @@
 
   async function hostQuiz(quizId: string) {
     try {
+      creatingGame = true;
+      createError = null;
+      
       const res = await api('/games/by-meeting', {
         method: 'POST',
         body: JSON.stringify({
@@ -59,7 +64,8 @@
 
       if (!res.ok) {
         const data = await res.json();
-        alert(data.message || 'Failed to create game');
+        createError = data.message || 'Failed to create game (Server error)';
+        creatingGame = false;
         return;
       }
 
@@ -80,13 +86,15 @@
         });
       } catch (meetErr) {
         console.error('Failed to promote to main stage:', meetErr);
+        // We don't return here because the game WAS created, the promotion just failed
       }
 
       hostSession.set({ gameId, hostToken });
       goto(`/host/${gameId}?mode=meet`);
     } catch (err) {
       console.error(err);
-      alert('An error occurred');
+      createError = 'A network error occurred. Please try again.';
+      creatingGame = false;
     }
   }
 
@@ -158,6 +166,12 @@
         <div class="text-sm muted">Signed in as {$auth.user.name}</div>
       </div>
 
+      {#if createError}
+        <div class="card bg-error/10 p-4 mb-6">
+          <p class="text-error font-bold">{createError}</p>
+        </div>
+      {/if}
+
       {#if loading}
         <p>Loading your quizzes...</p>
       {:else if error}
@@ -175,8 +189,8 @@
                 <div class="font-bold">{quiz.title}</div>
                 <div class="text-sm muted">{quiz.questionCount} questions</div>
               </div>
-              <button class="btn btn-primary" onclick={() => hostQuiz(quiz.id)}>
-                Host in Meeting
+              <button class="btn btn-primary" onclick={() => hostQuiz(quiz.id)} disabled={creatingGame}>
+                {creatingGame ? 'Starting...' : 'Host in Meeting'}
               </button>
             </div>
           {/each}
