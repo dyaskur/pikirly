@@ -16,7 +16,7 @@
   let meetContext = $state<MeetContext | null>(null);
   let mode = $derived(page.url.searchParams.get('mode'));
   let bootstrapping = $state(true);
-  let activeGameFound = $state(false);
+  let pollInterval: ReturnType<typeof setInterval> | null = null;
 
   async function bootstrapStage() {
     if (!meetContext) return;
@@ -27,23 +27,25 @@
       const res = await api(`/games/by-meeting/${meetContext.meetingCode}`);
       if (res.ok) {
         const { gameId } = await res.json();
-        activeGameFound = true;
-        
         const { navigateMeet } = await import('$lib/meet');
+        
+        // Stop polling if we found a game
+        if (pollInterval) clearInterval(pollInterval);
 
         // If we are signed in, we might be the host
-        if ($auth.user) {
-          // Check if we have a host session for this game
-          if ($hostSession?.gameId === gameId) {
-            navigateMeet(`/host/${gameId}`);
-            return;
-          }
+        if ($auth.user && $hostSession?.gameId === gameId) {
+          navigateMeet(`/host/${gameId}`);
+          return;
         }
         
         // Otherwise, we are a player
         navigateMeet(`/join?pin=${gameId}`);
       } else {
         bootstrapping = false;
+        // Start polling if no game found yet
+        if (!pollInterval && meetContext.surface === 'stage') {
+          pollInterval = setInterval(bootstrapStage, 3000);
+        }
       }
     } catch (e) {
       console.error('Stage bootstrap error:', e);
@@ -62,6 +64,10 @@
     } else {
       bootstrapping = false;
     }
+
+    return () => {
+      if (pollInterval) clearInterval(pollInterval);
+    };
   });
 
   function joinSubmit(e: Event) {
@@ -90,20 +96,16 @@
     {#if meetContext.surface === 'side'}
       <MeetBootstrap />
     {:else}
-      {#if $auth.user}
-        <MeetStage {meetContext} />
-      {:else}
-        <div class="center">
-          <div class="card p-12 text-center max-w-lg">
-            <div class="text-6xl mb-6">🎮</div>
-            <h1 class="text-3xl font-bold mb-4">Pikirly for Meet</h1>
-            <p class="text-lg muted mb-8">Waiting for the host to start a game in the side panel...</p>
-            <div class="animate-pulse flex justify-center">
-              <div class="h-2 w-32 bg-primary/20 rounded"></div>
-            </div>
+      <div class="center">
+        <div class="card p-12 text-center max-w-lg">
+          <div class="text-6xl mb-6">🎮</div>
+          <h1 class="text-3xl font-bold mb-4">Pikirly for Meet</h1>
+          <p class="text-lg muted mb-8">Waiting for the host to start a game in the side panel...</p>
+          <div class="animate-pulse flex justify-center">
+            <div class="h-2 w-32 bg-primary/20 rounded"></div>
           </div>
         </div>
-      {/if}
+      </div>
     {/if}
   {:else}
     <div class="center">
