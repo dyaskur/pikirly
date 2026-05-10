@@ -312,7 +312,12 @@
 
   .template-card.selected {
     border-color: var(--brand);
-    background: #f0f7ff;
+    border-width: 2px;
+    padding: 19px; /* Compensate for thicker border to prevent jump */
+  }
+
+  .template-card.selected::before {
+    opacity: 1;
   }
 
   .template-info strong {

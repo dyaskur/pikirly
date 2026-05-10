@@ -17,20 +17,15 @@ async function seed() {
   const categoryMap: Record<string, string> = {}; // Name -> ID
 
   async function ensureCategory(name: string, parentId?: string): Promise<string> {
-    const [existing] = await db
-      .select({ id: templateCategories.id })
-      .from(templateCategories)
-      .where(eq(templateCategories.name, name))
-      .limit(1);
-
-    if (existing) return existing.id;
-
     const [inserted] = await db
       .insert(templateCategories)
       .values({ name, parentId })
-      .returning();
+      .onConflictDoUpdate({
+        target: templateCategories.name,
+        set: { parentId: parentId ?? null } // Update parent if it changed, otherwise just get ID
+      })
+      .returning({ id: templateCategories.id });
     
-    console.log(`Seeded category: ${name}`);
     return inserted.id;
   }
 
@@ -44,6 +39,14 @@ async function seed() {
 
   // 2. Seed Templates (Idempotent by name)
   for (const template of starterTemplates) {
+    const categoryKey = `${template.category}:${template.subcategory}`;
+    const categoryId = categoryMap[categoryKey];
+
+    if (!categoryId) {
+      console.warn(`Skipping template "${template.name}": Category "${categoryKey}" not found in map.`);
+      continue;
+    }
+
     const existing = await db
       .select({ id: templatesSchema.id })
       .from(templatesSchema)
@@ -54,7 +57,7 @@ async function seed() {
       await db.insert(templatesSchema).values({
         name: template.name,
         description: template.description,
-        categoryId: categoryMap[`${template.category}:${template.subcategory}`],
+        categoryId: categoryId,
         questions: template.questions,
       });
       console.log(`Seeded template: ${template.name}`);
