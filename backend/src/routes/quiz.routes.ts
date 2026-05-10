@@ -29,9 +29,12 @@ export async function quizRoutes(app: FastifyInstance) {
       const quizzes = await quizRepo.list(req.user.id);
       console.log('[QUIZ-V5] Found quizzes:', quizzes.length);
       reply.send(quizzes);
-    } catch (err) {
+    } catch (err: any) {
       console.error('[QUIZ-V5] Failed to fetch quizzes:', err);
-      reply.status(500).send({ error: 'internal_error', message: 'Failed to fetch quizzes' });
+      reply.status(500).send({ 
+        error: 'internal_error', 
+        message: 'Failed to fetch quizzes: ' + err.message 
+      });
     }
   });
 
