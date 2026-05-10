@@ -37,8 +37,8 @@ export async function gameRoutes(app: FastifyInstance) {
     }
 
     // Get quiz
-    const quiz = await quizRepo.getById(hostQuizId);
-    if (!quiz || quiz.ownerUserId !== user.id) {
+    const quiz = await quizRepo.getById(hostQuizId, user.id);
+    if (!quiz) {
       console.log('[GAME-V3] Quiz not found or not owner:', hostQuizId);
       return reply.code(404).send({ error: 'quiz_not_found' });
     }
