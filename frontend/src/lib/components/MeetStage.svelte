@@ -94,9 +94,11 @@
     const backendUrl = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3001';
     const popup = window.open(`${backendUrl}/auth/google`, '_blank', 'width=500,height=600');
     
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'pikirly-auth-success') {
-        auth.init();
+    const handleMessage = async (event: MessageEvent) => {
+      if (event.data?.type === 'pikirly-auth-success' && event.data.token) {
+        const { setAuthToken } = await import('$lib/api');
+        setAuthToken(event.data.token);
+        await auth.init();
         window.removeEventListener('message', handleMessage);
       }
     };
@@ -111,7 +113,7 @@
       }
       if (popup?.closed) {
         clearInterval(interval);
-        window.removeEventListener('message', handleMessage);
+        setTimeout(() => window.removeEventListener('message', handleMessage), 1000);
       }
     }, 2000);
   }

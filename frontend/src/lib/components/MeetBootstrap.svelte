@@ -46,13 +46,28 @@
 
   function handleLogin() {
     const backendUrl = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3001';
-    window.open(`${backendUrl}/auth/google`, '_blank', 'width=500,height=600');
+    const popup = window.open(`${backendUrl}/auth/google`, '_blank', 'width=500,height=600');
     
-    // Poll for auth status
+    const handleMessage = async (event: MessageEvent) => {
+      if (event.data?.type === 'pikirly-auth-success' && event.data.token) {
+        const { setAuthToken } = await import('$lib/api');
+        setAuthToken(event.data.token);
+        await auth.init();
+        window.removeEventListener('message', handleMessage);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+
+    // Fallback poll
     const interval = setInterval(async () => {
       await auth.init();
       if ($auth.user) {
         clearInterval(interval);
+        window.removeEventListener('message', handleMessage);
+      }
+      if (popup?.closed) {
+        clearInterval(interval);
+        setTimeout(() => window.removeEventListener('message', handleMessage), 1000);
       }
     }, 2000);
   }
