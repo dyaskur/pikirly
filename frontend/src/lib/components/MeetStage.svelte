@@ -83,7 +83,7 @@
       }
 
       hostSession.set({ gameId, hostToken });
-      goto(`/host/${gameId}`);
+      goto(`/host/${gameId}?mode=meet`);
     } catch (err) {
       console.error(err);
       alert('An error occurred');
@@ -106,16 +106,25 @@
 
     // Fallback poll
     const interval = setInterval(async () => {
-      await auth.init();
-      if ($auth.user) {
-        clearInterval(interval);
-        window.removeEventListener('message', handleMessage);
+      // Check localStorage directly for the token
+      const { getAuthToken } = await import('$lib/api');
+      const token = getAuthToken();
+      
+      if (token || $auth.user) {
+        console.log('Token found via polling, initializing auth...');
+        await auth.init();
+        if ($auth.user) {
+          clearInterval(interval);
+          window.removeEventListener('message', handleMessage);
+        }
       }
+
       if (popup?.closed) {
+        console.log('Login popup closed');
         clearInterval(interval);
         setTimeout(() => window.removeEventListener('message', handleMessage), 1000);
       }
-    }, 2000);
+    }, 1000);
   }
 </script>
 

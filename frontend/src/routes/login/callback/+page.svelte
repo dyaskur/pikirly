@@ -5,15 +5,27 @@
 
   onMount(() => {
     const token = page.url.searchParams.get('token');
+    console.log('Login callback reached, token present:', !!token);
+    
     if (token) {
       setAuthToken(token);
       
       // Notify opener if exists (for iframe flow)
       if (window.opener) {
-        window.opener.postMessage({ type: 'pikirly-auth-success', token }, '*');
-        window.close();
+        console.log('Notifying opener...');
+        try {
+          window.opener.postMessage({ type: 'pikirly-auth-success', token }, '*');
+          // Give it a tiny bit of time to send before closing
+          setTimeout(() => {
+            console.log('Closing popup...');
+            window.close();
+          }, 500);
+        } catch (e) {
+          console.error('Failed to postMessage to opener:', e);
+          window.location.href = '/host';
+        }
       } else {
-        // Fallback for standalone
+        console.log('No opener found, redirecting to host dashboard');
         window.location.href = '/host';
       }
     }

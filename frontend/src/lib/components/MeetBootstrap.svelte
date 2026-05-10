@@ -60,16 +60,25 @@
 
     // Fallback poll
     const interval = setInterval(async () => {
-      await auth.init();
-      if ($auth.user) {
-        clearInterval(interval);
-        window.removeEventListener('message', handleMessage);
+      // Check localStorage directly for the token
+      const { getAuthToken } = await import('$lib/api');
+      const token = getAuthToken();
+      
+      if (token || $auth.user) {
+        console.log('Token found via polling, initializing auth...');
+        await auth.init();
+        if ($auth.user) {
+          clearInterval(interval);
+          window.removeEventListener('message', handleMessage);
+        }
       }
+      
       if (popup?.closed) {
+        console.log('Login popup closed');
         clearInterval(interval);
         setTimeout(() => window.removeEventListener('message', handleMessage), 1000);
       }
-    }, 2000);
+    }, 1000);
   }
 </script>
 
@@ -93,6 +102,9 @@
         <div class="card bg-info/10 p-4 mb-4">
           <p class="font-bold">Game in progress!</p>
           <p class="text-sm muted mt-1">Activity is running on the main stage.</p>
+          <button class="btn btn-primary btn-sm mt-4 w-full" onclick={() => goto(`/host/${activeGameId}?mode=meet`)}>
+            Manage Active Game
+          </button>
         </div>
       {/if}
 

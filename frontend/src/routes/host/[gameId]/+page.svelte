@@ -28,6 +28,24 @@
   let socket = getSocket();
   let tick: ReturnType<typeof setInterval> | null = null;
 
+  let isMeet = $derived($page.url.searchParams.get('mode') === 'meet');
+
+  async function promoteToMeet() {
+    try {
+      const { meet } = await import('@googleworkspace/meet-addons');
+      const session = await meet.addon.createAddonSession({
+        cloudProjectNumber: '798042367810'
+      });
+      const sidePanelClient = await session.createSidePanelClient();
+      await sidePanelClient.startActivity({
+        mainStageUrl: `${window.location.origin}/?mode=meet&surface=stage`
+      });
+    } catch (e) {
+      console.error('Failed to promote to Meet:', e);
+      alert('Failed to show on main stage. Ensure you are in a Meet call.');
+    }
+  }
+
   function startTimer() {
     if (tick) clearInterval(tick);
     tick = setInterval(() => {
@@ -158,14 +176,25 @@
         <div class="card" style="margin-top: 28px; max-width: 720px; margin-inline: auto;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px;">
             <h2 style="margin:0;">Players ({players.length})</h2>
-            <button
-              class="btn-primary"
-              style="width:auto;"
-              onclick={start}
-              disabled={starting || players.length === 0}
-            >
-              {starting ? 'Starting…' : 'Start game'}
-            </button>
+            <div style="display:flex; gap: 0.5rem;">
+              {#if isMeet}
+                <button
+                  class="btn-secondary"
+                  style="width:auto;"
+                  onclick={promoteToMeet}
+                >
+                  Show on Main Stage
+                </button>
+              {/if}
+              <button
+                class="btn-primary"
+                style="width:auto;"
+                onclick={start}
+                disabled={starting || players.length === 0}
+              >
+                {starting ? 'Starting…' : 'Start game'}
+              </button>
+            </div>
           </div>
           {#if startError}
             <div class="error">{startError}</div>
