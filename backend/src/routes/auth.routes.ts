@@ -125,10 +125,10 @@ export async function authRoutes(app: FastifyInstance) {
     const records = await db.select().from(pairingCodes).where(eq(pairingCodes.code, code));
     const data = records[0];
 
-    if (!data) return reply.status(404).send({ error: 'not_found' });
+    if (!data) return reply.code(404).send({ ok: false, error: 'not_found' });
     if (Date.now() > data.expiresAt.getTime()) {
       await db.delete(pairingCodes).where(eq(pairingCodes.code, code));
-      return reply.status(410).send({ error: 'expired' });
+      return reply.code(410).send({ ok: false, error: 'expired' });
     }
 
     // Return the token and remove it (single-use)

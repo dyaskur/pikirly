@@ -1,4 +1,5 @@
 import { page } from '$app/state';
+import type { AddonSession, MeetSidePanelClient, MeetMainStageClient } from '@googleworkspace/meet-addons';
 
 export interface MeetContext {
   meetingCode: string;
@@ -7,10 +8,10 @@ export interface MeetContext {
   surface: 'side' | 'stage';
 }
 
-let meetClient: any = null;
-let meetSession: any = null;
+let meetClient: MeetSidePanelClient | MeetMainStageClient | null = null;
+let meetSession: AddonSession | null = null;
 
-export async function getMeetClient() {
+export async function getMeetClient(): Promise<MeetSidePanelClient | MeetMainStageClient | null> {
   if (!meetClient) {
     await getMeetContext();
   }
@@ -20,7 +21,7 @@ export async function getMeetClient() {
 /**
  * Navigate while preserving Google Meet query parameters (especially meet_sdk)
  */
-export async function navigateMeet(path: string) {
+export async function navigateMeet(path: string): Promise<void> {
   const currentUrl = new URL(window.location.href);
   const targetUrl = new URL(path, window.location.origin);
   
@@ -41,33 +42,31 @@ export async function getMeetContext(): Promise<MeetContext | null> {
   const surface: 'side' | 'stage' = (rawSurface === 'stage') ? 'stage' : 'side';
   
   if (mode !== 'meet') return null;
+try {
+  const { meet } = await import('@googleworkspace/meet-addons');
 
-  try {
-    const { meet } = await import('@googleworkspace/meet-addons');
+  if (!meetSession) {
+    console.log('Initializing Meet Add-on SDK session...');
+    const projectNumber = import.meta.env.VITE_GOOGLE_PROJECT_NUMBER;
 
-    if (!meetSession) {
-      console.log('Initializing Meet Add-on SDK session...');
-      const projectNumber = import.meta.env.VITE_GOOGLE_PROJECT_NUMBER;
-      
-      if (!projectNumber) {
-        console.warn('VITE_GOOGLE_PROJECT_NUMBER is not defined. Meet SDK may fail to initialize.');
-      }
-
-      meetSession = await meet.addon.createAddonSession({
-        cloudProjectNumber: projectNumber
-      });
+    if (!projectNumber) {
+      console.warn('VITE_GOOGLE_PROJECT_NUMBER is not defined. Meet SDK may fail to initialize.');
     }
 
-    if (!meetClient) {
-      if (surface === 'stage') {
-        meetClient = await meetSession.createMainStageClient();
-      } else {
-        meetClient = await meetSession.createSidePanelClient();
-      }
+    meetSession = await meet.addon.createAddonSession({
+      cloudProjectNumber: projectNumber
+    });
+  }
+
+  if (!meetClient) {
+    if (surface === 'stage') {
+      meetClient = await meetSession.createMainStageClient();
+    } else {
+      meetClient = await meetSession.createSidePanelClient();
     }
+  }
 
-    const meetingInfo = await meetClient.getMeetingInfo();
-
+  const meetingInfo = await meetClient.getMeetingInfo();
     // Generate a stable visitorId for this user in this meeting if no identity provided by Meet
     let visitorId = '';
     if (typeof localStorage !== 'undefined') {
