@@ -88,7 +88,7 @@
       // Security: Validate the origin matches our own frontend
       if (event.origin !== window.location.origin) return;
       
-      if (event.data?.type === 'pikirly-auth-complete') {
+      if (event.data?.type === 'pikirly-auth-complete' && event.data.pairingCode === pairingCode) {
         console.log('Auth complete signal received via postMessage');
         // Trigger an immediate manual check for the pairing code
         await auth.init();

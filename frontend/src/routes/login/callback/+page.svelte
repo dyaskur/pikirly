@@ -22,7 +22,10 @@
       try {
         // We no longer send the token via postMessage to avoid leakage.
         // The side panel will poll the backend for it.
-        window.opener.postMessage({ type: 'pikirly-auth-complete', pairingCode }, window.location.origin);
+        window.opener.postMessage({ 
+          type: 'pikirly-auth-complete', 
+          pairingCode: pairingCode || undefined 
+        }, window.location.origin);
       } catch (e) {
         console.error('Failed to postMessage to opener:', e);
       }
@@ -30,11 +33,13 @@
     
     // Give it a tiny bit of time before closing/redirecting
     setTimeout(() => {
-      if (window.opener || pairingCode) {
+      if (window.opener) {
         console.log('Closing popup...');
         window.close();
       } else {
         console.log('No opener found, redirecting to host dashboard');
+        // If we got here, we're likely in a standalone flow or the opener was lost.
+        // Navigate to /host so the user isn't stuck on the spinner.
         window.location.href = '/host';
       }
     }, 1000);
