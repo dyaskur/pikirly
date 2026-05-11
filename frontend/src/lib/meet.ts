@@ -35,14 +35,15 @@ export async function navigateMeet(path: string) {
 
 export async function getMeetContext(): Promise<MeetContext | null> {
   const mode = page.url.searchParams.get('mode');
-  const surface = page.url.searchParams.get('surface') as 'side' | 'stage';
+  const rawSurface = page.url.searchParams.get('surface');
+  
+  // Validate surface parameter strictly
+  const surface: 'side' | 'stage' = (rawSurface === 'stage') ? 'stage' : 'side';
   
   if (mode !== 'meet') return null;
 
   try {
-    const sdk = await import('@googleworkspace/meet-addons');
-    const meet = (sdk as any).meet || sdk;
-    const addon = (meet as any).addon || meet;
+    const { meet } = await import('@googleworkspace/meet-addons');
 
     if (!meetSession) {
       console.log('Initializing Meet Add-on SDK session...');
@@ -52,7 +53,7 @@ export async function getMeetContext(): Promise<MeetContext | null> {
         console.warn('VITE_GOOGLE_PROJECT_NUMBER is not defined. Meet SDK may fail to initialize.');
       }
 
-      meetSession = await addon.createAddonSession({
+      meetSession = await meet.addon.createAddonSession({
         cloudProjectNumber: projectNumber
       });
     }
@@ -81,7 +82,7 @@ export async function getMeetContext(): Promise<MeetContext | null> {
       meetingCode: meetingInfo.meetingCode || meetingInfo.meetingId,
       participantId: visitorId, 
       displayName: '',   // Will be populated from auth store if available
-      surface: surface || 'side'
+      surface
     };
   } catch (err) {
     console.error('Failed to initialize Meet Add-on SDK:', err);
