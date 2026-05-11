@@ -96,7 +96,7 @@ export async function gameRoutes(app: FastifyInstance) {
 
     const params = paramsSchema.safeParse(req.params);
     if (!params.success) {
-      return reply.send({ ok: false, error: 'invalid_params' });
+      return reply.code(400).send({ ok: false, error: 'invalid_params' });
     }
 
     const { meetingCode } = params.data;
@@ -104,7 +104,7 @@ export async function gameRoutes(app: FastifyInstance) {
 
     const game = findByMeetingId(meetingCode);
     if (!game) {
-      return reply.send({ ok: false, error: 'game_not_found' });
+      return reply.code(404).send({ ok: false, error: 'game_not_found' });
     }
 
     return reply.send({ 
