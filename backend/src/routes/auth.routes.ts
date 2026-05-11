@@ -121,18 +121,23 @@ export async function authRoutes(app: FastifyInstance) {
   });
 
   app.get('/auth/pairing/poll/:code', async (req, reply) => {
-    const { code } = req.params as { code: string };
-    const records = await db.select().from(pairingCodes).where(eq(pairingCodes.code, code));
-    const data = records[0];
+    const paramsSchema = z.object({ code: z.string().min(1) });
+    const { code } = paramsSchema.parse(req.params);
+
+    // Atomic DELETE ... RETURNING to prevent race conditions (single-use guarantee)
+    const deleted = await db
+      .delete(pairingCodes)
+      .where(eq(pairingCodes.code, code))
+      .returning();
+      
+    const data = deleted[0];
 
     if (!data) return reply.code(404).send({ ok: false, error: 'not_found' });
+    
     if (Date.now() > data.expiresAt.getTime()) {
-      await db.delete(pairingCodes).where(eq(pairingCodes.code, code));
       return reply.code(410).send({ ok: false, error: 'expired' });
     }
 
-    // Return the token and remove it (single-use)
-    await db.delete(pairingCodes).where(eq(pairingCodes.code, code));
     return { token: data.token };
   });
 }

@@ -90,7 +90,6 @@ export async function gameRoutes(app: FastifyInstance) {
 
   // New REST endpoint GET /games/by-meeting/:meetingCode
   app.get('/games/by-meeting/:meetingCode', async (req, reply) => {
-    console.log('[GAME-V6] GET /games/by-meeting hit for:', (req.params as any).meetingCode);
     const paramsSchema = z.object({
       meetingCode: z.string().min(1),
     });
@@ -100,7 +99,10 @@ export async function gameRoutes(app: FastifyInstance) {
       return reply.send({ ok: false, error: 'invalid_params' });
     }
 
-    const game = findByMeetingId(params.data.meetingCode);
+    const { meetingCode } = params.data;
+    console.log('[GAME-V6] GET /games/by-meeting hit for:', meetingCode);
+
+    const game = findByMeetingId(meetingCode);
     if (!game) {
       return reply.send({ ok: false, error: 'game_not_found' });
     }

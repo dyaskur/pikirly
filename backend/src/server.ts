@@ -58,7 +58,7 @@ async function main() {
     scope: ['profile', 'email'],
   });
 
-  app.get('/health', async () => {
+  app.get('/health', async (req, reply) => {
     try {
       // Test DB connection with a raw query to get better error messages
       const client = await pool.connect();
@@ -70,8 +70,11 @@ async function main() {
       return { ok: true, db: true, ts: Date.now() };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';
-      const code = (err as any)?.code; // Optional code check
+      const code = typeof err === 'object' && err !== null && 'code' in err ? (err as any).code : undefined;
       console.error('[DB-CHECK] Failed:', message);
+      
+      // Readiness check should fail with 503 if DB is unreachable
+      reply.code(503);
       return { 
         ok: true, 
         db: false, 

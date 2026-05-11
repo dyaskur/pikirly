@@ -44,8 +44,8 @@
 <div class="flex items-center justify-center min-h-screen">
   <div class="text-center">
     {#if error}
-      <div class="card bg-error/10 p-8">
-        <h2 class="text-2xl font-bold text-error mb-4">Sign In Failed</h2>
+      <div class="card p-8" style="border: 2px solid var(--brand);">
+        <h2 class="text-2xl font-bold mb-4">Sign In Failed</h2>
         <p>{error}</p>
         <button class="btn btn-primary mt-6" onclick={() => window.close()}>Close Window</button>
       </div>
