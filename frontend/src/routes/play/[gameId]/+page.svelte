@@ -4,9 +4,16 @@
   import { onMount } from 'svelte';
   import { getSocket } from '$lib/socket';
   import { playerSession } from '$lib/stores/player';
-  import type { QuestionPublic } from '@kahoot/shared';
+  import MeetSharedDisplay from '$lib/components/MeetSharedDisplay.svelte';
+  import MeetSideControls from '$lib/components/MeetSideControls.svelte';
+  import type { PlayerPublic, QuestionPublic, LeaderboardEntry } from '@kahoot/shared';
 
   const gameId = $derived($page.params.gameId ?? '');
+
+  let players = $state<PlayerPublic[]>([]);
+  let leaderboard = $state<LeaderboardEntry[]>([]);
+  let final = $state<LeaderboardEntry[] | null>(null);
+  let reveal = $state<{ correctChoice: number; distribution: number[] } | null>(null);
 
   let phase = $state<'lobby' | 'in_question' | 'answered' | 'reveal' | 'ended'>('lobby');
   let currentQuestion = $state<QuestionPublic | null>(null);
@@ -56,6 +63,8 @@
       connect: () => { connectionMsg = null; reJoin(); },
       disconnect: () => { connectionMsg = 'Reconnecting…'; },
       game_started: () => { phase = 'in_question'; },
+      player_joined: (p: any) => { players = [...players, p]; },
+      player_left: ({ playerId }: any) => { players = players.filter(p => p.playerId !== playerId); },
       question: (q: QuestionPublic) => {
         currentQuestion = q;
         timeLeftMs = Math.max(0, q.deadlineMs - Date.now());
@@ -78,6 +87,7 @@
         }
       },
       question_end: (e: any) => {
+        reveal = { correctChoice: e.correctChoice, distribution: e.distribution };
         revealResult = {
           correct: e.yourCorrect ?? false,
           earned: e.yourScore ?? 0,
@@ -87,10 +97,12 @@
         stopTimer();
       },
       leaderboard_update: ({ top }: any) => {
+        leaderboard = top;
         const me = top.find((t: any) => t.playerId === sess.playerId);
         myRank = me?.rank ?? null;
       },
       game_end: ({ finalLeaderboard }: any) => {
+        final = finalLeaderboard;
         const me = finalLeaderboard.find((t: any) => t.playerId === sess.playerId);
         myFinalScore = me?.score ?? 0;
         myRank = me?.rank ?? null;
@@ -128,20 +140,41 @@
 
   const tileColors = ['var(--c-red)', 'var(--c-blue)', 'var(--c-yellow)', 'var(--c-green)'];
   const shapes = ['▲', '◆', '●', '■'];
+const progressPct = $derived(
+  currentQuestion ? Math.max(0, Math.min(100, (timeLeftMs / currentQuestion.limitMs) * 100)) : 0,
+);
 
-  const progressPct = $derived(
-    currentQuestion ? Math.max(0, Math.min(100, (timeLeftMs / currentQuestion.limitMs) * 100)) : 0,
-  );
+let isMeet = $derived($page.url.searchParams.get('mode') === 'meet');
+let isSidePanel = $derived($page.url.searchParams.get('surface') === 'side');
 </script>
 
 {#if connectionMsg}
-  <div style="position:fixed; top:14px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.75); color:white; padding:8px 16px; border-radius:99px; z-index:100; font-size: 0.9rem;">
-    {connectionMsg}
-  </div>
+<div style="position:fixed; top:14px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.75); color:white; padding:8px 16px; border-radius:99px; z-index:100; font-size: 0.9rem;">
+  {connectionMsg}
+</div>
 {/if}
 
+{#if isMeet}
+{#if isSidePanel}
+  <MeetSideControls {gameId} />
+{:else}
+  <MeetSharedDisplay 
+    phase={phase === 'answered' ? 'in_question' : phase} 
+    {gameId} 
+    {players} 
+    {currentQuestion} 
+    {progressPct} 
+    {timeLeftMs} 
+    {reveal} 
+    {leaderboard} 
+    {final} 
+  />
+{/if}
+{:else}
 <div class="center" style="padding: 18px 12px;">
-  <div style="width:100%; max-width: 720px;">
+...
+</div>
+{/if}
     {#if phase === 'lobby'}
       <div class="card fade-in" style="text-align:center;">
         <div style="font-size: 3rem;">⏳</div>

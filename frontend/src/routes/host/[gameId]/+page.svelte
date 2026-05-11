@@ -4,6 +4,8 @@
   import { getSocket } from '$lib/socket';
   import { hostSession } from '$lib/stores/host';
   import { goto } from '$app/navigation';
+  import MeetSharedDisplay from '$lib/components/MeetSharedDisplay.svelte';
+  import MeetSideControls from '$lib/components/MeetSideControls.svelte';
   import type {
     PlayerPublic,
     QuestionPublic,
@@ -161,6 +163,23 @@
   );
 </script>
 
+{#if isMeet}
+  {#if isSidePanel}
+    <MeetSideControls {gameId} />
+  {:else}
+    <MeetSharedDisplay 
+      {phase} 
+      {gameId} 
+      {players} 
+      {currentQuestion} 
+      {progressPct} 
+      {timeLeftMs} 
+      {reveal} 
+      {leaderboard} 
+      {final} 
+    />
+  {/if}
+{:else}
 <div class="center" style="padding: 28px 16px;">
   <div style="width: 100%; max-width: 900px;">
     {#if staleGame}
@@ -316,3 +335,4 @@
     {/if}
   </div>
 </div>
+{/if}
