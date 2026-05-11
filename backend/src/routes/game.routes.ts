@@ -20,7 +20,7 @@ export async function gameRoutes(app: FastifyInstance) {
     const body = schema.safeParse(req.body);
     if (!body.success) {
       console.log('[GAME-V7] Zod Validation failed:', body.error.message);
-      return reply.send({ 
+      return reply.code(400).send({ 
         ok: false, 
         error: 'invalid_request', 
         message: 'Invalid request data: ' + body.error.message 
@@ -35,6 +35,16 @@ export async function gameRoutes(app: FastifyInstance) {
     console.log('[GAME-V7] Checking for existing game...');
     const existing = findByMeetingId(meetingCode);
     if (existing) {
+      // SECURITY: Only return the hostToken if the current user is the actual host
+      if (existing.hostUserId !== user.id) {
+        console.log('[GAME-V7] Unauthorized takeover attempt detected');
+        return reply.code(403).send({
+          ok: false,
+          error: 'forbidden',
+          message: 'A game already exists for this meeting, but you are not the host.'
+        });
+      }
+
       console.log('[GAME-V7] Existing game found:', existing.gameId);
       return reply.send({ 
         ok: true,
@@ -52,7 +62,7 @@ export async function gameRoutes(app: FastifyInstance) {
       console.log('[GAME-V7] DB Query successful, quiz found:', !!quiz);
     } catch (err) {
       console.error('[GAME-V7] DB Query CRASHED:', err);
-      return reply.send({ 
+      return reply.code(500).send({ 
         ok: false, 
         error: 'db_error', 
         message: 'Database query failed. This usually means a connection issue.' 
@@ -61,7 +71,7 @@ export async function gameRoutes(app: FastifyInstance) {
 
     if (!quiz) {
       console.log(`[GAME-V7] Ownership check failed. User ${user.id} does not own Quiz ${hostQuizId}`);
-      return reply.send({ 
+      return reply.code(404).send({ 
         ok: false, 
         error: 'quiz_not_found', 
         message: `You don't have permission to host this quiz, or it doesn't exist.` 

@@ -55,9 +55,12 @@
       const data = await res.json();
       if (res.ok && data.ok) {
         activeGameId = data.gameId;
+      } else if (!res.ok) {
+        error = 'Failed to connect to server. Please try again.';
       }
     } catch (e) {
       console.error('Bootstrap check error:', e);
+      error = 'A network error occurred during initialization.';
     } finally {
       loading = false;
     }
@@ -87,19 +90,35 @@
       
       if (event.data?.type === 'pikirly-auth-complete') {
         console.log('Auth complete signal received via postMessage');
-        // The side panel is already polling, so we just wait for the poll to succeed
+        // Trigger an immediate manual check for the pairing code
         await auth.init();
+        cleanupLogin();
       }
     };
     window.addEventListener('message', loginMessageListener);
 
+    if (!popup) {
+      error = 'Login popup was blocked. Please allow popups for this site and try again.';
+      cleanupLogin();
+      return;
+    }
+
     // Robust Polling fallback
     console.log('Starting pairing code poll:', pairingCode);
     loginPollInterval = setInterval(async () => {
-      if (popup?.closed) {
+      if (popup.closed) {
         console.log('Login popup closed');
-        // Give it one last check then stop
-        setTimeout(cleanupLogin, 2000);
+        // Final attempt then stop
+        try {
+          const res = await api(`/auth/pairing/poll/${pairingCode}`);
+          if (res.ok) {
+            const { token } = await res.json();
+            const { setAuthToken } = await import('$lib/api');
+            setAuthToken(token);
+            await auth.init();
+          }
+        } catch (e) { /* ignore */ }
+        cleanupLogin();
         return;
       }
 
@@ -148,13 +167,11 @@
     <p>Connecting to Pikirly...</p>
   {:else if error}
     <div class="card p-6 mb-4 w-full" style="border: 2px solid var(--brand);">
-      <p class="text-error font-bold">{error}</p>
+      <p class="font-bold">{error}</p>
     </div>
-    {#if error.includes('No active game found')}
-      <button class="btn btn-primary" onclick={bootstrap}>
-        Retry
-      </button>
-    {/if}
+    <button class="btn btn-primary" onclick={bootstrap}>
+      Retry
+    </button>
   {:else if $auth.user}
     <!-- Host View -->
     <div class="w-full">
@@ -166,7 +183,7 @@
       {#if activeGameId}
         <div class="card p-6 mb-4 w-full" style="border: 2px solid var(--info);">
           <p class="font-bold">Game in progress!</p>
-          <p class="text-sm muted mt-1">Activity is running on the main stage.</p>
+          <p class="mt-1">Activity is running on the main stage.</p>
           <button class="btn btn-primary btn-sm mt-4 w-full" onclick={handleManageActive}>
             Manage Active Game
           </button>
@@ -182,14 +199,20 @@
       <h3 class="text-xl font-bold mb-2">Pikirly for Meet</h3>
       
       {#if activeGameId}
-        <p class="text-primary font-bold mb-4">Game is active!</p>
-        <p class="muted mb-6">Look at the main stage (center area) to join and play.</p>
+        <div class="mb-4">
+          <p class="font-bold">Game is active!</p>
+          <p class="mt-2">Look at the main stage (center area) to join and play.</p>
+        </div>
       {:else}
-        <p class="muted mb-6">Waiting for the host to start a game on the main stage...</p>
+        <div class="mb-6">
+          <p>Waiting for the host to start a game on the main stage...</p>
+        </div>
       {/if}
 
       <div class="mt-8 pt-8 border-t">
-        <p class="text-sm muted mb-4">Are you the host?</p>
+        <div class="mb-4">
+          <p>Are you the host?</p>
+        </div>
         <button class="btn btn-secondary w-full" onclick={handleLogin}>
           Sign in to Host
         </button>

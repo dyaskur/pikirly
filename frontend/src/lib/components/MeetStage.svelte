@@ -137,23 +137,36 @@
       // Security: Validate the origin matches our own frontend
       if (event.origin !== window.location.origin) return;
 
-      if (event.data?.type === 'pikirly-auth-success' && event.data.token) {
-        console.log('Token received via postMessage');
-        const { setAuthToken } = await import('$lib/api');
-        setAuthToken(event.data.token);
+      if (event.data?.type === 'pikirly-auth-complete' && event.data.pairingCode === pairingCode) {
+        console.log('Auth complete signal received via postMessage');
         await auth.init();
         cleanupLogin();
       }
     };
     window.addEventListener('message', loginMessageListener);
 
+    if (!popup) {
+      createError = 'Login popup was blocked. Please allow popups and try again.';
+      cleanupLogin();
+      return;
+    }
+
     // Robust Polling fallback
     console.log('Starting pairing code poll:', pairingCode);
     loginPollInterval = setInterval(async () => {
-      if (popup?.closed) {
+      if (popup.closed) {
         console.log('Login popup closed');
-        // Give it one last check then stop
-        setTimeout(cleanupLogin, 2000);
+        // Final attempt then stop
+        try {
+          const res = await api(`/auth/pairing/poll/${pairingCode}`);
+          if (res.ok) {
+            const { token } = await res.json();
+            const { setAuthToken } = await import('$lib/api');
+            setAuthToken(token);
+            await auth.init();
+          }
+        } catch (e) { /* ignore */ }
+        cleanupLogin();
         return;
       }
 
@@ -184,15 +197,20 @@
     {:else if !$auth.user}
       <div class="text-center py-12">
         <h2 class="text-2xl font-bold mb-4">Host Pikirly in Meet</h2>
-        <p class="muted mb-8">Sign in with your Google account to host games for your meeting participants.</p>
+        <p class="mb-8">Sign in with your Google account to host games for your meeting participants.</p>
         <button class="btn btn-primary btn-lg" onclick={handleLogin}>
           Sign in to Pikirly
         </button>
+        {#if createError}
+          <div class="mt-6 p-4 rounded-lg border-2 border-brand bg-white">
+            <p class="text-error font-bold">{createError}</p>
+          </div>
+        {/if}
       </div>
     {:else}
       <div class="flex justify-between items-center mb-8">
         <h2 class="text-2xl font-bold">Pick a quiz for this meeting</h2>
-        <div class="text-sm muted">Signed in as {$auth.user.name}</div>
+        <div>Signed in as {$auth.user.name}</div>
       </div>
 
       {#if createError}
@@ -207,7 +225,7 @@
         <p class="text-error">{error}</p>
       {:else if quizzes.length === 0}
         <div class="text-center py-8">
-          <p class="muted mb-4">You don't have any quizzes yet.</p>
+          <p class="mb-4">You don't have any quizzes yet.</p>
           <a href="/host/quiz/new" target="_blank" class="btn btn-secondary">Create a quiz in new tab</a>
         </div>
       {:else}
@@ -216,7 +234,7 @@
             <div class="flex justify-between items-center p-4 border rounded-lg hover:border-primary transition-colors">
               <div>
                 <div class="font-bold">{quiz.title}</div>
-                <div class="text-sm muted">{quiz.questionCount} questions</div>
+                <div>{quiz.questionCount} questions</div>
               </div>
               <button class="btn btn-primary" onclick={() => hostQuiz(quiz.id)} disabled={creatingGame}>
                 {creatingGame ? 'Starting...' : 'Host in Meeting'}

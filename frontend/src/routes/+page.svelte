@@ -116,7 +116,7 @@
         <div class="card p-12 text-center max-w-lg">
           <div class="text-6xl mb-6">🎮</div>
           <h1 class="text-3xl font-bold mb-4">Pikirly for Meet</h1>
-          <p class="text-lg muted mb-8">Waiting for the host to start a game in the side panel...</p>
+          <p class="text-lg mb-8">Waiting for the host to start a game in the side panel...</p>
           <div class="animate-pulse flex justify-center">
             <div class="h-2 w-32 bg-primary/20 rounded"></div>
           </div>
