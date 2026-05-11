@@ -79,7 +79,7 @@ try {
 
     return {
       meetingCode: meetingInfo.meetingCode || meetingInfo.meetingId,
-      participantId: visitorId, 
+      participantId: visitorId || meetingInfo.meetingId || meetingInfo.meetingCode || 'unknown', 
       displayName: '',   // Will be populated from auth store if available
       surface
     };

@@ -4,12 +4,11 @@ import oauthPlugin from '@fastify/oauth2';
 import jwtPlugin from '@fastify/jwt';
 import cookiePlugin from '@fastify/cookie';
 import { z } from 'zod';
-import { sql } from 'drizzle-orm';
 import { Server as IOServer } from 'socket.io';
 import type { ClientToServerEvents, ServerToClientEvents } from '@kahoot/shared';
 import { registerHandlers } from './ws/index.js';
 import { getGame } from './services/game/store.js';
-import { db, pool } from './db/client.js';
+import { pool } from './db/client.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { quizRoutes } from './routes/quiz.routes.js';
 import { aiRoutes } from './routes/ai.routes.js';
@@ -125,5 +124,8 @@ async function main() {
 
 main().catch((err) => {
   console.error(err);
+  process.exit(1);
+});
+sole.error(err);
   process.exit(1);
 });

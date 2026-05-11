@@ -29,22 +29,23 @@ export async function quizRoutes(app: FastifyInstance) {
       const quizzes = await quizRepo.list(req.user.id);
       console.log('[QUIZ-V5] Found quizzes:', quizzes.length);
       reply.send(quizzes);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
       console.error('[QUIZ-V5] Failed to fetch quizzes:', err);
       reply.status(500).send({ 
         error: 'internal_error', 
-        message: 'Failed to fetch quizzes: ' + err.message 
+        message: 'Failed to fetch quizzes: ' + message 
       });
     }
   });
 
   app.get('/quizzes/:id', async (req, reply) => {
-    console.log('[QUIZ-V5] GET /quizzes/:id hit. ID:', (req.params as any).id);
     const parseParams = idParamSchema.safeParse(req.params);
     if (!parseParams.success) {
       reply.status(400).send({ error: 'invalid_id', message: 'ID must be a valid UUID' });
       return;
     }
+    console.log('[QUIZ-V5] GET /quizzes/:id hit. ID:', parseParams.data.id);
 
     try {
       const quiz = await quizRepo.getById(parseParams.data.id, req.user.id);
