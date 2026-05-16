@@ -5,6 +5,7 @@
   import { hostSession } from '$lib/stores/host';
   import { goto } from '$app/navigation';
   import type { MeetContext } from '$lib/meet';
+  import QuizEditor from './QuizEditor.svelte';
 
   interface Props {
     meetContext: MeetContext;
@@ -22,6 +23,12 @@
   let error = $state<string | null>(null);
   let creatingGame = $state(false);
   let createError = $state<string | null>(null);
+  let showCreateModal = $state(false);
+
+  async function handleQuizCreated() {
+    showCreateModal = false;
+    await loadQuizzes();
+  }
 
   let loginPollInterval: ReturnType<typeof setInterval> | null = null;
   let loginMessageListener: ((e: MessageEvent) => void) | null = null;
@@ -226,9 +233,12 @@
       {:else if quizzes.length === 0}
         <div class="text-center py-8">
           <p class="mb-4">You don't have any quizzes yet.</p>
-          <a href="/host/quiz/new" target="_blank" class="btn btn-secondary">Create a quiz in new tab</a>
+          <button class="btn btn-secondary" onclick={() => showCreateModal = true}>Create your first quiz</button>
         </div>
       {:else}
+        <div class="flex justify-end mb-3">
+          <button class="btn btn-secondary btn-sm" onclick={() => showCreateModal = true}>+ New Quiz</button>
+        </div>
         <div class="grid gap-4">
           {#each quizzes as quiz}
             <div class="flex justify-between items-center p-4 border rounded-lg hover:border-primary transition-colors">
@@ -246,3 +256,33 @@
     {/if}
   </div>
 </div>
+
+{#if showCreateModal}
+  <div
+    class="quiz-create-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Create quiz"
+    onclick={() => showCreateModal = false}
+    onkeydown={(e) => e.key === 'Escape' && (showCreateModal = false)}
+    tabindex="-1"
+  >
+    <div class="quiz-create-panel" onclick={(e) => e.stopPropagation()} role="document">
+      <QuizEditor onSaveSuccess={handleQuizCreated} onCancel={() => showCreateModal = false} />
+    </div>
+  </div>
+{/if}
+
+<style>
+  .quiz-create-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    overflow-y: auto;
+  }
+  .quiz-create-panel {
+    min-height: 100%;
+    background: var(--card, white);
+  }
+</style>
