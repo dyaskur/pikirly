@@ -4,14 +4,14 @@ Read this before touching code. Architecture decisions are intentional — don't
 
 ## Project status
 
-**Phase 1 complete** (in-memory MVP). **Phase 2 complete** (Postgres + Google OAuth + Quiz editor). **Next is Phase 3** (Templates + AI generation).
+**Phases 1–3 complete**. **Phase 4 in progress** (Google Meet add-on — implementation done, verification pending).
 
 | # | Phase | Status | Action plan |
 |---|---|---|---|
 | 1 | Minimal playable loop, in-memory state | ✅ Done | [docs/phases/01-mvp.md](docs/phases/01-mvp.md) |
 | 2 | Postgres + Google OAuth + Quiz editor | ✅ Done | [docs/phases/02-persistence-auth-editor.md](docs/phases/02-persistence-auth-editor.md) |
-| 3 | Templates + AI generation | 🔜 Next | [docs/phases/03-templates-ai.md](docs/phases/03-templates-ai.md) |
-| 4 | Google Meet add-on | 🔜 | [docs/phases/04-meet.md](docs/phases/04-meet.md) |
+| 3 | Templates + AI generation | ✅ Done | [docs/phases/03-templates-ai.md](docs/phases/03-templates-ai.md) |
+| 4 | Google Meet add-on | 🚧 In progress | [docs/phases/04-meet.md](docs/phases/04-meet.md) |
 | 5 | Google Slides add-on | 🔜 | [docs/phases/05-slides.md](docs/phases/05-slides.md) |
 | 6 | Question type system (True/False, dynamic choices, randomize) | 🔜 | [docs/phases/06-question-types-foundation.md](docs/phases/06-question-types-foundation.md) |
 | 7 | Poll / Open Ended / Word Cloud | 🔜 | [docs/phases/07-poll-openended-wordcloud.md](docs/phases/07-poll-openended-wordcloud.md) |
@@ -97,10 +97,15 @@ Always run type checks before claiming a task done. Once Phase 2 lands, also run
 | Style/UI | `frontend/src/app.css` (design tokens) — global cascades from `.card` and `.btn-*` |
 | Reconnect/state-sync bug | `backend/src/ws/index.ts` `join_game` reconnect path |
 
-## Phase 3 starting points (next work)
+## Phase 4 remaining work
 
-1. Define template library in `backend/src/data/templates.ts`
-2. `GET /templates` + `GET /templates/:id` REST endpoints
-3. "Start from template" flow in frontend quiz editor
-4. Consume the newly created `POST /ai/generate-questions` endpoint in the frontend
-5. "Generate with AI" drawer in quiz editor (calling the multi-provider backend)
+All code deliverables in [docs/phases/04-meet.md](docs/phases/04-meet.md) are merged. What's left is verification:
+
+1. Local iframe smoke test — load `http://localhost:5173/?mode=meet&surface=side` in an iframe-friendly preview tool; confirm bootstrap initializes without error
+2. Register the add-on in Workspace Marketplace test mode using the manifest in [docs/meet-addon.md](docs/meet-addon.md)
+3. End-to-end Meet playthrough — two test accounts, real test Meet, host picks quiz → players auto-join side panel → full game to `game_end`
+4. DB verification — confirm `games.meeting_id` populated correctly after a Meet-launched game
+5. Reconnect test — refresh the side-panel iframe mid-game; verify re-sync without PIN / nickname entry (`meetParticipants` mapping in `backend/src/ws/player.handlers.ts`)
+6. Acceptance criteria sign-off per [docs/phases/04-meet.md](docs/phases/04-meet.md), including standalone web flow still works unchanged
+
+When all six pass: flip Phase 4 to ✅ Done in this file and the phase doc, and move `[Unreleased]` CHANGELOG entries under a dated release header.

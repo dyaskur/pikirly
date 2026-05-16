@@ -95,6 +95,28 @@ All previous phases make it functional. Phase 9 makes it shippable. Polish lands
   - Regenerate `CHANGELOG.md` on tag push in CI: `git cliff -o CHANGELOG.md`
   - Remove the "manually edit CHANGELOG" rule from `CLAUDE.md`; replace with "write conventional commit messages"
 
+### 8. Meet add-on UX (deferred from Phase 4)
+
+Phase 4 shipped functional; these are polish items observed during dogfooding.
+
+Side panel ([frontend/src/lib/components/MeetBootstrap.svelte](../../frontend/src/lib/components/MeetBootstrap.svelte)):
+- [ ] Remove double heading stutter — "Host Controls" + `<MeetStage>`'s own "Pick a quiz" heading shouldn't both render in a 400px column. Pick one owner of the title.
+- [ ] Make participant side panel useful during gameplay — render the answer pad, current score, and rank instead of the static "Look at the main stage" text
+- [ ] Hide the "Are you the host?" sign-in CTA when a game is already active
+- [ ] Replace bare spinner with a skeleton of the about-to-render content (quiz picker shell for host, "waiting for host" card for participant)
+- [ ] Replace placeholder 🎮 emoji with proper Pikirly mark
+
+Main stage / quiz picker ([frontend/src/lib/components/MeetStage.svelte](../../frontend/src/lib/components/MeetStage.svelte)):
+- [ ] Quiz list metadata: show last-played date, add search/sort, surface "recently used" at top
+- [ ] Rename "Host in Meeting" button to "Start" (host is already in the meeting)
+- [ ] Inline quiz creation (modal) instead of opening editor in a new tab — preserve in-Meet flow
+- [ ] Add a "Ready to start?" confirmation before promoting the activity to the main stage (currently silent — surprises the room)
+- [ ] Host side panel during gameplay: show live participant count, current question, advance/skip/pause controls, glance leaderboard — don't reduce it to a single "Manage Active Game" button
+
+Cross-cutting:
+- [ ] Extract the duplicated `handleLogin` flow from `MeetBootstrap.svelte` and `MeetStage.svelte` into a single reusable component or composable
+- [ ] Strip `console.log` / `[DEBUG]` statements from Meet components before deploy
+
 ## Files to touch
 
 ```
@@ -115,6 +137,9 @@ frontend/
   src/lib/sounds/                   # NEW
   src/routes/host/[gameId]/+page.svelte    # MODIFY: skip + kick + answer count
   src/routes/play/[gameId]/+page.svelte    # MODIFY: countdown ring
+  src/lib/components/MeetBootstrap.svelte  # MODIFY: side-panel UX polish
+  src/lib/components/MeetStage.svelte      # MODIFY: quiz picker polish, confirm before stage promotion
+  src/lib/components/MeetSignIn.svelte     # NEW: shared sign-in extracted from the two Meet components
   .env.example                      # NEW
 
 .github/
