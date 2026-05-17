@@ -1,17 +1,28 @@
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { db } from '../client.js';
 import { users } from '../schema.js';
 
 export const userRepo = {
   async findOrCreateByGoogleSub(sub: string, email: string, name: string) {
-    const existing = await db.select().from(users).where(eq(users.googleSub, sub));
-    if (existing[0]) return existing[0];
-    
+    const cleanSub = String(sub).trim();
+    if (!cleanSub) {
+      throw new Error('Google subject identifier is empty');
+    }
+
+    // Use sql wrapper with explicit text cast in the query
+    // This is safer than raw db.execute because it preserves Drizzle's pooling
+    const existing = await db.select().from(users).where(sql`${users.googleSub} = ${cleanSub}::text`);
+
+    if (existing[0]) {
+      return existing[0];
+    }
+
     const inserted = await db.insert(users).values({
-      googleSub: sub,
+      googleSub: cleanSub,
       email,
       name,
     }).returning();
+
     return inserted[0];
   },
 

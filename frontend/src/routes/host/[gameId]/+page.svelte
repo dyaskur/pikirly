@@ -4,6 +4,8 @@
   import { getSocket } from '$lib/socket';
   import { hostSession } from '$lib/stores/host';
   import { goto } from '$app/navigation';
+  import MeetSharedDisplay from '$lib/components/MeetSharedDisplay.svelte';
+  import MeetSideControls from '$lib/components/MeetSideControls.svelte';
   import type {
     PlayerPublic,
     QuestionPublic,
@@ -28,6 +30,43 @@
   let socket = getSocket();
   let tick: ReturnType<typeof setInterval> | null = null;
 
+  let isMeet = $derived($page.url.searchParams.get('mode') === 'meet');
+  let isSidePanel = $derived($page.url.searchParams.get('surface') === 'side');
+
+  function exitHostSession({ clear = true }: { clear?: boolean } = {}) {
+    if (clear) hostSession.set(null);
+    if (isMeet) {
+      const surface = isSidePanel ? 'side' : 'stage';
+      goto(`/?mode=meet&surface=${surface}`);
+    } else {
+      goto('/');
+    }
+  }
+
+  async function promoteToMeet() {
+    try {
+      const { getMeetClient } = await import('$lib/meet');
+      const client = await getMeetClient();
+      
+      if (client && typeof client.startActivity === 'function') {
+        await client.startActivity({
+          mainStageUrl: `${window.location.origin}/?mode=meet&surface=stage`
+        });
+      } else {
+        throw new Error('Meet client not initialized correctly');
+      }
+    } catch (e: any) {
+      console.error('Failed to promote to Meet:', e);
+      // If error contains 'already hosting' or similar, we can ignore it or inform the user
+      const msg = e?.message || '';
+      if (msg.includes('already hosting') || msg.includes('one add-on at a time')) {
+        console.log('Activity already running on main stage.');
+      } else {
+        alert('Failed to show on main stage. Ensure you are in a Meet call.');
+      }
+    }
+  }
+
   function startTimer() {
     if (tick) clearInterval(tick);
     tick = setInterval(() => {
@@ -40,7 +79,7 @@
   onMount(() => {
     const init = async () => {
       if (!$hostSession || $hostSession.gameId !== gameId) {
-        goto('/');
+        exitHostSession({ clear: false });
         return;
       }
 
@@ -50,7 +89,18 @@
         staleGame = true;
         return;
       }
-      
+
+      // Main stage: listen for the side panel signalling a new game so we
+      // can transition without endActivity() (which would close the side
+      // panel). The listener is installed once globally.
+      if (isMeet && !isSidePanel) {
+        const { listenForHostNewGame } = await import('$lib/meet');
+        void listenForHostNewGame(() => {
+          hostSession.set(null);
+          goto('/?mode=meet&surface=stage');
+        });
+      }
+
       // Initial bind
       handlers.connect();
     };
@@ -134,6 +184,23 @@
   );
 </script>
 
+{#if isMeet}
+  {#if isSidePanel}
+    <MeetSideControls {gameId} />
+  {:else}
+    <MeetSharedDisplay 
+      {phase} 
+      {gameId} 
+      {players} 
+      {currentQuestion} 
+      {progressPct} 
+      {timeLeftMs} 
+      {reveal} 
+      {leaderboard} 
+      {final} 
+    />
+  {/if}
+{:else}
 <div class="center" style="padding: 28px 16px;">
   <div style="width: 100%; max-width: 900px;">
     {#if staleGame}
@@ -141,8 +208,8 @@
         <div style="font-size:2.6rem;">⚠️</div>
         <h2 style="margin: 8px 0 6px;">Game session expired</h2>
         <div class="muted" style="margin-bottom:22px;">The server restarted and lost this game's state. Start a new one.</div>
-        <button class="btn-primary" onclick={() => { hostSession.set(null); goto('/'); }}>
-          Create new game
+        <button class="btn-primary" onclick={() => exitHostSession()}>
+          {isMeet ? 'Pick another quiz' : 'Create new game'}
         </button>
       </div>
     {:else if phase === 'lobby'}
@@ -151,19 +218,39 @@
         <div style="font-size: clamp(3rem, 12vw, 6rem); font-weight: 900; letter-spacing: 0.15em; margin: 8px 0 4px;">
           {gameId}
         </div>
-        <div style="opacity:0.85;">Players join at <strong>pikirly.app</strong> and enter the PIN</div>
+        
+        {#if isMeet}
+          <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.15); padding: 4px 12px; border-radius:99px; font-size:0.9rem;">
+            <span style="color:#4ade80;">●</span> Meet Auto-Join Active
+          </div>
+          <div style="opacity:0.75; font-size:0.85rem; margin-top:8px;">External players join at <strong>pikirly.app</strong></div>
+        {:else}
+          <div style="opacity:0.85;">Players join at <strong>pikirly.app</strong> and enter the PIN</div>
+        {/if}
 
         <div class="card" style="margin-top: 28px; max-width: 720px; margin-inline: auto;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px;">
             <h2 style="margin:0;">Players ({players.length})</h2>
-            <button
-              class="btn-primary"
-              style="width:auto;"
-              onclick={start}
-              disabled={starting || players.length === 0}
-            >
-              {starting ? 'Starting…' : 'Start game'}
-            </button>
+            <div style="display:flex; gap: 0.5rem;">
+              {#if isMeet && isSidePanel}
+                <button
+                  class="btn-secondary"
+                  style="width:auto;"
+                  onclick={promoteToMeet}
+                >
+                  Show on Main Stage
+                </button>
+              {/if}
+              <button
+                class="btn-primary"
+                style="width:auto;"
+                onclick={start}
+                disabled={starting || players.length === 0}
+                title={players.length === 0 ? 'Need at least one player to start' : ''}
+              >
+                {starting ? 'Starting…' : 'Start game'}
+              </button>
+            </div>
           </div>
           {#if startError}
             <div class="error">{startError}</div>
@@ -172,6 +259,7 @@
           {#if players.length === 0}
             <div class="muted" style="padding: 32px 0; text-align:center;">
               Waiting for players to join…
+              <div style="margin-top: 6px; font-size: 0.85rem;">Start unlocks once at least one player joins.</div>
             </div>
           {:else}
             <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px;">
@@ -263,10 +351,11 @@
             {/each}
           </ol>
         </div>
-        <button class="btn-primary" style="max-width: 280px; margin-top: 26px;" onclick={() => { hostSession.set(null); goto('/'); }}>
-          New game
+        <button class="btn-primary" style="max-width: 280px; margin-top: 26px;" onclick={() => exitHostSession()}>
+          {isMeet ? 'Pick another quiz' : 'New game'}
         </button>
       </div>
     {/if}
   </div>
 </div>
+{/if}

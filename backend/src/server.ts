@@ -8,13 +8,16 @@ import { Server as IOServer } from 'socket.io';
 import type { ClientToServerEvents, ServerToClientEvents } from '@kahoot/shared';
 import { registerHandlers } from './ws/index.js';
 import { getGame } from './services/game/store.js';
+import { pool } from './db/client.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { quizRoutes } from './routes/quiz.routes.js';
 import { aiRoutes } from './routes/ai.routes.js';
 import { templateRoutes } from './routes/template.routes.js';
+import { gameRoutes } from './routes/game.routes.js';
 
-// Bypass self-signed certificate errors for local development behind corporate proxies
-if (process.env.NODE_ENV !== 'production') {
+import { config } from './config.js';
+
+if (config.ALLOW_INSECURE_TLS) {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 }
 
@@ -25,7 +28,13 @@ const ORIGIN = process.env.CORS_ORIGIN ?? 'http://localhost:5173';
 async function main() {
   const app = Fastify({ logger: { level: 'info' } });
   
-  await app.register(cors, { origin: ORIGIN, credentials: true });
+  // Robust CORS for iframe/subdomain environments
+  await app.register(cors, { 
+    origin: [ORIGIN, 'https://pikirly.com', 'https://api.pikirly.com'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept']
+  });
   await app.register(cookiePlugin);
   await app.register(jwtPlugin, {
     secret: process.env.JWT_SECRET || 'supersecretdevjwt',
@@ -49,7 +58,36 @@ async function main() {
     scope: ['profile', 'email'],
   });
 
-  app.get('/health', async () => ({ ok: true, ts: Date.now() }));
+  app.get('/health', async (req, reply) => {
+    try {
+      // Test DB connection with a raw query to get better error messages
+      const client = await pool.connect();
+      try {
+        await client.query('SELECT 1');
+      } finally {
+        client.release();
+      }
+      return { ok: true, db: true, ts: Date.now() };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      const code = typeof err === 'object' && err !== null && 'code' in err ? (err as any).code : undefined;
+      console.error('[DB-CHECK] Failed:', message);
+      
+      // Readiness check should fail with 503 if DB is unreachable
+      reply.code(503);
+      return { 
+        ok: true, 
+        db: false, 
+        error: message, 
+        code, // Postgres error code (if any)
+        ts: Date.now() 
+      };
+    }
+  });
+
+  // Register game routes early to prevent shadowing
+  console.log('[GAME-V3] Registering game routes...');
+  await app.register(gameRoutes);
 
   await app.register(authRoutes);
   await app.register(quizRoutes);

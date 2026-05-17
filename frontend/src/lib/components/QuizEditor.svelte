@@ -12,10 +12,10 @@
     limitMs: number;
   }
 
-  let { 
-    quizId = null as string | null, 
+  let {
+    quizId = null as string | null,
     templateId = null as string | null,
-    initialData = null as { title: string, questions: Question[] } | null 
+    initialData = null as { title: string, questions: Question[] } | null
   } = $props();
 
   let loading = $state(false);
@@ -87,6 +87,14 @@
     questions = [...questions, ...generated].slice(0, 50);
   }
 
+  function closeOrGoHost() {
+    if (typeof window !== 'undefined' && window.opener && !window.opener.closed) {
+      window.close();
+    } else {
+      goto('/host');
+    }
+  }
+
   async function save() {
     if (!title.trim()) {
       error = 'Title is required';
@@ -117,7 +125,7 @@
         body: JSON.stringify({ title, questions }),
       });
       if (res.ok) {
-        goto('/host');
+        closeOrGoHost();
       } else {
         const data = await res.json();
         error = data.message || 'Failed to save quiz';
@@ -135,7 +143,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
       <h2 style="margin: 0;">{quizId ? 'Edit Quiz' : 'Create New Quiz'}</h2>
       <div style="display: flex; gap: 0.5rem;">
-        <button class="btn-secondary" onclick={() => goto('/host')} disabled={saving}>Cancel</button>
+        <button class="btn-secondary" onclick={closeOrGoHost} disabled={saving}>Cancel</button>
         <button class="btn-primary" onclick={save} disabled={saving}>{saving ? 'Saving...' : 'Save Quiz'}</button>
       </div>
     </div>

@@ -3,9 +3,24 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
+// z.coerce.boolean() uses Boolean() which treats "false" as truthy. Parse strings explicitly.
+function envBool(defaultValue: boolean) {
+  return z.preprocess((v) => {
+    if (v === null || v === '') return defaultValue;
+    if (typeof v === 'boolean') return v;
+    if (typeof v === 'string') {
+      const lower = v.toLowerCase().trim();
+      return lower === 'true' || lower === '1' || lower === 'yes';
+    }
+    return defaultValue;
+  }, z.boolean()).default(defaultValue);
+}
+
 const envSchema = z.object({
   DATABASE_URL: z.string().url(),
-  DATABASE_SSL: z.coerce.boolean().default(false),
+  DATABASE_SSL: envBool(false),
+  DATABASE_SSL_NO_VERIFY: envBool(false),
+  ALLOW_INSECURE_TLS: envBool(false),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   JWT_SECRET: z.string().optional(),

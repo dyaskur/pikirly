@@ -65,7 +65,14 @@ export interface ClientToServerEvents {
   ) => void;
 
   join_game: (
-    payload: { gameId: string; nickname: string; playerId?: string; playerToken?: string },
+    payload: { 
+      gameId: string; 
+      nickname: string; 
+      playerId?: string; 
+      playerToken?: string;
+      meetParticipantId?: string;
+      meetDisplayName?: string;
+    },
     cb: (
       res:
         | { ok: true; playerId: string; playerToken: string; players: PlayerPublic[]; status: GameStatus }
