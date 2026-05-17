@@ -1,7 +1,8 @@
 # Follow-ups — Meet Add-on UX Polish
 
-**Status**: 🚧 In progress
-**Depends on**: Phase 4 (Meet add-on shipped)
+**Status**: 🚧 In progress (on `feature/phase-04-meet`; not yet on `main`)
+**Depends on**: Phase 4 (Meet add-on shipped to feature branch — see [04-meet.md](04-meet.md))
+**Relationship to Phase 5**: Phase 5 (Slides) can begin in parallel, but the Meet flow should not be promoted publicly until the **side-panel-during-game** and **host-in-game-controls** items below are done — otherwise dogfooders still hit the awkward states described in this doc.
 **Goal**: Close the UX gaps observed while dogfooding the Meet add-on. Phase 4 shipped functional; this doc tracks the polish needed before we'd recommend the Meet flow to anyone outside the team.
 
 ## Why this phase
@@ -20,24 +21,25 @@ Phase 4's acceptance criteria were about *function* (host can launch, players au
 
 ### 1. Side panel ([frontend/src/lib/components/MeetBootstrap.svelte](../../frontend/src/lib/components/MeetBootstrap.svelte))
 
-- [ ] Remove double heading stutter — "Host Controls" + `<MeetStage>`'s own "Pick a quiz" heading shouldn't both render in a 400px column. Pick one owner of the title.
-- [ ] Make the participant side panel useful during gameplay — render the answer pad, current score, and rank instead of the static "Look at the main stage" text
+- [x] Remove double heading stutter — "Host Controls" + "Signed in as" both dropped (`b123ce9`)
+- [ ] Make the participant side panel useful during gameplay — render the answer pad, current score, and rank instead of the static "Look at the main stage" text. *(Partial: role-surface separation landed in `fba1d19` / `9abd219`, but the participant pad still needs the in-game answer UI.)*
 - [ ] Hide the "Are you the host?" sign-in CTA when a game is already active
 - [ ] Replace bare spinner with a skeleton of the about-to-render content (quiz picker shell for host, "waiting for host" card for participant)
-- [ ] Replace placeholder 🎮 emoji with proper Pikirly mark
+- [ ] Replace placeholder 🎮 emoji with proper Pikirly mark *(still present in `MeetBootstrap.svelte` as of `aaa6a2c`)*
 
 ### 2. Main stage / quiz picker ([frontend/src/lib/components/MeetStage.svelte](../../frontend/src/lib/components/MeetStage.svelte))
 
-- [x] **Inline quiz creation modal** — hosts can create a new quiz without leaving Meet (replaces the prior open-in-new-tab link). Shipped in commit `13475a1`.
-- [ ] Quiz list metadata: show last-played date, add search/sort, surface "recently used" at top
+- [x] **Inline quiz creation modal** — hosts can create a new quiz without leaving Meet (replaces the prior open-in-new-tab link). Shipped in commit `13475a1`. Later replaced with a centred popup window in `9f96e7f`; popup auto-closes and refreshes list (`edcc3c5`).
+- [x] Sort controls — sort dropdown + manual refresh button (`6d3d561`); default order "Newest first" (`366fdc8`). *(Last-played date and "recently used" still pending.)*
+- [ ] Quiz list metadata: show last-played date, surface "recently used" at top
 - [ ] Rename "Host in Meeting" button to "Start" (host is already in the meeting)
-- [ ] Add a "Ready to start?" confirmation before promoting the activity to the main stage (currently silent — surprises the room)
-- [ ] Host side panel during gameplay: show live participant count, current question, advance/skip/pause controls, glance leaderboard — don't reduce it to a single "Manage Active Game" button
+- [ ] Add a "Ready to start?" confirmation before promoting the activity to the main stage (currently silent — surprises the room). *(Note: `aaa6a2c` already ends prior activity before starting a new one, which addresses the side-effect; the user-facing confirmation is still missing.)*
+- [ ] Host side panel during gameplay: show live participant count, current question, advance/skip/pause controls, glance leaderboard — don't reduce it to a single "Manage Active Game" button. *(Partial: `fba1d19` separated Sidebar = Host Controls vs Main Stage = Participation. Full in-game control surface still pending.)*
 
 ### 3. Cross-cutting
 
 - [ ] Extract the duplicated `handleLogin` flow from `MeetBootstrap.svelte` and `MeetStage.svelte` into a single reusable component or composable
-- [ ] Strip `console.log` / `[DEBUG]` statements from Meet components before deploy
+- [ ] Strip `console.log` / `[DEBUG]` statements from Meet components before deploy *(verified still present in both components — `grep -n "console\.log" frontend/src/lib/components/Meet*.svelte` on `feature/phase-04-meet`)*
 
 ## Files to touch
 

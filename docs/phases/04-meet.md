@@ -1,8 +1,15 @@
 # Phase 4 — Google Meet Add-on
 
-**Status**: 🚧 In progress (implementation complete; verification pending)
+**Status**: 🚧 In progress — first cut shipped to `feature/phase-04-meet`; not yet on `main`. Security hardening still landing; merge strategy pending.
 **Depends on**: Phase 2 (DB + auth + `meeting_id` column), Phase 3 (deployed)
 **Goal**: A host running a Meet call launches Pikirly in the Meet side panel; participants play inside Meet without entering a PIN.
+
+## Current state
+
+- **Branch**: `feature/phase-04-meet` (~50 commits ahead of `main`; check with `git log main..feature/phase-04-meet --oneline`)
+- **Merged to `main`**: nothing yet — only the `meeting_id VARCHAR(64)` column reserved in Phase 2
+- **Why still in progress**: security review surfaced a string of fixes (JWT-from-URL removal, postMessage origin restriction, server-side pairing, TLS verification, PII redaction). See the Security checklist below. Merge is gated on those landing and a decided merge strategy.
+- **CHANGELOG**: `[Unreleased]` entries for the Meet work are accumulating on the feature branch — they merge in naturally with the PR.
 
 ## Why this phase
 
@@ -30,58 +37,74 @@ Distribution. Meet add-ons surface Pikirly to existing Meet users with zero inst
 
 ### 1. Add-on manifest
 
-- [ ] Register add-on in Google Workspace Marketplace SDK
-- [ ] Manifest declares two surfaces:
+- [ ] Register add-on in Google Workspace Marketplace SDK *(pending — needs Workspace test-mode access)*
+- [x] Manifest declares two surfaces:
   - **Side panel** (player-facing): renders `https://pikirly.app/?mode=meet&surface=side`
   - **Main stage** (host-facing leaderboard): renders `https://pikirly.app/?mode=meet&surface=stage`
-- [ ] OAuth scopes: `meetings.space.readonly` (to identify the meeting)
+- [x] OAuth scopes: `meetings.space.readonly` (to identify the meeting)
 
 ### 2. Frontend Meet bootstrap
 
-- [ ] Add `@google/meet-addons-sdk`
-- [ ] New module `frontend/src/lib/meet.ts`:
-  - Detects `mode=meet` query param
-  - Calls `meet.addon.createAddonClient()`
-  - Reads participant identity + meeting code
-  - Reads surface (`side` vs `stage`) from query
-- [ ] Bootstrap path:
-  - `mode=standalone` (default) → existing Phase 1-3 flow
-  - `mode=meet&surface=side` → player flow without PIN entry; auto-joins game tied to meeting
-  - `mode=meet&surface=stage` → host dashboard / leaderboard view
-- [ ] No changes to `socket.ts`, `stores/*`, or game pages — only the entry component differs
+- [x] Add `@googleworkspace/meet-addons`
+- [x] New module `frontend/src/lib/meet.ts`
+- [x] Bootstrap path (`mode=standalone` / `mode=meet&surface=side` / `mode=meet&surface=stage`)
+- [x] No churn in `socket.ts`, `stores/*`, or game pages — only the entry component differs
 
 ### 3. Meeting ↔ Game binding
 
-- [ ] New REST endpoint `POST /games/by-meeting`:
-  - Body: `{ meetingCode, hostQuizId }`
-  - Auth: JWT (host)
-  - Behavior: create new game with `meeting_id = meetingCode`, return `{ gameId, hostToken }`
-- [ ] New REST endpoint `GET /games/by-meeting/:meetingCode`:
-  - Behavior: lookup active game by `meeting_id`; return 404 if none
-  - Used by side-panel bootstrap to find the game players should join
-- [ ] In `gameRepo`: add `findByMeetingId(meetingCode)` query (only active/lobby games)
+- [x] `POST /games/by-meeting` (creates game, sets `meeting_id`, returns `{ gameId, hostToken }`)
+- [x] `GET /games/by-meeting/:meetingCode` (lookup active game by `meeting_id`; 404 if none)
+- [x] `gameRepo.findByMeetingId(meetingCode)` (active/lobby only)
 
 ### 4. Identity reconciliation
 
-Players in Meet have a Meet participant ID. We map that to our anonymous `playerId` once on first join.
-
-- [ ] Add to `GameState`: `meetParticipants: Map<meetParticipantId, playerId>` (in-memory; doesn't need persistence)
-- [ ] Modify `join_game` payload: optional `meetParticipantId`, `meetDisplayName`
-- [ ] On first join with `meetParticipantId`, allocate a `playerId` and store the mapping; subsequent joins from the same Meet user (e.g., reconnect) get the same `playerId`
-- [ ] Use Meet display name as nickname if `nickname` not provided
+- [x] `meetParticipants: Map<meetParticipantId, playerId>` on `GameState`
+- [x] `join_game` accepts optional `meetParticipantId`, `meetDisplayName`
+- [x] Stable mapping across reconnects
+- [x] Falls back to Meet display name when no `nickname` provided
 
 ### 5. UX inside Meet
 
-- [ ] Side panel layout fits ~400px width; existing player UI already mobile-first so should adapt
-- [ ] Main stage shows the host dashboard at full Meet stage size
-- [ ] Hide the "Game PIN" header when `mode=meet` (players don't need to type it)
-- [ ] Add "Start a game" button in main stage that opens quiz picker
+- [x] Side panel fits ~400px width
+- [x] Main stage shows host dashboard at full Meet stage size
+- [x] "Game PIN" header hidden when `mode=meet`
+- [x] "Start a game" button in main stage opens quiz picker
 
 ### 6. Host launch flow
 
-- [ ] Side panel shows "Sign in to Pikirly" if not authed in Meet
-- [ ] Once authed, host picks a quiz → `POST /games/by-meeting` → main stage loads with leaderboard
-- [ ] Players in Meet see side panel auto-join (no PIN entry)
+- [x] Side panel shows sign-in CTA when host not authed
+- [x] Once authed, host picks a quiz → `POST /games/by-meeting` → main stage loads
+- [x] Participants in Meet auto-join from the side panel without PIN entry
+
+> All boxes above reflect what exists on `feature/phase-04-meet`. They do **not** mean anything is on `main`.
+
+## Security checklist
+
+Meet add-ons run in a cross-origin iframe and exchange auth across windows; this section tracks the hardening that surfaced during dogfooding.
+
+- [x] JWT removed from URLs (`bb5c091`)
+- [x] postMessage target origin restricted to `window.location.origin` (`5351f2b`)
+- [x] Pairing flow moved server-side; insecure endpoint removed (`7519b61`)
+- [x] Pairing codes persisted in DB for multi-process safety (`c0c4674`)
+- [x] TLS cert verification re-enabled in prod (`90735ff`)
+- [x] PII stripped from logs (`90735ff`)
+- [x] Strict Add-on Only mode enforced when `mode=meet` (`042c163`)
+- [x] Game PIN restored for hybrid in-Meet + remote participants (`222ea66`)
+- [ ] Pino redaction config (out of scope here — tracked in [improvements-ai-hardening.md](improvements-ai-hardening.md))
+
+Add new Meet-specific security work as checkboxes here, not in CHANGELOG-only.
+
+## Merge plan
+
+The branch is too large for a single drive-by review. Recommended approach:
+
+1. **Open a single PR `main ← feature/phase-04-meet`** with the full diff, organised by commit.
+2. Behind a runtime flag `FEATURE_MEET` (env-toggled) so the standalone flow is unaffected if the flag is off. The flag can flip to default-on after the Marketplace verification passes (deliverable #1 above).
+3. Reviewer: whoever last touched `backend/src/ws/` — that's the hottest blast-radius area.
+4. CHANGELOG entries on the branch already accumulate under `[Unreleased]`; the PR merge resolves naturally.
+5. After merge: the verification checklist below moves into a tracking issue rather than this doc, since post-merge verification is an ops task, not a phase task.
+
+If reviewers push back on size, fall back to a split: (a) backend `/games/by-meeting` + repo + schema check, (b) `shared/src/index.ts` event additions, (c) frontend `meet.ts` + bootstrap components, (d) UX polish (4.1 items). Each PR rebases on the previous.
 
 ## Files to touch
 
@@ -107,11 +130,34 @@ docs/
 
 ## Verification
 
-1. Local: load `http://localhost:5173/?mode=meet&surface=side` in iframe-friendly preview tool; bootstrap doesn't error
-2. Sandbox: register add-on in Workspace Marketplace test mode; install in test Meet meeting
-3. Two test accounts in Meet → host installs add-on → side panel shows quiz picker → main stage shows lobby → second user sees side panel with auto-join → full game playthrough
-4. Verify `games.meeting_id` populated correctly
-5. Reconnect test: refresh side-panel iframe mid-game → re-syncs without PIN entry
+Each item below should be checked off with linked evidence (screenshot path, log excerpt, or test-run id) before Phase 4 flips to ✅ Done.
+
+- [ ] **Local iframe smoke** — Owner: dev
+  - How to run: serve the SPA, load `http://localhost:5173/?mode=meet&surface=side` inside an iframe-friendly preview (e.g. a throwaway HTML page with `<iframe src=...>` over `file://`)
+  - Pass criteria: bootstrap initialises without console errors; CSP / `frame-ancestors` doesn't block
+  - Evidence: console screenshot in `docs/_evidence/04-iframe-smoke.png`
+
+- [ ] **Marketplace registration (test mode)** — Owner: needs Workspace admin
+  - How to run: follow [docs/meet-addon.md](../meet-addon.md) to register the add-on in Workspace Marketplace test mode
+  - Pass criteria: add-on appears in a test Meet meeting's side-panel picker
+  - Evidence: screenshot of the side-panel install
+
+- [ ] **End-to-end Meet playthrough** — Owner: dev, second tester
+  - How to run: two test Google accounts, real test Meet call, host installs add-on, picks a quiz, second user joins, play to `game_end`
+  - Pass criteria: every player sees question/answer/leaderboard transitions; no PIN or nickname prompt
+  - Evidence: short screencap
+
+- [ ] **`games.meeting_id` populated** — Owner: dev
+  - How to run: after a Meet-launched game, `select id, meeting_id from games order by created_at desc limit 5;`
+  - Pass criteria: `meeting_id` matches the Meet meeting code, not null
+
+- [ ] **Reconnect test** — Owner: dev
+  - How to run: mid-game, refresh the side-panel iframe of a participant
+  - Pass criteria: re-syncs to current question; no PIN / nickname re-entry; mapping comes from `meetParticipants` in [backend/src/ws/player.handlers.ts](../../backend/src/ws/player.handlers.ts)
+
+- [ ] **Standalone regression** — Owner: dev
+  - How to run: full Phase 1–3 flow (host creates quiz, player joins by PIN, full game) with the Meet code merged but `FEATURE_MEET=false`
+  - Pass criteria: identical behaviour to pre-merge `main`
 
 ## Acceptance criteria
 
