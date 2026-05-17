@@ -95,6 +95,8 @@ All previous phases make it functional. Phase 9 makes it shippable. Polish lands
   - Regenerate `CHANGELOG.md` on tag push in CI: `git cliff -o CHANGELOG.md`
   - Remove the "manually edit CHANGELOG" rule from `CLAUDE.md`; replace with "write conventional commit messages"
 
+> Meet add-on UX polish has been moved to its own focused doc: [04-meet-followups.md](04-meet-followups.md).
+
 ## Files to touch
 
 ```

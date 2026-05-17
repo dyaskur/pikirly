@@ -1,6 +1,6 @@
 # Phase 4 — Google Meet Add-on
 
-**Status**: 🔜
+**Status**: 🚧 In progress (implementation complete; verification pending)
 **Depends on**: Phase 2 (DB + auth + `meeting_id` column), Phase 3 (deployed)
 **Goal**: A host running a Meet call launches Pikirly in the Meet side panel; participants play inside Meet without entering a PIN.
 
