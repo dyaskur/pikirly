@@ -274,30 +274,25 @@
           <button class="btn btn-secondary" onclick={openCreateWindow}>Create your first quiz</button>
         </div>
       {:else}
-        <div class="flex justify-between items-center gap-2 mb-3 flex-wrap">
-          <label class="flex items-center gap-2 text-sm">
-            <span class="muted">Sort:</span>
-            <select bind:value={sortBy} class="border rounded px-2 py-1 text-sm bg-white">
-              <option value="title-asc">Title A → Z</option>
-              <option value="title-desc">Title Z → A</option>
-              <option value="count-desc">Most questions</option>
-              <option value="count-asc">Fewest questions</option>
-            </select>
-          </label>
-          <div class="flex gap-2">
-            <button class="btn btn-secondary btn-sm" onclick={loadQuizzes} disabled={loading} aria-label="Refresh quiz list" title="Refresh">↻</button>
-            <button class="btn btn-secondary btn-sm" onclick={openCreateWindow}>+ New Quiz</button>
-          </div>
+        <div class="meet-actions">
+          <select bind:value={sortBy} class="meet-sort" aria-label="Sort quizzes">
+            <option value="title-asc">Title A→Z</option>
+            <option value="title-desc">Title Z→A</option>
+            <option value="count-desc">Most questions</option>
+            <option value="count-asc">Fewest questions</option>
+          </select>
+          <button class="btn btn-secondary meet-icon-btn" onclick={loadQuizzes} disabled={loading} aria-label="Refresh quiz list" title="Refresh">↻</button>
+          <button class="btn btn-secondary meet-icon-btn" onclick={openCreateWindow} aria-label="Create new quiz" title="New quiz">+ New</button>
         </div>
-        <div class="grid gap-4">
+        <div class="meet-quiz-list">
           {#each sortedQuizzes as quiz}
-            <div class="flex justify-between items-center p-4 border rounded-lg hover:border-primary transition-colors">
-              <div>
+            <div class="meet-quiz-row">
+              <div class="meet-quiz-meta">
                 <div class="font-bold">{quiz.title}</div>
-                <div>{quiz.questionCount} questions</div>
+                <div class="muted text-sm">{quiz.questionCount} question{quiz.questionCount === 1 ? '' : 's'}</div>
               </div>
-              <button class="btn btn-primary" onclick={() => hostQuiz(quiz.id)} disabled={creatingGame}>
-                {creatingGame ? 'Starting...' : 'Host in Meeting'}
+              <button class="btn btn-primary meet-host-btn" onclick={() => hostQuiz(quiz.id)} disabled={creatingGame}>
+                {creatingGame ? '…' : 'Host'}
               </button>
             </div>
           {/each}
@@ -306,3 +301,58 @@
     {/if}
   </div>
 </div>
+
+<style>
+  .meet-actions {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .meet-sort {
+    width: 100%;
+    min-width: 0;
+    padding: 8px 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    font-size: 0.9rem;
+  }
+  .meet-icon-btn {
+    width: auto;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+  .meet-quiz-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .meet-quiz-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+  }
+  .meet-quiz-row:hover { border-color: var(--brand); }
+  .meet-quiz-meta {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .meet-quiz-meta .font-bold {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .meet-host-btn {
+    width: auto;
+    padding: 8px 14px;
+    font-size: 0.9rem;
+    flex: 0 0 auto;
+  }
+</style>
