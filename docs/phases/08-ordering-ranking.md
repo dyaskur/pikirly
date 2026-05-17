@@ -36,10 +36,13 @@ Ordering questions test deeper understanding than multiple choice — useful for
     limitMs: number,
   ): number
   ```
-- [ ] Scoring method: **Kendall tau distance** (count inversions vs correct order)
-  - Full score (1000) → zero inversions (perfect match)
-  - Partial score → proportional to inversions avoided
-  - Time bonus still applies (same formula as `scoreAnswer`)
+- [ ] Scoring method: **Kendall tau distance** (count inversions between submitted and correct orders)
+  - Let `n = choices.length`, `inversions = k`, `maxInversions = n*(n-1)/2`
+  - Accuracy ratio: `acc = 1 - (k / maxInversions)` → 1 for perfect match, 0 for fully reversed
+  - Time decay (same shape as `scoreAnswer`): `timeFactor = 1 - min(timeUsedMs, limitMs) / (limitMs * 2)` → in `[0.5, 1]`
+  - Final score: `Math.round(1000 * acc * timeFactor)`, bounded `[0, 1000]`
+  - Reference outputs (verify in unit test): 4 items, perfect order, t=0 → `1000`; 4 items, fully reversed, any t → `0`; 4 items, 1 swap of adjacent, t=0 → `1000 * (1 - 1/6) ≈ 833`; 4 items, perfect order, t = limitMs → `500`
+- [ ] Implement `kendallInversions(a: number[], b: number[]): number` as a helper in `shared/src/index.ts` (naive O(n²) is fine — `n ≤ 6`)
 - [ ] Engine: call `scoreRanking` when `question.type === 'ranking'`
 
 ### 3. WS protocol
@@ -97,7 +100,7 @@ frontend/
 4. Timer expires before submit → current order auto-submitted
 5. Reveal: items animate to correct positions, correct/wrong position color coded
 6. `tsc --noEmit` + `svelte-check` pass
-7. `scoreRanking` unit tests: perfect order = 1000 (minus time), reversed order = ~0, half-wrong = ~500
+7. `scoreRanking` unit tests in `shared/src/index.test.ts` (new): assert the four reference outputs listed in §2 exactly; also assert `kendallInversions` returns 0 for identical arrays, 3 for `[0,1,2]` vs `[2,1,0]` (n=3, max=3)
 
 ## Acceptance criteria
 

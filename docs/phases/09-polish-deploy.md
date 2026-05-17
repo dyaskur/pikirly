@@ -33,10 +33,11 @@ All previous phases make it functional. Phase 9 makes it shippable. Polish lands
 
 ### 2. Game-flow polish
 
-- [ ] Host can "skip" question early (advance reveal manually)
 - [ ] Host can "kick" a misbehaving player from lobby
 - [ ] Show countdown ring on player screen (visual countdown, not just text)
 - [ ] Sound effects (optional toggle): question-start tick, correct chime, wrong buzz
+
+> **Moved out:** "Host can skip / pause / advance" is scoped in [improvements-host-controls.md](improvements-host-controls.md). When that ships, this section gets the matching button styling polish but not the engine work.
 
 ### 3. Production readiness
 

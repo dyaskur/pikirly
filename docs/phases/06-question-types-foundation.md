@@ -53,7 +53,7 @@ All future question types (Phases 7–8) depend on this. The schema, engine, and
 - [ ] `scoreAnswer()` in `shared/src/index.ts`: guard `if (!question.correct) return 0` for non-scored types (forward-compat for Phase 7)
 - [ ] `recordAnswer()` in `lifecycle.ts`: pass question type through; skip scoring for non-scored types
 - [ ] `question` WS event payload: add `type`, `randomizeChoices` fields
-- [ ] Server does NOT randomize — sends canonical order; **client randomizes** using a per-player seed (player socket ID) so reconnects get same order
+- [ ] Server does NOT randomize — sends canonical order; **client randomizes** using a per-player seed (`playerId`, **not** the socket ID — Socket.IO assigns a new socket id on every reconnect, so seeding with it would re-shuffle the choices mid-game and let an attentive player figure out the correct answer by reconnecting until the green tile lands somewhere recognisable). Use `seededShuffle(choices, playerId + ':' + questionIndex)`.
 
 ### 4. True/False question type
 
@@ -71,8 +71,9 @@ All future question types (Phases 7–8) depend on this. The schema, engine, and
 ### 6. Randomize answer order
 
 - [ ] `randomizeChoices?: boolean` toggle in editor (per-question)
-- [ ] Client-side shuffle in player screen: `seededShuffle(choices, playerSocketId + questionIndex)`
+- [ ] Client-side shuffle in player screen: `seededShuffle(choices, playerId + ':' + questionIndex)` (see seed note above — `playerId`, not socket id)
 - [ ] Track original index mapping so `submit_answer` still sends canonical index (not shuffled index)
+- [ ] `seededShuffle` implementation: Fisher-Yates with a small string-hash PRNG (no `Math.random()`); put it in `shared/src/index.ts` so the host can deterministically reconstruct any player's view if needed for debugging
 - [ ] Host screen always shows canonical order (no shuffle)
 
 ### 7. Editor updates
@@ -95,7 +96,8 @@ backend/
   src/routes/quiz.routes.ts                 # MODIFY: remove fixed-4 validation
   src/services/game/lifecycle.ts            # MODIFY: type-aware scoring
   src/ws/index.ts                           # MODIFY: include type in question event
-  src/data/quizzes.ts                       # MODIFY: add type:'multiple_choice' to seed
+  src/db/seeds/quizzes.ts                   # MODIFY: add type:'multiple_choice' to seed
+  src/db/seeds/templates.ts                 # MODIFY: same backfill
 
 frontend/
   src/lib/components/QuizEditor.svelte      # MODIFY: type selector, dynamic choices
