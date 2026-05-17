@@ -178,11 +178,6 @@
   {:else if $auth.user}
     <!-- Host View -->
     <div class="w-full">
-      <div class="flex justify-between items-center mb-4 px-2">
-        <h3 class="text-lg font-bold">Host Controls</h3>
-        <div class="text-xs muted">{$auth.user.name}</div>
-      </div>
-      
       {#if activeGameId}
         <div class="card p-6 mb-4 w-full" style="border: 2px solid var(--info);">
           <p class="font-bold">Game in progress!</p>

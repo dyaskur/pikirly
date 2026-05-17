@@ -260,10 +260,7 @@
         {/if}
       </div>
     {:else}
-      <div class="flex justify-between items-center mb-8">
-        <h2 class="text-2xl font-bold">Pick a quiz for this meeting</h2>
-        <div>Signed in as {$auth.user.name}</div>
-      </div>
+      <h2 class="meet-heading">Pick a quiz</h2>
 
       {#if createError}
         <div class="p-4 mb-6 rounded-lg border-2 border-brand bg-white">
@@ -312,6 +309,11 @@
 </div>
 
 <style>
+  .meet-heading {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+  }
   .meet-actions {
     display: grid;
     grid-template-columns: 1fr auto auto;
