@@ -17,11 +17,24 @@
     questionCount: number;
   }
 
+  type SortKey = 'title-asc' | 'title-desc' | 'count-desc' | 'count-asc';
+
   let quizzes = $state<QuizListItem[]>([]);
   let loading = $state(true);
   let error = $state<string | null>(null);
   let creatingGame = $state(false);
   let createError = $state<string | null>(null);
+  let sortBy = $state<SortKey>('title-asc');
+
+  const sortedQuizzes = $derived.by(() => {
+    const arr = [...quizzes];
+    switch (sortBy) {
+      case 'title-asc':  return arr.sort((a, b) => a.title.localeCompare(b.title));
+      case 'title-desc': return arr.sort((a, b) => b.title.localeCompare(a.title));
+      case 'count-desc': return arr.sort((a, b) => b.questionCount - a.questionCount);
+      case 'count-asc':  return arr.sort((a, b) => a.questionCount - b.questionCount);
+    }
+  });
 
   let loginPollInterval: ReturnType<typeof setInterval> | null = null;
   let loginMessageListener: ((e: MessageEvent) => void) | null = null;
@@ -261,11 +274,23 @@
           <button class="btn btn-secondary" onclick={openCreateWindow}>Create your first quiz</button>
         </div>
       {:else}
-        <div class="flex justify-end mb-3">
-          <button class="btn btn-secondary btn-sm" onclick={openCreateWindow}>+ New Quiz</button>
+        <div class="flex justify-between items-center gap-2 mb-3 flex-wrap">
+          <label class="flex items-center gap-2 text-sm">
+            <span class="muted">Sort:</span>
+            <select bind:value={sortBy} class="border rounded px-2 py-1 text-sm bg-white">
+              <option value="title-asc">Title A → Z</option>
+              <option value="title-desc">Title Z → A</option>
+              <option value="count-desc">Most questions</option>
+              <option value="count-asc">Fewest questions</option>
+            </select>
+          </label>
+          <div class="flex gap-2">
+            <button class="btn btn-secondary btn-sm" onclick={loadQuizzes} disabled={loading} aria-label="Refresh quiz list" title="Refresh">↻</button>
+            <button class="btn btn-secondary btn-sm" onclick={openCreateWindow}>+ New Quiz</button>
+          </div>
         </div>
         <div class="grid gap-4">
-          {#each quizzes as quiz}
+          {#each sortedQuizzes as quiz}
             <div class="flex justify-between items-center p-4 border rounded-lg hover:border-primary transition-colors">
               <div>
                 <div class="font-bold">{quiz.title}</div>
