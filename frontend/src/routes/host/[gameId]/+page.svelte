@@ -225,6 +225,7 @@
                 style="width:auto;"
                 onclick={start}
                 disabled={starting || players.length === 0}
+                title={players.length === 0 ? 'Need at least one player to start' : ''}
               >
                 {starting ? 'Starting…' : 'Start game'}
               </button>
@@ -237,6 +238,7 @@
           {#if players.length === 0}
             <div class="muted" style="padding: 32px 0; text-align:center;">
               Waiting for players to join…
+              <div style="margin-top: 6px; font-size: 0.85rem;">Start unlocks once at least one player joins.</div>
             </div>
           {:else}
             <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px;">
