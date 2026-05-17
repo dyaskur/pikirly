@@ -109,9 +109,6 @@
         {#if phase === 'lobby'}
           <div class="card p-3 text-center">
             <p class="font-bold">{playerCount} player{playerCount === 1 ? '' : 's'} joined</p>
-            {#if playerCount === 0}
-              <p class="text-sm muted mt-1">Start unlocks once at least one player joins.</p>
-            {/if}
           </div>
           <button
             class="btn-primary py-6 text-lg"

@@ -57,6 +57,15 @@
           </div>
         {/if}
       </div>
+
+      <div style="margin-top: 18px; opacity: 0.85; font-size: 0.95rem;">
+        Host: open the <strong>side panel</strong> and click <strong>Start Game</strong> when ready.
+        {#if players.length === 0}
+          <div style="margin-top: 4px; opacity: 0.7; font-size: 0.85rem;">
+            Start unlocks once at least one player joins.
+          </div>
+        {/if}
+      </div>
     </div>
 
   {:else if phase === 'in_question' && currentQuestion}
