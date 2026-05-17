@@ -13,6 +13,7 @@ export const quizRepo = {
         id: q.id,
         title: q.title,
         questionCount: q.questions.length,
+        createdAt: q.createdAt,
         updatedAt: q.updatedAt,
       }));
     } catch (err) {

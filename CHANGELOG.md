@@ -18,7 +18,7 @@ Categories: **Added**, **Changed**, **Deprecated**, **Removed**, **Fixed**, **Se
   - Quiz picker for hosts in the main stage with auto-auth handling
   - UI adjustments: Game PIN and instructions hidden when running inside Meet
   - "+ New Quiz" / "Create your first quiz" buttons in the Meet quiz picker open the editor in a centred popup window and auto-refresh the quiz list when the popup closes (replaces the prior open-in-new-tab link)
-  - Quiz picker sort dropdown (Title A→Z / Z→A, Most / Fewest questions) and manual refresh button next to "+ New Quiz"
+  - Quiz picker sort dropdown (Newest / Oldest first, Title A→Z / Z→A, Most / Fewest questions; defaults to Newest first) and manual refresh button next to "+ New Quiz"
   - `docs/meet-addon.md` documentation for registration and testing
 
 ### Changed

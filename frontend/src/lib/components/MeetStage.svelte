@@ -15,24 +15,31 @@
     id: string;
     title: string;
     questionCount: number;
+    createdAt?: string;
   }
 
-  type SortKey = 'title-asc' | 'title-desc' | 'count-desc' | 'count-asc';
+  type SortKey = 'created-desc' | 'created-asc' | 'title-asc' | 'title-desc' | 'count-desc' | 'count-asc';
 
   let quizzes = $state<QuizListItem[]>([]);
   let loading = $state(true);
   let error = $state<string | null>(null);
   let creatingGame = $state(false);
   let createError = $state<string | null>(null);
-  let sortBy = $state<SortKey>('title-asc');
+  let sortBy = $state<SortKey>('created-desc');
+
+  function createdMs(q: QuizListItem): number {
+    return q.createdAt ? new Date(q.createdAt).getTime() : 0;
+  }
 
   const sortedQuizzes = $derived.by(() => {
     const arr = [...quizzes];
     switch (sortBy) {
-      case 'title-asc':  return arr.sort((a, b) => a.title.localeCompare(b.title));
-      case 'title-desc': return arr.sort((a, b) => b.title.localeCompare(a.title));
-      case 'count-desc': return arr.sort((a, b) => b.questionCount - a.questionCount);
-      case 'count-asc':  return arr.sort((a, b) => a.questionCount - b.questionCount);
+      case 'created-desc': return arr.sort((a, b) => createdMs(b) - createdMs(a));
+      case 'created-asc':  return arr.sort((a, b) => createdMs(a) - createdMs(b));
+      case 'title-asc':    return arr.sort((a, b) => a.title.localeCompare(b.title));
+      case 'title-desc':   return arr.sort((a, b) => b.title.localeCompare(a.title));
+      case 'count-desc':   return arr.sort((a, b) => b.questionCount - a.questionCount);
+      case 'count-asc':    return arr.sort((a, b) => a.questionCount - b.questionCount);
     }
   });
 
@@ -276,6 +283,8 @@
       {:else}
         <div class="meet-actions">
           <select bind:value={sortBy} class="meet-sort" aria-label="Sort quizzes">
+            <option value="created-desc">Newest first</option>
+            <option value="created-asc">Oldest first</option>
             <option value="title-asc">Title A→Z</option>
             <option value="title-desc">Title Z→A</option>
             <option value="count-desc">Most questions</option>
