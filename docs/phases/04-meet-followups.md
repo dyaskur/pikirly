@@ -1,7 +1,7 @@
 # Follow-ups — Meet Add-on UX Polish
 
-**Status**: 🚧 In progress (on `feature/phase-04-meet`; not yet on `main`)
-**Depends on**: Phase 4 (Meet add-on shipped to feature branch — see [04-meet.md](04-meet.md))
+**Status**: 🚧 In progress
+**Depends on**: Phase 4 (Meet add-on shipped on `main` in PR #6 — see [04-meet.md](04-meet.md))
 **Relationship to Phase 5**: Phase 5 (Slides) can begin in parallel, but the Meet flow should not be promoted publicly until the **side-panel-during-game** and **host-in-game-controls** items below are done — otherwise dogfooders still hit the awkward states described in this doc.
 **Goal**: Close the UX gaps observed while dogfooding the Meet add-on. Phase 4 shipped functional; this doc tracks the polish needed before we'd recommend the Meet flow to anyone outside the team.
 
@@ -25,7 +25,7 @@ Phase 4's acceptance criteria were about *function* (host can launch, players au
 - [ ] Make the participant side panel useful during gameplay — render the answer pad, current score, and rank instead of the static "Look at the main stage" text. *(Partial: role-surface separation landed in `fba1d19` / `9abd219`, but the participant pad still needs the in-game answer UI.)*
 - [ ] Hide the "Are you the host?" sign-in CTA when a game is already active
 - [ ] Replace bare spinner with a skeleton of the about-to-render content (quiz picker shell for host, "waiting for host" card for participant)
-- [ ] Replace placeholder 🎮 emoji with proper Pikirly mark *(still present in `MeetBootstrap.svelte` as of `aaa6a2c`)*
+- [ ] Replace placeholder 🎮 emoji with proper Pikirly mark *(still present in [MeetBootstrap.svelte](../../frontend/src/lib/components/MeetBootstrap.svelte) on `main`)*
 
 ### 2. Main stage / quiz picker ([frontend/src/lib/components/MeetStage.svelte](../../frontend/src/lib/components/MeetStage.svelte))
 
@@ -39,7 +39,7 @@ Phase 4's acceptance criteria were about *function* (host can launch, players au
 ### 3. Cross-cutting
 
 - [ ] Extract the duplicated `handleLogin` flow from `MeetBootstrap.svelte` and `MeetStage.svelte` into a single reusable component or composable
-- [ ] Strip `console.log` / `[DEBUG]` statements from Meet components before deploy *(verified still present in both components — `grep -n "console\.log" frontend/src/lib/components/Meet*.svelte` on `feature/phase-04-meet`)*
+- [ ] Strip `console.log` / `[DEBUG]` statements from Meet components before deploy *(still present on `main` — `grep -n "console\.log" frontend/src/lib/components/Meet*.svelte`)*
 
 ## Files to touch
 

@@ -4,7 +4,7 @@ Read this before touching code. Architecture decisions are intentional — don't
 
 ## Project status
 
-**Phases 1–3 complete**. **Phase 4 in progress** — first cut on `feature/phase-04-meet`; not yet on `main`. Security hardening + merge strategy still in flight.
+**Phases 1–4 complete** (Meet add-on merged in PR #6, commit `4ec6c96`). **Phase 4.1 in progress** (Meet UX polish).
 
 | # | Phase | Status | Action plan |
 |---|---|---|---|
@@ -12,8 +12,8 @@ Read this before touching code. Architecture decisions are intentional — don't
 | 2 | Postgres + Google OAuth + Quiz editor | ✅ Done | [docs/phases/02-persistence-auth-editor.md](docs/phases/02-persistence-auth-editor.md) |
 | 3 | Templates + AI generation | ✅ Done | [docs/phases/03-templates-ai.md](docs/phases/03-templates-ai.md) |
 | 3.1 | AI hardening (rate limit, cost caps, redaction) | 🔜 | [docs/phases/improvements-ai-hardening.md](docs/phases/improvements-ai-hardening.md) |
-| 4 | Google Meet add-on | 🚧 In progress (feature branch) | [docs/phases/04-meet.md](docs/phases/04-meet.md) |
-| 4.1 | Meet add-on UX follow-ups | 🚧 In progress (feature branch) | [docs/phases/04-meet-followups.md](docs/phases/04-meet-followups.md) |
+| 4 | Google Meet add-on | ✅ Done | [docs/phases/04-meet.md](docs/phases/04-meet.md) |
+| 4.1 | Meet add-on UX follow-ups | 🚧 In progress | [docs/phases/04-meet-followups.md](docs/phases/04-meet-followups.md) |
 | 5 | Google Slides add-on | 🔜 | [docs/phases/05-slides.md](docs/phases/05-slides.md) |
 | 6 | Question type system (True/False, dynamic choices, randomize) | 🔜 | [docs/phases/06-question-types-foundation.md](docs/phases/06-question-types-foundation.md) |
 | 6.5 | Rich slides (media + info slides + slide editor) | 🔜 | [docs/phases/06.5-rich-slides.md](docs/phases/06.5-rich-slides.md) |
@@ -100,6 +100,6 @@ Always run type checks before claiming a task done. Once Phase 2 lands, also run
 | Style/UI | `frontend/src/app.css` (design tokens) — global cascades from `.card` and `.btn-*` |
 | Reconnect/state-sync bug | `backend/src/ws/index.ts` `join_game` reconnect path |
 
-## Phase 4 remaining work
+## Current work
 
-See [docs/phases/04-meet.md](docs/phases/04-meet.md) — the **Current state**, **Security checklist**, **Merge plan**, and **Verification** sections are the canonical source. When every checkbox in those sections is ticked: flip Phase 4 to ✅ Done in this file and the phase doc, and move `[Unreleased]` CHANGELOG entries under a dated release header.
+Phase 4 shipped in PR #6. The remaining Meet polish lives in [docs/phases/04-meet-followups.md](docs/phases/04-meet-followups.md) — pick from that list before starting on Phase 5.
