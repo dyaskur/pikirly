@@ -28,6 +28,8 @@ Read this before touching code. Architecture decisions are intentional — don't
 
 **For agents picking up work**: read the relevant phase doc — it contains a checklist of deliverables, files to touch, and verification steps. Don't infer; the plan is explicit.
 
+**For parallel agentic implementation**: see [docs/AGENTIC-WORKFLOW.md](docs/AGENTIC-WORKFLOW.md) — dependency graph, worktree setup, and which PRs are ready to fan out concurrently.
+
 ## Architecture
 
 ```
