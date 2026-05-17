@@ -81,8 +81,17 @@
     });
   }
 
-  function pickAnotherQuiz() {
+  async function pickAnotherQuiz() {
     hostSession.set(null);
+    try {
+      const { getMeetClient } = await import('$lib/meet');
+      const client = await getMeetClient();
+      if (client && typeof client.endActivity === 'function') {
+        try { await client.endActivity(); } catch { /* nothing to end */ }
+      }
+    } catch (e) {
+      console.error('Failed to end Meet activity:', e);
+    }
     goto('/?mode=meet&surface=side');
   }
 </script>

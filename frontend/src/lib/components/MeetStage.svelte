@@ -151,15 +151,22 @@
 
       const { gameId, hostToken } = data;
 
-      // For Google Meet: we must promote the app to the Main Stage
+      // For Google Meet: we must promote the app to the Main Stage.
+      // If an activity from a previous game is still running, Meet will reject
+      // startActivity with an alert — end the prior activity first.
       try {
         const { getMeetClient } = await import('$lib/meet');
         const client = await getMeetClient();
-        
-        if (client && typeof client.startActivity === 'function') {
-          await client.startActivity({
-            mainStageUrl: `${window.location.origin}/?mode=meet&surface=stage`
-          });
+
+        if (client) {
+          if (typeof client.endActivity === 'function') {
+            try { await client.endActivity(); } catch { /* nothing to end */ }
+          }
+          if (typeof client.startActivity === 'function') {
+            await client.startActivity({
+              mainStageUrl: `${window.location.origin}/?mode=meet&surface=stage`
+            });
+          }
         }
       } catch (meetErr) {
         console.error('Failed to promote to main stage:', meetErr);
