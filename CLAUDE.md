@@ -14,6 +14,8 @@ Read this before touching code. Architecture decisions are intentional — don't
 | 3.1 | AI hardening (rate limit, cost caps, redaction) | 🔜 | [docs/phases/improvements-ai-hardening.md](docs/phases/improvements-ai-hardening.md) |
 | 4 | Google Meet add-on | ✅ Done | [docs/phases/04-meet.md](docs/phases/04-meet.md) |
 | 4.1 | Meet add-on UX follow-ups | 🚧 In progress | [docs/phases/04-meet-followups.md](docs/phases/04-meet-followups.md) |
+| — | Host live session controls (pause/skip/advance) | 🔜 | [docs/phases/improvements-host-controls.md](docs/phases/improvements-host-controls.md) |
+| — | Slide-rail quiz editor (1 question = 1 slide) | 🔜 | [docs/phases/improvements-slide-rail-editor.md](docs/phases/improvements-slide-rail-editor.md) |
 | 5 | Google Slides add-on | 🔜 | [docs/phases/05-slides.md](docs/phases/05-slides.md) |
 | 6 | Question type system (True/False, dynamic choices, randomize) | 🔜 | [docs/phases/06-question-types-foundation.md](docs/phases/06-question-types-foundation.md) |
 | 6.5 | Rich slides (media + info slides + slide editor) | 🔜 | [docs/phases/06.5-rich-slides.md](docs/phases/06.5-rich-slides.md) |

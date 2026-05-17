@@ -34,7 +34,7 @@ Phase 4's acceptance criteria were about *function* (host can launch, players au
 - [ ] Quiz list metadata: show last-played date, surface "recently used" at top
 - [ ] Rename "Host in Meeting" button to "Start" (host is already in the meeting)
 - [ ] Add a "Ready to start?" confirmation before promoting the activity to the main stage (currently silent — surprises the room). *(Note: `aaa6a2c` already ends prior activity before starting a new one, which addresses the side-effect; the user-facing confirmation is still missing.)*
-- [ ] Host side panel during gameplay: show live participant count, current question, advance/skip/pause controls, glance leaderboard — don't reduce it to a single "Manage Active Game" button. *(Partial: `fba1d19` separated Sidebar = Host Controls vs Main Stage = Participation. Full in-game control surface still pending.)*
+- [ ] Host side panel during gameplay: show live participant count, current question, advance/skip/pause controls, glance leaderboard — don't reduce it to a single "Manage Active Game" button. *(Partial: `fba1d19` separated Sidebar = Host Controls vs Main Stage = Participation. The pause/skip/advance buttons are scoped in [improvements-host-controls.md](improvements-host-controls.md) and tick when that ships. The remaining glance UI here is independent.)*
 
 ### 3. Cross-cutting
 
