@@ -3,14 +3,7 @@
   import { api } from '$lib/api';
   import { goto } from '$app/navigation';
   import AIGenerateDrawer from './AIGenerateDrawer.svelte';
-
-  interface Question {
-    id: string;
-    text: string;
-    choices: string[];
-    correct: number;
-    limitMs: number;
-  }
+  import type { Question } from '@kahoot/shared';
 
   let {
     quizId = null as string | null,
@@ -71,6 +64,7 @@
       ...questions,
       {
         id: crypto.randomUUID(),
+        type: 'multiple_choice',
         text: '',
         choices: ['', '', '', ''],
         correct: 0,

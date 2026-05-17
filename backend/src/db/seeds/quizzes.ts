@@ -8,6 +8,7 @@ export const QUIZZES: Record<string, Quiz> = {
     questions: [
       {
         id: 'general-1-q1',
+        type: 'multiple_choice',
         text: 'What is 7 × 8?',
         choices: ['54', '56', '64', '48'],
         correct: 1,
@@ -15,6 +16,7 @@ export const QUIZZES: Record<string, Quiz> = {
       },
       {
         id: 'general-1-q2',
+        type: 'multiple_choice',
         text: 'Which planet is known as the Red Planet?',
         choices: ['Venus', 'Jupiter', 'Mars', 'Saturn'],
         correct: 2,
@@ -22,6 +24,7 @@ export const QUIZZES: Record<string, Quiz> = {
       },
       {
         id: 'general-1-q3',
+        type: 'multiple_choice',
         text: 'Who wrote "Romeo and Juliet"?',
         choices: ['Dickens', 'Shakespeare', 'Austen', 'Tolstoy'],
         correct: 1,
@@ -29,6 +32,7 @@ export const QUIZZES: Record<string, Quiz> = {
       },
       {
         id: 'general-1-q4',
+        type: 'multiple_choice',
         text: 'What is the chemical symbol for gold?',
         choices: ['Go', 'Gd', 'Au', 'Ag'],
         correct: 2,
@@ -36,6 +40,7 @@ export const QUIZZES: Record<string, Quiz> = {
       },
       {
         id: 'general-1-q5',
+        type: 'multiple_choice',
         text: 'Which language has the most native speakers?',
         choices: ['English', 'Spanish', 'Hindi', 'Mandarin Chinese'],
         correct: 3,

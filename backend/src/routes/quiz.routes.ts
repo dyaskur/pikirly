@@ -5,6 +5,7 @@ import { verifyJwt } from '../auth/middleware.js';
 
 const questionSchema = z.object({
   id: z.string(),
+  type: z.literal('multiple_choice').default('multiple_choice'),
   text: z.string().min(1).max(500),
   choices: z.array(z.string().min(1).max(200)).length(4),
   correct: z.number().int().min(0).max(3),

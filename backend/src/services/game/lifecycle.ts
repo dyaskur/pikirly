@@ -74,10 +74,12 @@ export function beginQuestion(io: IO, g: GameState, index: number): void {
   io.to(roomOf(g.gameId)).emit('question', {
     index,
     total: g.quiz.questions.length,
+    type: q.type,
     text: q.text,
     choices: q.choices,
     deadlineMs: g.questionDeadlineAt,
     limitMs: q.limitMs,
+    randomizeChoices: q.randomizeChoices,
   });
 
   scheduleNext(g.gameId, q.limitMs, () => endQuestion(io, g, index));
@@ -102,13 +104,15 @@ function endQuestion(io: IO, g: GameState, qIndex: number) {
   const distribution = answerDistribution(g, qIndex);
   const answers = g.answersByQuestion.get(qIndex) ?? new Map();
 
+  const correctChoice = q.correct ?? -1;
+
   // Per-player reveal includes their score breakdown.
   for (const [playerId, ans] of answers) {
     const p = g.players.get(playerId);
     if (!p || !p.socketId) continue;
     io.to(p.socketId).emit('question_end', {
       questionIndex: qIndex,
-      correctChoice: q.correct,
+      correctChoice,
       distribution,
       yourScore: ans.scoreEarned,
       yourCorrect: ans.choice === q.correct,
@@ -122,7 +126,7 @@ function endQuestion(io: IO, g: GameState, qIndex: number) {
     if (!p.socketId) continue;
     io.to(p.socketId).emit('question_end', {
       questionIndex: qIndex,
-      correctChoice: q.correct,
+      correctChoice,
       distribution,
       yourScore: 0,
       yourCorrect: false,
@@ -134,7 +138,7 @@ function endQuestion(io: IO, g: GameState, qIndex: number) {
   if (g.hostSocketId) {
     io.to(g.hostSocketId).emit('question_end', {
       questionIndex: qIndex,
-      correctChoice: q.correct,
+      correctChoice,
       distribution,
     });
   }
