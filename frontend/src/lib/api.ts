@@ -16,7 +16,9 @@ export async function api(endpoint: string, options: RequestInit = {}) {
   console.log(`[API] Calling ${endpoint}...`);
   
   const headers = new Headers(options.headers);
-  if (!headers.has('Content-Type')) {
+  // Only declare a JSON body when one is actually being sent — Fastify rejects
+  // empty-body requests that advertise Content-Type: application/json.
+  if (options.body != null && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
   
