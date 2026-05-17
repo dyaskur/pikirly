@@ -8,6 +8,24 @@
 
 All future question types (Phases 7–8) depend on this. The schema, engine, and editor must be type-aware before adding Poll, Word Cloud, or Ranking. Do it once, do it right.
 
+## Parallel PR strategy
+
+```
+Wave 1 (2 parallel PRs)              Wave 2 (2 parallel PRs)        Wave 3 (1 PR)
+──────────────────────────────       ─────────────────────────      ──────────────
+PR-A shared schema + seededShuffle   PR-C engine + WS event         PR-E player UI +
+PR-B DB backfill migration             └─ needs A                     randomize integration
+                                     PR-D editor type selector +      └─ needs A + C
+                                       T/F + dynamic choices UI
+                                       └─ needs A
+```
+
+**PR-A** · Wave 1 · covers §1 (shared schema) + §3 partial (`seededShuffle` helper) — files: `shared/src/index.ts`
+**PR-B** · Wave 1 · covers §2 (DB migration) + seed backfill — files: `backend/src/db/migrations/000X_add_question_type.sql`, `backend/src/db/seeds/quizzes.ts`, `backend/src/db/seeds/templates.ts`
+**PR-C** · Wave 2 · covers §3 (engine) — files: `backend/src/services/game/lifecycle.ts`, `backend/src/ws/index.ts`, `backend/src/routes/quiz.routes.ts` (zod loosening)
+**PR-D** · Wave 2 · covers §4 (T/F editor) + §5 (dynamic choices editor) + §7 (type selector) — files: `frontend/src/lib/components/QuizEditor.svelte` (or `SlideEditor.svelte` if [improvements-slide-rail-editor.md](improvements-slide-rail-editor.md) shipped first)
+**PR-E** · Wave 3 · covers §4/5 player side + §6 (randomize end-to-end) — files: `frontend/src/routes/play/[gameId]/+page.svelte`, `frontend/src/routes/host/[gameId]/+page.svelte`
+
 ## Breaking changes
 
 - `Question.choices: string[]` stays, but `choices.length` is no longer fixed at 4

@@ -8,6 +8,43 @@
 
 System templates are managed by a [backend/src/db/seeds/templates.ts](../../backend/src/db/seeds/templates.ts) seed script today — fine for bootstrap, awful for ongoing curation. AI usage is unmetered. Misbehaving user quizzes can't be removed without `psql`. This phase replaces those operational gaps with a guarded admin surface.
 
+## Parallel PR strategy
+
+```
+Wave 1 (3 parallel PRs)              Wave 2 (5 parallel PRs)          Wave 3 (5 parallel PRs)
+──────────────────────────           ──────────────────────────────   ──────────────────────────
+PR-A schema migration + role         PR-D users REST routes           PR-I admin layout + dashboard
+PR-B verifyAdmin middleware            └─ needs A + C                 PR-J users page
+  + JWT role claim                   PR-E quizzes routes              PR-K quizzes page
+PR-C promote-admin CLI                 + clone-to-template            PR-L templates + categories pages
+  └─ needs A                           └─ needs A + C                 PR-M settings page
+                                     PR-F categories/templates          (each is a distinct
+                                       routes + featured flag           Svelte route file)
+                                       └─ needs A + C                   └─ all need Wave 2
+                                     PR-G config + app_config
+                                       + maintenance enforcement
+                                       └─ needs A + C
+                                     PR-H ai_usage logging
+                                       + provider override
+                                       └─ needs A + C
+```
+
+**PR-A** · Wave 1 · §1 (role column) + §3 (new tables) — files: `backend/src/db/schema.ts`, `backend/src/db/migrations/00XX_admin_panel.sql` (new)
+**PR-B** · Wave 1 · §1 (middleware) + §7 (JWT) — files: `backend/src/auth/middleware.ts`, `backend/src/auth/*.ts` (wherever JWT is signed/verified)
+**PR-C** · Wave 1 · §1 CLI — files: `backend/scripts/promote-admin.ts` (new)
+**PR-D** · Wave 2 · §2 users routes — files: `backend/src/routes/admin.routes.ts` (one file owned by D — split-route-file is fine; alternative is one PR per route group with separate files like `admin.users.routes.ts`, `admin.quizzes.routes.ts`, etc. **Recommend the separate-file split** so PRs D–H can land independently without touching each other)
+**PR-E** · Wave 2 · §2 quizzes — files: `backend/src/routes/admin.quizzes.routes.ts` (new)
+**PR-F** · Wave 2 · §2 categories + templates + §3 featured — files: `backend/src/routes/admin.templates.routes.ts` (new), `backend/src/db/repositories/templateRepo.ts`
+**PR-G** · Wave 2 · §2 config + §4 maintenance enforcement — files: `backend/src/routes/admin.config.routes.ts` (new), `backend/src/db/repositories/appConfigRepo.ts` (new), `backend/src/services/game/createGame.ts`
+**PR-H** · Wave 2 · §3 (ai_usage table done in PR-A migration) + §5 provider override — files: `backend/src/services/ai/service.ts`, `backend/src/db/repositories/aiUsageRepo.ts` (new)
+**PR-I** · Wave 3 · §6 layout + dashboard — files: `frontend/src/routes/admin/+layout.svelte` (new), `frontend/src/routes/admin/+page.svelte` (new), `frontend/src/lib/components/AdminTable.svelte` (new)
+**PR-J** · Wave 3 · §6 users page — files: `frontend/src/routes/admin/users/+page.svelte` (new)
+**PR-K** · Wave 3 · §6 quizzes page — files: `frontend/src/routes/admin/quizzes/+page.svelte` (new)
+**PR-L** · Wave 3 · §6 templates + categories — files: `frontend/src/routes/admin/templates/+page.svelte`, `frontend/src/routes/admin/templates/[id]/+page.svelte`, `frontend/src/routes/admin/categories/+page.svelte` (all new)
+**PR-M** · Wave 3 · §6 settings — files: `frontend/src/routes/admin/settings/+page.svelte` (new)
+
+> Wave 2 split favours **one route file per group** (admin.users.routes.ts, admin.quizzes.routes.ts, …) over one shared admin.routes.ts. That keeps PRs file-disjoint so five agents can land in parallel.
+
 ## Out of scope (intentional)
 
 - Multi-tier roles (we ship two: `host`, `admin`)

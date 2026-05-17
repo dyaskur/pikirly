@@ -8,6 +8,33 @@
 
 All previous phases make it functional. Phase 9 makes it shippable. Polish lands last so we don't iterate on UI that might be thrown away during feature development.
 
+## Parallel PR strategy
+
+```
+Wave 1 (6 parallel PRs — all small)             Wave 2 (1 PR + 1 human task)
+──────────────────────────────────────          ────────────────────────────────
+PR-A backend prod hardening                     PR-G CI workflow (GitHub Actions)
+  (helmet, rate-limit, graceful shutdown)         └─ needs all wave-1 PRs green
+PR-B podium polish (confetti + animate)         PR-H deploy (Fly + Cloudflare +
+PR-C reconnection toast + countdown ring          domain + Google OAuth prod URI)
+PR-D color-hash avatars + lobby polish            └─ HUMAN: needs credentials
+PR-E sound effects (optional toggle)            PR-I git-cliff CHANGELOG migration
+PR-F kick-player flow                             (parallel-safe with G/H once
+  (player.handlers + host page)                    conventional commits adopted)
+```
+
+**PR-A** · Wave 1 · §3 — files: `backend/src/server.ts`, `backend/src/config.ts`, `backend/src/routes/health.routes.ts`, `backend/package.json`
+**PR-B** · Wave 1 · §1 confetti + podium animation only — files: `frontend/src/lib/components/Confetti.svelte` (new), `frontend/src/routes/play/[gameId]/+page.svelte` (game-end section only)
+**PR-C** · Wave 1 · §1 reconnect toast + §2 countdown ring — files: `frontend/src/lib/components/ConnectionToast.svelte` (new), `frontend/src/routes/play/[gameId]/+page.svelte` (countdown section only — coordinate with PR-B to keep diffs non-overlapping)
+**PR-D** · Wave 1 · §1 avatars + lobby — files: `frontend/src/lib/components/Avatar.svelte` (new), `frontend/src/routes/host/[gameId]/+page.svelte` (lobby section only)
+**PR-E** · Wave 1 · §2 sound effects — files: `frontend/src/lib/sounds/**` (new directory)
+**PR-F** · Wave 1 · §2 kick-player — files: `backend/src/ws/host.handlers.ts`, `shared/src/index.ts` (new `kick_player` event), `frontend/src/routes/host/[gameId]/+page.svelte` (lobby kick button — coordinate with PR-D)
+**PR-G** · Wave 2 · §5 CI/CD — files: `.github/workflows/ci.yml`, `.github/workflows/cd.yml`, `.coderabbit.yaml`
+**PR-H** · Wave 2 · §4 deploy — files: `fly.toml`, `Dockerfile`, `backend/.env.example`, `frontend/.env.example`, `docs/RUNBOOK.md` (new). **Human-only**: Fly auth, Cloudflare account, domain registrar, Google OAuth prod redirect URI registration.
+**PR-I** · Wave 2 · §7 git-cliff — files: `cliff.toml` (new), `CLAUDE.md` (replace the manual-CHANGELOG bullet), `.github/workflows/release.yml`
+
+> Wave 1 has six file-disjoint PRs; six agents can run in parallel worktrees. Watch the `play/[gameId]/+page.svelte` and `host/[gameId]/+page.svelte` files — PRs B/C/D/F touch them, so each PR should edit a distinct section and rebase frequently. Suggested split: PR-B owns the game-end block, PR-C owns the question block, PR-D + PR-F own the lobby block.
+
 ## Out of scope (intentional)
 
 - Custom domain email

@@ -8,6 +8,32 @@
 
 Today the product is purely live multiplayer: a host runs a game, players join with a PIN. There's no way to use it alone for self-study, which is the dominant Kahoot use case for individual learners. A learning-paths surface reuses the existing `Quiz` model + AI generator, adds a thin solo-play flow, and unlocks a second product mode without disturbing the live engine.
 
+## Parallel PR strategy
+
+```
+Wave 1 (3 parallel PRs)            Wave 2 (2 parallel PRs)        Wave 3 (3 parallel PRs)
+──────────────────────────         ──────────────────────────     ──────────────────────────
+PR-A shared types (explanation,    PR-D learning-path REST        PR-F path index + detail
+  LearningPath, PathProgress)        routes (CRUD + attempt)        pages
+PR-B DB migration + repo             └─ needs A + B               PR-G solo-play page
+  (learning_paths, path_progress,  PR-E AI path generator           └─ needs A + D
+   path_attempts) + seed-paths       (POST /ai/generate-path)     PR-H builder pages
+PR-C explanation field in            └─ needs A                     (manual + AI)
+  SlideEditor (or QuizEditor)                                       └─ needs A + D + E
+  └─ needs A
+```
+
+**PR-A** · Wave 1 · §1 — files: `shared/src/index.ts`
+**PR-B** · Wave 1 · §2 + §7 — files: `backend/src/db/schema.ts`, `backend/src/db/migrations/00XX_learning_paths.sql` (new), `backend/src/db/repositories/learningPathRepo.ts` (new), `backend/src/db/seeds/paths.ts` (new)
+**PR-C** · Wave 1 · §6 (editor explanation textarea only) — files: `frontend/src/lib/components/SlideEditor.svelte` (or `QuizEditor.svelte` if [improvements-slide-rail-editor.md](improvements-slide-rail-editor.md) hasn't shipped)
+**PR-D** · Wave 2 · §3 — files: `backend/src/routes/learning-path.routes.ts` (new), `backend/src/server.ts` (route registration only)
+**PR-E** · Wave 2 · §4 — files: `backend/src/routes/ai.routes.ts`, `backend/src/services/ai/service.ts`, `backend/src/services/ai/service.test.ts`
+**PR-F** · Wave 3 · §5 (index + detail) — files: `frontend/src/routes/learn/+page.svelte` (new), `frontend/src/routes/learn/[pathId]/+page.svelte` (new)
+**PR-G** · Wave 3 · §5 (solo play) — files: `frontend/src/routes/learn/[pathId]/step/[stepIndex]/+page.svelte` (new)
+**PR-H** · Wave 3 · §5 (builders) — files: `frontend/src/routes/learn/build/+page.svelte` (new), `frontend/src/routes/learn/ai/+page.svelte` (new)
+
+> Three parallel agents in Wave 1, two in Wave 2, three in Wave 3 = up to 8 parallel sessions worth of work spread across the phase, with the critical-path PR being A → D → G (shared types → REST → solo play).
+
 ## Out of scope (intentional)
 
 - **Spaced repetition** — surfacing weak questions on a schedule. Big design space (intervals, decay model, per-user state). Track in a follow-up doc; ship paths first.

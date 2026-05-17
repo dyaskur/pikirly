@@ -8,6 +8,23 @@
 
 Ordering questions test deeper understanding than multiple choice — useful for timelines, priority ranking, and step-by-step processes. Mechanically distinct from all other types (drag UI + partial scoring).
 
+## Parallel PR strategy
+
+```
+Wave 1 (2 parallel PRs)               Wave 2 (2 parallel PRs)        Wave 3 (1 PR)
+──────────────────────────            ────────────────────────────   ──────────────
+PR-A shared scoring + kendall +       PR-C engine + WS validate      PR-E editor + host + player
+  shared/src/index.test.ts              └─ needs A + B                 page integration
+PR-B WS payload type change           PR-D RankingInput.svelte         └─ needs A + D
+  (choice: number | number[])           (standalone Svelte file)
+```
+
+**PR-A** · Wave 1 · §2 + §7 tests — files: `shared/src/index.ts`, `shared/src/index.test.ts` (new)
+**PR-B** · Wave 1 · §3 — files: `shared/src/index.ts` (just the `submit_answer` payload union — coordinate with PR-A so the shared file diff is non-overlapping; split into two distinct edits)
+**PR-C** · Wave 2 · §1 schema activation + engine call — files: `backend/src/routes/quiz.routes.ts`, `backend/src/services/game/lifecycle.ts`, `backend/src/ws/index.ts`
+**PR-D** · Wave 2 · §4 player UI primitive — files: `frontend/src/lib/components/RankingInput.svelte` (new). Library decision: prefer native HTML5 drag-and-drop over `@neodrag/svelte` for v1 (zero dep weight; touch fallback via `pointerdown`/`pointermove`).
+**PR-E** · Wave 3 · §5 + §6 integration — files: `frontend/src/lib/components/QuizEditor.svelte` (or `SlideEditor.svelte`), `frontend/src/routes/host/[gameId]/+page.svelte`, `frontend/src/routes/play/[gameId]/+page.svelte`
+
 ## Out of scope (intentional)
 
 - Weighted ranking (not all positions equal value)

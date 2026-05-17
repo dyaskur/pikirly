@@ -8,6 +8,25 @@
 
 Transforms Pikirly from a pure quiz tool into an audience engagement platform. Poll + Open Ended + Word Cloud cover the core Mentimeter / Slido use cases without requiring a scored quiz.
 
+## Parallel PR strategy
+
+```
+Wave 1 (2 parallel PRs)            Wave 2 (3 parallel PRs)        Wave 3 (1 PR)
+──────────────────────────         ────────────────────────────   ──────────────
+PR-A shared schema + events        PR-C LiveBarChart.svelte       PR-F wire components into
+PR-B engine text-answer storage    PR-D ResponseList.svelte         QuizEditor + host + play
+  └─ needs A                       PR-E WordCloud.svelte            └─ needs all wave-2 PRs
+                                     (each is a standalone
+                                      Svelte file, no shared deps)
+```
+
+**PR-A** · Wave 1 · covers §4 shared half (`submit_text_answer`, `question_end` extension) — files: `shared/src/index.ts`
+**PR-B** · Wave 1 · covers §4 backend half + §5 — files: `backend/src/services/game/engine.ts`, `backend/src/services/game/lifecycle.ts`, `backend/src/ws/index.ts`
+**PR-C** · Wave 2 · §1 host visual — files: `frontend/src/lib/components/LiveBarChart.svelte` (new, isolated)
+**PR-D** · Wave 2 · §2 host visual — files: `frontend/src/lib/components/ResponseList.svelte` (new, isolated)
+**PR-E** · Wave 2 · §3 host visual — files: `frontend/src/lib/components/WordCloud.svelte` (new, isolated). Library decision (`d3-cloud` vs `wordcloud2.js`): pick `wordcloud2.js`, smaller and no D3 dependency tree.
+**PR-F** · Wave 3 · §6 editor + page integration — files: `frontend/src/lib/components/QuizEditor.svelte` (or `SlideEditor.svelte`), `frontend/src/routes/host/[gameId]/+page.svelte`, `frontend/src/routes/play/[gameId]/+page.svelte`. This is the only PR that touches the shared page files; serial by design to avoid merge conflicts.
+
 ## Out of scope (intentional)
 
 - AI moderation of open-ended responses
