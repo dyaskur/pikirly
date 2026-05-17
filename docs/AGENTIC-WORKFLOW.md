@@ -11,7 +11,7 @@ How to fan out the phase plans across many simultaneous Claude Code (or other ag
 
 ## Dependency graph (what blocks what)
 
-```
+```text
 done ──→ Phase 1, 2, 3, 4
 
 ready to start now (in parallel):

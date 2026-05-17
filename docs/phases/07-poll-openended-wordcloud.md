@@ -10,7 +10,7 @@ Transforms Pikirly from a pure quiz tool into an audience engagement platform. P
 
 ## Parallel PR strategy
 
-```
+```text
 Wave 1 (2 parallel PRs)            Wave 2 (3 parallel PRs)        Wave 3 (1 PR)
 ──────────────────────────         ────────────────────────────   ──────────────
 PR-A shared schema + events        PR-C LiveBarChart.svelte       PR-F wire components into
@@ -90,7 +90,7 @@ PR-B engine text-answer storage    PR-D ResponseList.svelte         QuizEditor +
 
 ## Files to touch
 
-```
+```text
 shared/
   src/index.ts                              # MODIFY: submit_text_answer event, question_end payload
 

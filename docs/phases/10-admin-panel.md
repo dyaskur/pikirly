@@ -10,7 +10,7 @@ System templates are managed by a [backend/src/db/seeds/templates.ts](../../back
 
 ## Parallel PR strategy
 
-```
+```text
 Wave 1 (3 parallel PRs)              Wave 2 (5 parallel PRs)          Wave 3 (5 parallel PRs)
 ──────────────────────────           ──────────────────────────────   ──────────────────────────
 PR-A schema migration + role         PR-D users REST routes           PR-I admin layout + dashboard
@@ -123,7 +123,7 @@ New route tree under `frontend/src/routes/admin/`:
 
 ## Files to touch
 
-```
+```text
 backend/
   src/db/schema.ts                                     # MODIFY: role, featured, audit_log, app_config, ai_usage
   src/db/migrations/00XX_admin_panel.sql               # NEW

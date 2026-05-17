@@ -10,7 +10,7 @@ All previous phases make it functional. Phase 9 makes it shippable. Polish lands
 
 ## Parallel PR strategy
 
-```
+```text
 Wave 1 (6 parallel PRs — all small)             Wave 2 (1 PR + 1 human task)
 ──────────────────────────────────────          ────────────────────────────────
 PR-A backend prod hardening                     PR-G CI workflow (GitHub Actions)
@@ -127,7 +127,7 @@ PR-F kick-player flow                             (parallel-safe with G/H once
 
 ## Files to touch
 
-```
+```text
 backend/
   src/
     config.ts                       # MODIFY: production env handling

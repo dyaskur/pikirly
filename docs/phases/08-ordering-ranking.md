@@ -10,7 +10,7 @@ Ordering questions test deeper understanding than multiple choice — useful for
 
 ## Parallel PR strategy
 
-```
+```text
 Wave 1 (2 parallel PRs)               Wave 2 (2 parallel PRs)        Wave 3 (1 PR)
 ──────────────────────────            ────────────────────────────   ──────────────
 PR-A shared scoring + kendall +       PR-C engine + WS validate      PR-E editor + host + player
@@ -93,7 +93,7 @@ PR-B WS payload type change           PR-D RankingInput.svelte         └─ ne
 
 ## Files to touch
 
-```
+```text
 shared/
   src/index.ts                              # MODIFY: scoreRanking, correct: number|number[], submit_answer payload
 

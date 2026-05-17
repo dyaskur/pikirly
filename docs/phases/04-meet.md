@@ -99,7 +99,7 @@ Shipped as a single squashed PR (#6) `main ← feature/phase-04-meet`. CHANGELOG
 
 ## Files to touch
 
-```
+```text
 frontend/
   src/lib/meet.ts                              # NEW
   src/routes/+page.svelte                      # MODIFY: detect mode=meet, route to bootstrap

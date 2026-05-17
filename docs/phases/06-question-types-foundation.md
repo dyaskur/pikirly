@@ -10,7 +10,7 @@ All future question types (Phases 7–8) depend on this. The schema, engine, and
 
 ## Parallel PR strategy
 
-```
+```text
 Wave 1 (2 parallel PRs)              Wave 2 (2 parallel PRs)        Wave 3 (1 PR)
 ──────────────────────────────       ─────────────────────────      ──────────────
 PR-A shared schema + seededShuffle   PR-C engine + WS event         PR-E player UI +
@@ -105,7 +105,7 @@ PR-B DB backfill migration             └─ needs A                     random
 
 ## Files to touch
 
-```
+```text
 shared/
   src/index.ts                              # MODIFY: QuestionType, Question interface
 

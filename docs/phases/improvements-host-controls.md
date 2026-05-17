@@ -21,9 +21,9 @@ Real classroom / dogfood feedback: a question fires while a learner is still rea
 
 ### 1. Engine state
 
-- [ ] Add `pausedAt: number | null` and `accumulatedPauseMs: number` to [`GameState`](../../backend/src/services/game/engine.ts:21)
-- [ ] Extend [`GameStatus`](../../shared/src/index.ts:4) with `'paused'` (sub-state of in-question — only valid when `currentQuestionIndex >= 0` and `pausedAt !== null`)
-- [ ] Scoring uses `now - questionStartedAt - accumulatedPauseMs` as time-used so paused time does not penalise late-answer scoring ([`scoreAnswer`](../../shared/src/index.ts:119) inputs in [`recordAnswer`](../../backend/src/services/game/lifecycle.ts:157))
+- [ ] Add `pausedAt: number | null` and `accumulatedPauseMs: number` to [`GameState`](../../backend/src/services/game/engine.ts#L21)
+- [ ] Extend [`GameStatus`](../../shared/src/index.ts#L4) with `'paused'` (sub-state of in-question — only valid when `currentQuestionIndex >= 0` and `pausedAt !== null`)
+- [ ] Scoring uses `now - questionStartedAt - accumulatedPauseMs` as time-used so paused time does not penalise late-answer scoring ([`scoreAnswer`](../../shared/src/index.ts#L126) inputs in [`recordAnswer`](../../backend/src/services/game/lifecycle.ts#L157))
 
 ### 2. Lifecycle functions
 
@@ -33,7 +33,7 @@ In [backend/src/services/game/lifecycle.ts](../../backend/src/services/game/life
 - [ ] `resumeQuestion(io, g)` — only valid when `status === 'paused'`. Compute pause duration, push `questionDeadlineAt` forward by that amount, add to `accumulatedPauseMs`, clear `pausedAt`, set `status = 'in_question'`, re-schedule timer with remaining ms, broadcast `question_resumed { deadlineMs }`
 - [ ] `skipQuestion(io, g)` — only valid when `status` is `'in_question'` or `'paused'`. Force-call `endQuestion(io, g, currentQuestionIndex)` (existing function already handles reveal + leaderboard + auto-advance). If paused: unpause first so timing math stays consistent.
 - [ ] `advanceNow(io, g)` — only valid when `status === 'between'`. Clear the active timer (the one scheduling next question), call `beginQuestion(io, g, currentQuestionIndex + 1)` (or `endGame` if no more questions)
-- [ ] [`recordAnswer`](../../backend/src/services/game/lifecycle.ts:157) rejects with a new reason `'paused'` when `status === 'paused'`
+- [ ] [`recordAnswer`](../../backend/src/services/game/lifecycle.ts#L157) rejects with a new reason `'paused'` when `status === 'paused'`
 
 ### 3. Shared event contract
 
@@ -94,7 +94,7 @@ In [frontend/src/lib/components/MeetSideControls.svelte](../../frontend/src/lib/
 
 ## Files to touch
 
-```
+```text
 shared/
   src/index.ts                                      # MODIFY: events, GameStatus, answer_ack reason
 

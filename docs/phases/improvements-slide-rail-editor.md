@@ -66,7 +66,7 @@ In the same shell:
 
 ## Files to touch
 
-```
+```text
 frontend/
   src/lib/components/
     QuizEditor.svelte        # heavy refactor: layout shell only

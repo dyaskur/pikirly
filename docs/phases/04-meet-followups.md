@@ -43,7 +43,7 @@ Phase 4's acceptance criteria were about *function* (host can launch, players au
 
 ## Files to touch
 
-```
+```text
 frontend/
   src/lib/components/
     MeetBootstrap.svelte       # MODIFY: heading, participant view, sign-in CTA gating, skeleton, brand mark

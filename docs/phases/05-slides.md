@@ -17,7 +17,7 @@ Slido-style integration. Hosts already use Slides for presentations — embeddin
 
 ## Parallel PR strategy
 
-```
+```text
 Wave 1 (2 parallel PRs)        Wave 2 (1 PR + 1 human task)   Wave 3 (1 PR)
 ─────────────────────────      ────────────────────────────   ──────────────
 PR-A backend qrcode + CORS     PR-C sidebar UI (Cards API)    PR-D live result
@@ -85,7 +85,7 @@ PR-B Apps Script skeleton        └─ needs A + B                 polling + le
 
 ## Files to touch
 
-```
+```text
 slides-addon/                                  # NEW — Google Apps Script project
   src/Code.ts                                  # add-on entry: onOpen, sidebar card builder
   src/Auth.ts                                  # OAuth token forwarding to Pikirly backend

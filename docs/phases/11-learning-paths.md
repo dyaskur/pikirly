@@ -10,7 +10,7 @@ Today the product is purely live multiplayer: a host runs a game, players join w
 
 ## Parallel PR strategy
 
-```
+```text
 Wave 1 (3 parallel PRs)            Wave 2 (2 parallel PRs)        Wave 3 (3 parallel PRs)
 ──────────────────────────         ──────────────────────────     ──────────────────────────
 PR-A shared types (explanation,    PR-D learning-path REST        PR-F path index + detail
@@ -129,7 +129,7 @@ New page tree under `frontend/src/routes/learn/`:
 
 ## Files to touch
 
-```
+```text
 shared/
   src/index.ts                                                # MODIFY: explanation, LearningPath types
 
