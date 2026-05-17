@@ -89,7 +89,18 @@
         staleGame = true;
         return;
       }
-      
+
+      // Main stage: listen for the side panel signalling a new game so we
+      // can transition without endActivity() (which would close the side
+      // panel). The listener is installed once globally.
+      if (isMeet && !isSidePanel) {
+        const { listenForHostNewGame } = await import('$lib/meet');
+        void listenForHostNewGame(() => {
+          hostSession.set(null);
+          goto('/?mode=meet&surface=stage');
+        });
+      }
+
       // Initial bind
       handlers.connect();
     };

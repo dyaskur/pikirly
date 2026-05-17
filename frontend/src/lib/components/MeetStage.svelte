@@ -151,25 +151,31 @@
 
       const { gameId, hostToken } = data;
 
-      // For Google Meet: we must promote the app to the Main Stage.
-      // If an activity from a previous game is still running, Meet will reject
-      // startActivity with an alert — end the prior activity first.
+      // Get the main stage to show the new game. Preferred path: a message
+      // to an existing main stage so it re-bootstraps in place — this avoids
+      // endActivity()/startActivity(), which would close the side panel.
+      // Only call startActivity() on first run, when there's no main stage
+      // iframe yet for notifyMainStage to reach.
       try {
         const { getMeetClient } = await import('$lib/meet');
         const client = await getMeetClient();
 
         if (client) {
-          if (typeof client.endActivity === 'function') {
-            try { await client.endActivity(); } catch { /* nothing to end */ }
+          let notified = false;
+          if ('notifyMainStage' in client) {
+            try {
+              await client.notifyMainStage(JSON.stringify({ type: 'pikirly.host_new_game' }));
+              notified = true;
+            } catch { /* no main stage iframe yet — fall through */ }
           }
-          if (typeof client.startActivity === 'function') {
+          if (!notified && typeof client.startActivity === 'function') {
             await client.startActivity({
               mainStageUrl: `${window.location.origin}/?mode=meet&surface=stage`
             });
           }
         }
       } catch (meetErr) {
-        console.error('Failed to promote to main stage:', meetErr);
+        console.error('Failed to set up Meet main stage:', meetErr);
       }
 
       hostSession.set({ gameId, hostToken });

@@ -10,12 +10,31 @@ export interface MeetContext {
 
 let meetClient: MeetSidePanelClient | MeetMainStageClient | null = null;
 let meetSession: AddonSession | null = null;
+let mainStageListenerInstalled = false;
 
 export async function getMeetClient(): Promise<MeetSidePanelClient | MeetMainStageClient | null> {
   if (!meetClient) {
     await getMeetContext();
   }
   return meetClient;
+}
+
+/**
+ * Side-panel → main-stage signal: host has created a new game and the main
+ * stage should re-bootstrap to find it. Idempotent — calling twice does
+ * not register two listeners.
+ */
+export async function listenForHostNewGame(handler: () => void): Promise<void> {
+  if (mainStageListenerInstalled) return;
+  const client = await getMeetClient();
+  if (!client || typeof client.on !== 'function') return;
+  client.on('frameToFrameMessage', (m) => {
+    try {
+      const data = JSON.parse(m.payload);
+      if (data?.type === 'pikirly.host_new_game') handler();
+    } catch { /* not our message */ }
+  });
+  mainStageListenerInstalled = true;
 }
 
 /**
