@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { api } from '$lib/api';
   import { getSocket } from '$lib/socket';
   import { playerSession } from '$lib/stores/player';
   import { hostSession } from '$lib/stores/host';
-  import type { PlayerPublic, QuestionPublic, LeaderboardEntry } from '@kahoot/shared';
+  import type { QuestionPublic } from '@kahoot/shared';
 
   interface Props {
     gameId: string;
@@ -14,19 +16,21 @@
   let phase = $state<'lobby' | 'in_question' | 'answered' | 'reveal' | 'ended'>('lobby');
   let currentQuestion = $state<QuestionPublic | null>(null);
   let myFinalScore = $state<number | null>(null);
+  let playerCount = $state(0);
+  let starting = $state(false);
 
   let socket = getSocket();
 
   onMount(() => {
-    // Determine role
     if ($hostSession?.gameId === gameId) {
       role = 'host';
+      void fetchPlayerCount();
     } else if ($playerSession?.gameId === gameId) {
       role = 'player';
     }
 
     const handlers = {
-      game_started: () => { phase = 'in_question'; },
+      game_started: () => { phase = 'in_question'; starting = false; },
       question: (q: QuestionPublic) => {
         currentQuestion = q;
         phase = 'in_question';
@@ -40,10 +44,11 @@
           myFinalScore = me?.score ?? 0;
         }
         phase = 'ended';
-      }
+      },
+      player_joined: () => { playerCount += 1; },
+      player_left: () => { playerCount = Math.max(0, playerCount - 1); },
     };
 
-    // Register handlers
     for (const [event, fn] of Object.entries(handlers)) {
       socket.on(event as any, fn);
     }
@@ -55,10 +60,30 @@
     };
   });
 
+  async function fetchPlayerCount() {
+    try {
+      const res = await api(`/games/${gameId}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (typeof data.playerCount === 'number') playerCount = data.playerCount;
+      }
+    } catch { /* ignore — events will sync */ }
+  }
+
   function start() {
+    if (playerCount === 0 || starting) return;
+    starting = true;
     socket.emit('start_game', { gameId }, (res) => {
-      if (!res.ok) console.error(res.error);
+      if (!res.ok) {
+        starting = false;
+        console.error(res.error);
+      }
     });
+  }
+
+  function pickAnotherQuiz() {
+    hostSession.set(null);
+    goto('/?mode=meet&surface=side');
   }
 </script>
 
@@ -73,8 +98,19 @@
 
       <div class="grid gap-3">
         {#if phase === 'lobby'}
-          <button class="btn-primary py-6 text-lg" onclick={start}>
-            Start Game
+          <div class="card p-3 text-center">
+            <p class="font-bold">{playerCount} player{playerCount === 1 ? '' : 's'} joined</p>
+            {#if playerCount === 0}
+              <p class="text-sm muted mt-1">Start unlocks once at least one player joins.</p>
+            {/if}
+          </div>
+          <button
+            class="btn-primary py-6 text-lg"
+            onclick={start}
+            disabled={starting || playerCount === 0}
+            title={playerCount === 0 ? 'Need at least one player to start' : ''}
+          >
+            {starting ? 'Starting…' : 'Start Game'}
           </button>
         {:else if phase === 'in_question'}
           <div class="card p-4 text-center">
@@ -86,8 +122,8 @@
             Next Question
           </button>
         {:else if phase === 'ended'}
-          <button class="btn-secondary py-4" onclick={() => window.location.href = '/'}>
-            Back to Home
+          <button class="btn-primary py-4" onclick={pickAnotherQuiz}>
+            Pick another quiz
           </button>
         {/if}
       </div>

@@ -33,6 +33,16 @@
   let isMeet = $derived($page.url.searchParams.get('mode') === 'meet');
   let isSidePanel = $derived($page.url.searchParams.get('surface') === 'side');
 
+  function exitHostSession({ clear = true }: { clear?: boolean } = {}) {
+    if (clear) hostSession.set(null);
+    if (isMeet) {
+      const surface = isSidePanel ? 'side' : 'stage';
+      goto(`/?mode=meet&surface=${surface}`);
+    } else {
+      goto('/');
+    }
+  }
+
   async function promoteToMeet() {
     try {
       const { getMeetClient } = await import('$lib/meet');
@@ -69,7 +79,7 @@
   onMount(() => {
     const init = async () => {
       if (!$hostSession || $hostSession.gameId !== gameId) {
-        goto('/');
+        exitHostSession({ clear: false });
         return;
       }
 
@@ -187,8 +197,8 @@
         <div style="font-size:2.6rem;">⚠️</div>
         <h2 style="margin: 8px 0 6px;">Game session expired</h2>
         <div class="muted" style="margin-bottom:22px;">The server restarted and lost this game's state. Start a new one.</div>
-        <button class="btn-primary" onclick={() => { hostSession.set(null); goto('/'); }}>
-          Create new game
+        <button class="btn-primary" onclick={() => exitHostSession()}>
+          {isMeet ? 'Pick another quiz' : 'Create new game'}
         </button>
       </div>
     {:else if phase === 'lobby'}
@@ -330,8 +340,8 @@
             {/each}
           </ol>
         </div>
-        <button class="btn-primary" style="max-width: 280px; margin-top: 26px;" onclick={() => { hostSession.set(null); goto('/'); }}>
-          New game
+        <button class="btn-primary" style="max-width: 280px; margin-top: 26px;" onclick={() => exitHostSession()}>
+          {isMeet ? 'Pick another quiz' : 'New game'}
         </button>
       </div>
     {/if}

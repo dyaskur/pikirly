@@ -39,7 +39,11 @@
   onMount(() => {
     const sess = $playerSession;
     if (!sess || sess.gameId !== gameId) {
-      goto(`/join?pin=${gameId}`);
+      if (isMeet) {
+        exitPlayerSession({ clear: false });
+      } else {
+        goto(`/join?pin=${gameId}`);
+      }
       return;
     }
 
@@ -51,7 +55,9 @@
         (res) => {
           if (!res.ok) {
             connectionMsg = 'Could not rejoin: ' + res.error;
-            setTimeout(() => goto('/'), 1500);
+            if (!isMeet) {
+              setTimeout(() => goto('/'), 1500);
+            }
           } else {
             connectionMsg = null;
           }
@@ -147,6 +153,16 @@
 
   let isMeet = $derived($page.url.searchParams.get('mode') === 'meet');
   let isSidePanel = $derived($page.url.searchParams.get('surface') === 'side');
+
+  function exitPlayerSession({ clear = true }: { clear?: boolean } = {}) {
+    if (clear) playerSession.set(null);
+    if (isMeet) {
+      const surface = isSidePanel ? 'side' : 'stage';
+      goto(`/?mode=meet&surface=${surface}`);
+    } else {
+      goto('/');
+    }
+  }
 </script>
 
 {#if connectionMsg}
@@ -362,9 +378,15 @@
               <div style="font-size: 2.2rem; font-weight: 900;">{myFinalScore}</div>
             </div>
           {/if}
-          <button class="btn-primary" onclick={() => { playerSession.set(null); goto('/'); }}>
-            Play another
-          </button>
+          {#if isMeet}
+            <div class="muted" style="margin-top: 18px; font-size: 0.9rem;">
+              Waiting for the host to start a new game…
+            </div>
+          {:else}
+            <button class="btn-primary" onclick={() => exitPlayerSession()}>
+              Play another
+            </button>
+          {/if}
         </div>
       {/if}
     </div>
