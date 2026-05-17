@@ -71,12 +71,40 @@ cd ../kahoot-phase-5-pr-a
 pnpm install
 
 # Launch the agent and point it at the right plan
-claude  # or whatever CLI you use
+claude          # Claude Code
+# or any other agentic CLI: cursor agent, aider, codex, cline, continue, …
 ```
 
-Hand the agent:
+Any agentic tool works — the plans are tool-agnostic. The agent just needs to read files, run shell commands, and either open PRs via `gh` or push a branch you turn into a PR yourself.
 
-> "Read [docs/phases/05-slides.md](docs/phases/05-slides.md). Implement **only PR-A** from the Parallel PR strategy section. Open a PR against `main` when verification passes."
+### Launching prompt (paste this into the agent)
+
+Replace `<PHASE-DOC>` and `<X>` with the doc and PR you assigned this worktree. The template is deliberately strict — it keeps the agent inside one bounded PR rather than letting scope creep into a 50-commit feature branch.
+
+```text
+Read docs/AGENTIC-WORKFLOW.md and CLAUDE.md for project rules.
+
+Then read docs/phases/<PHASE-DOC>.md. Your job is to implement ONLY
+PR-<X> from that doc's "Parallel PR strategy" section. Do not touch
+any file outside that PR's "Files to touch" list — if you think you
+need to, stop and tell me before expanding scope.
+
+Run the verification commands listed in that doc's Verification
+section. All must pass before you open the PR.
+
+When verification passes:
+1. Append a CHANGELOG entry under [Unreleased] in the same commit as
+   your last code change.
+2. Push the branch.
+3. Open a PR against main whose description quotes which doc + which
+   PR you implemented (e.g. "Implements PR-A from
+   docs/phases/05-slides.md"). Use `gh pr create` if available.
+
+Don't push to main. Don't force-push. Don't skip the verification
+gate. If a hook or test fails, fix the root cause — don't bypass.
+```
+
+For agents that don't have a built-in `gh` integration, drop step 3 and have them push the branch with `git push -u origin <branch>`; you open the PR yourself afterwards. The rest of the prompt is identical regardless of tool.
 
 ### When the PR merges
 
