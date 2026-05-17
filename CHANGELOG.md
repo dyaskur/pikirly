@@ -17,7 +17,7 @@ Categories: **Added**, **Changed**, **Deprecated**, **Removed**, **Fixed**, **Se
   - Auto-join for participants in the side panel (no PIN or nickname entry required)
   - Quiz picker for hosts in the main stage with auto-auth handling
   - UI adjustments: Game PIN and instructions hidden when running inside Meet
-  - Inline "Create quiz" modal in the Meet quiz picker — hosts can create a new quiz without leaving Meet (replaces the prior open-in-new-tab link)
+  - "+ New Quiz" / "Create your first quiz" buttons in the Meet quiz picker open the editor in a centred popup window and auto-refresh the quiz list when the popup closes (replaces the prior open-in-new-tab link)
   - `docs/meet-addon.md` documentation for registration and testing
 
 ### Changed
