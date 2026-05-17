@@ -15,6 +15,23 @@ Slido-style integration. Hosts already use Slides for presentations — embeddin
 - Offline / export to PDF with results
 - Microsoft PowerPoint add-in
 
+## Parallel PR strategy
+
+```text
+Wave 1 (2 parallel PRs)        Wave 2 (1 PR + 1 human task)   Wave 3 (1 PR)
+─────────────────────────      ────────────────────────────   ──────────────
+PR-A backend qrcode + CORS     PR-C sidebar UI (Cards API)    PR-D live result
+PR-B Apps Script skeleton        └─ needs A + B                 polling + leaderboard
+  (clasp init, manifest)       Marketplace registration         └─ needs C
+                                 (human, not an agent task)
+```
+
+**PR-A** · Wave 1 · covers §4–5 (backend) — files: `backend/src/routes/game.routes.ts`, `backend/src/server.ts`, `backend/package.json`
+**PR-B** · Wave 1 · covers §1 (Apps Script project setup) — files: `slides-addon/**` (new directory)
+**PR-C** · Wave 2 · covers §3 (sidebar UI) — files: `slides-addon/src/Code.ts`, `slides-addon/src/Auth.ts`, `slides-addon/src/Quiz.ts`
+**Marketplace registration** · Wave 2 · §2 — human-only (cannot be agentic; needs Workspace admin credentials)
+**PR-D** · Wave 3 · covers §6 (polling + result display) — files: `slides-addon/src/Results.ts`
+
 ## Design constraints
 
 - Slides add-on UI = Google Cards API (not HTML iframe like Meet)
@@ -68,7 +85,7 @@ Slido-style integration. Hosts already use Slides for presentations — embeddin
 
 ## Files to touch
 
-```
+```text
 slides-addon/                                  # NEW — Google Apps Script project
   src/Code.ts                                  # add-on entry: onOpen, sidebar card builder
   src/Auth.ts                                  # OAuth token forwarding to Pikirly backend

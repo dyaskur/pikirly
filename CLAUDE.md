@@ -4,22 +4,31 @@ Read this before touching code. Architecture decisions are intentional — don't
 
 ## Project status
 
-**Phase 1 complete** (in-memory MVP). **Phase 2 complete** (Postgres + Google OAuth + Quiz editor). **Next is Phase 3** (Templates + AI generation).
+**Phases 1–4 complete** (Meet add-on merged in PR #6, commit `4ec6c96`). **Phase 4.1 in progress** (Meet UX polish).
 
 | # | Phase | Status | Action plan |
 |---|---|---|---|
 | 1 | Minimal playable loop, in-memory state | ✅ Done | [docs/phases/01-mvp.md](docs/phases/01-mvp.md) |
 | 2 | Postgres + Google OAuth + Quiz editor | ✅ Done | [docs/phases/02-persistence-auth-editor.md](docs/phases/02-persistence-auth-editor.md) |
-| 3 | Templates + AI generation | 🔜 Next | [docs/phases/03-templates-ai.md](docs/phases/03-templates-ai.md) |
-| 4 | Google Meet add-on | 🔜 | [docs/phases/04-meet.md](docs/phases/04-meet.md) |
+| 3 | Templates + AI generation | ✅ Done | [docs/phases/03-templates-ai.md](docs/phases/03-templates-ai.md) |
+| 3.1 | AI hardening (rate limit, cost caps, redaction) | 🔜 | [docs/phases/improvements-ai-hardening.md](docs/phases/improvements-ai-hardening.md) |
+| 4 | Google Meet add-on | ✅ Done | [docs/phases/04-meet.md](docs/phases/04-meet.md) |
+| 4.1 | Meet add-on UX follow-ups | 🚧 In progress | [docs/phases/04-meet-followups.md](docs/phases/04-meet-followups.md) |
+| — | Host live session controls (pause/skip/advance) | 🔜 | [docs/phases/improvements-host-controls.md](docs/phases/improvements-host-controls.md) |
+| — | Slide-rail quiz editor (1 question = 1 slide) | 🔜 | [docs/phases/improvements-slide-rail-editor.md](docs/phases/improvements-slide-rail-editor.md) |
 | 5 | Google Slides add-on | 🔜 | [docs/phases/05-slides.md](docs/phases/05-slides.md) |
 | 6 | Question type system (True/False, dynamic choices, randomize) | 🔜 | [docs/phases/06-question-types-foundation.md](docs/phases/06-question-types-foundation.md) |
+| 6.5 | Rich slides (media + info slides + slide editor) | 🔜 | [docs/phases/06.5-rich-slides.md](docs/phases/06.5-rich-slides.md) |
 | 7 | Poll / Open Ended / Word Cloud | 🔜 | [docs/phases/07-poll-openended-wordcloud.md](docs/phases/07-poll-openended-wordcloud.md) |
 | 8 | Ordering / Ranking | 🔜 | [docs/phases/08-ordering-ranking.md](docs/phases/08-ordering-ranking.md) |
 | 9 | UX polish + deploy | 🔜 | [docs/phases/09-polish-deploy.md](docs/phases/09-polish-deploy.md) |
+| 10 | Admin panel | 🔜 | [docs/phases/10-admin-panel.md](docs/phases/10-admin-panel.md) |
+| 11 | Self-paced learning paths (solo study) | 🔜 | [docs/phases/11-learning-paths.md](docs/phases/11-learning-paths.md) |
 | — | Redis multi-instance scaling | ⏸ Deferred | [docs/phases/deferred-redis.md](docs/phases/deferred-redis.md) |
 
 **For agents picking up work**: read the relevant phase doc — it contains a checklist of deliverables, files to touch, and verification steps. Don't infer; the plan is explicit.
+
+**For parallel agentic implementation**: see [docs/AGENTIC-WORKFLOW.md](docs/AGENTIC-WORKFLOW.md) — dependency graph, worktree setup, and which PRs are ready to fan out concurrently.
 
 ## Architecture
 
@@ -54,7 +63,7 @@ Node API (Fastify + Socket.IO)
 - **No abstractions until third use.** A bug fix doesn't need surrounding cleanup.
 - **No backwards-compat shims.** This is greenfield. Just change the code.
 - **Prefer editing existing files over creating new ones.** Especially: don't create new doc files unless asked.
-- **Update `CHANGELOG.md`** in the same commit as any user-visible change (features, behavior changes, schema, deploy, bugs users would notice). Append under `[Unreleased]`. Skip for typo fixes or pure internal refactors.
+- **Update `CHANGELOG.md`** in the same commit as any user-visible change (features, behavior changes, schema, deploy, bugs users would notice). Append under `[Unreleased]`. Skip for typo fixes or pure internal refactors. On long-lived feature branches, append to `[Unreleased]` as you go on the branch — don't wait for merge.
 - **Don't add error handling for impossible cases.** Validate at boundaries (user input, external APIs); trust internal calls.
 - **Real-time correctness over clever design.** Server is authoritative for time, scoring, question advancement.
 
@@ -97,10 +106,6 @@ Always run type checks before claiming a task done. Once Phase 2 lands, also run
 | Style/UI | `frontend/src/app.css` (design tokens) — global cascades from `.card` and `.btn-*` |
 | Reconnect/state-sync bug | `backend/src/ws/index.ts` `join_game` reconnect path |
 
-## Phase 3 starting points (next work)
+## Current work
 
-1. Define template library in `backend/src/data/templates.ts`
-2. `GET /templates` + `GET /templates/:id` REST endpoints
-3. "Start from template" flow in frontend quiz editor
-4. Consume the newly created `POST /ai/generate-questions` endpoint in the frontend
-5. "Generate with AI" drawer in quiz editor (calling the multi-provider backend)
+Phase 4 shipped in PR #6. The remaining Meet polish lives in [docs/phases/04-meet-followups.md](docs/phases/04-meet-followups.md) — pick from that list before starting on Phase 5.
