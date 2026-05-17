@@ -81,17 +81,13 @@
     });
   }
 
-  async function pickAnotherQuiz() {
+  function pickAnotherQuiz() {
+    // Intentionally do NOT call client.endActivity() here. Ending the Meet
+    // activity also tears down the side panel iframe, which would close the
+    // host's cockpit. The next call to startActivity() inside MeetStage's
+    // hostQuiz() will transition the main stage cleanly when the host picks
+    // a new quiz.
     hostSession.set(null);
-    try {
-      const { getMeetClient } = await import('$lib/meet');
-      const client = await getMeetClient();
-      if (client && typeof client.endActivity === 'function') {
-        try { await client.endActivity(); } catch { /* nothing to end */ }
-      }
-    } catch (e) {
-      console.error('Failed to end Meet activity:', e);
-    }
     goto('/?mode=meet&surface=side');
   }
 </script>
