@@ -32,7 +32,7 @@ PR-C promote-admin CLI                 + clone-to-template            PR-L templ
 **PR-A** · Wave 1 · §1 (role column) + §3 (new tables) — files: `backend/src/db/schema.ts`, `backend/src/db/migrations/00XX_admin_panel.sql` (new)
 **PR-B** · Wave 1 · §1 (middleware) + §7 (JWT) — files: `backend/src/auth/middleware.ts`, `backend/src/auth/*.ts` (wherever JWT is signed/verified)
 **PR-C** · Wave 1 · §1 CLI — files: `backend/scripts/promote-admin.ts` (new)
-**PR-D** · Wave 2 · §2 users routes — files: `backend/src/routes/admin.routes.ts` (one file owned by D — split-route-file is fine; alternative is one PR per route group with separate files like `admin.users.routes.ts`, `admin.quizzes.routes.ts`, etc. **Recommend the separate-file split** so PRs D–H can land independently without touching each other)
+**PR-D** · Wave 2 · §2 users routes — files: `backend/src/routes/admin.users.routes.ts` (new)
 **PR-E** · Wave 2 · §2 quizzes — files: `backend/src/routes/admin.quizzes.routes.ts` (new)
 **PR-F** · Wave 2 · §2 categories + templates + §3 featured — files: `backend/src/routes/admin.templates.routes.ts` (new), `backend/src/db/repositories/templateRepo.ts`
 **PR-G** · Wave 2 · §2 config + §4 maintenance enforcement — files: `backend/src/routes/admin.config.routes.ts` (new), `backend/src/db/repositories/appConfigRepo.ts` (new), `backend/src/services/game/createGame.ts`
@@ -71,7 +71,7 @@ In `backend/src/auth/middleware.ts`:
 
 ### 2. Admin REST routes
 
-New file `backend/src/routes/admin.routes.ts`, all guarded by `verifyAdmin`:
+Routes are split into one file per resource group so the Wave 2 PRs in the strategy above can land in parallel without touching each other. Each file is a Fastify plugin guarded by `verifyAdmin`. Files: `admin.users.routes.ts`, `admin.quizzes.routes.ts`, `admin.templates.routes.ts` (categories + templates + featured), `admin.config.routes.ts` (config + metrics), all under `backend/src/routes/`.
 
 - [ ] `GET /admin/metrics` → `{ activeGameCount, totalQuizCount, totalUserCount, recentAiCalls: { today: number, last7d: number } }`. Active games come from the in-memory `store.ts`; the rest are DB counts.
 - [ ] `GET /admin/users?search=&offset=&limit=` → paginated `{ users: [{ id, email, name, role, createdAt }], total }`. Search matches `email` ILIKE.
@@ -134,7 +134,10 @@ backend/
   src/db/repositories/aiUsageRepo.ts                   # NEW
   src/auth/middleware.ts                               # MODIFY: verifyAdmin
   src/auth/jwt.ts (or equivalent)                      # MODIFY: role claim
-  src/routes/admin.routes.ts                           # NEW
+  src/routes/admin.users.routes.ts                     # NEW (PR-D)
+  src/routes/admin.quizzes.routes.ts                   # NEW (PR-E)
+  src/routes/admin.templates.routes.ts                 # NEW (PR-F — categories + templates + featured)
+  src/routes/admin.config.routes.ts                    # NEW (PR-G — config + metrics + maintenance gate)
   src/services/game/createGame.ts                      # MODIFY: maintenance-mode check
   src/services/ai/service.ts                           # MODIFY: provider override + usage logging
   scripts/promote-admin.ts                             # NEW

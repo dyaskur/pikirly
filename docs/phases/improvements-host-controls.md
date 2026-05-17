@@ -6,7 +6,7 @@
 
 ## Why
 
-Real classroom / dogfood feedback: a question fires while a learner is still reading; the room wants to discuss an answer mid-question; the host wants to end the reveal pause early to keep momentum. The Phase 4.1 followup doc already lists "advance/skip/pause controls" as a Meet-host gap, but the underlying capability has to exist on the engine first and the standalone host page needs it too — so this is its own focused unit rather than a Meet polish item.
+Real classroom / dogfood feedback: a question fires while a learner is still reading; the room wants to discuss an answer mid-question; the host wants to end the reveal pause early to keep momentum. The Phase 4.1 follow-up doc already lists "advance/skip/pause controls" as a Meet-host gap, but the underlying capability has to exist on the engine first and the standalone host page needs it too — so this is its own focused unit rather than a Meet polish item.
 
 ## Out of scope (intentional)
 
@@ -29,8 +29,8 @@ Real classroom / dogfood feedback: a question fires while a learner is still rea
 
 In [backend/src/services/game/lifecycle.ts](../../backend/src/services/game/lifecycle.ts):
 
-- [ ] `pauseQuestion(io, g)` — only valid when `status === 'in_question'`. Clear the active timer, capture remaining ms (`questionDeadlineAt - now`), set `pausedAt = now`, set `status = 'paused'`, broadcast `question_paused { remainingMs }`
-- [ ] `resumeQuestion(io, g)` — only valid when `status === 'paused'`. Compute pause duration, push `questionDeadlineAt` forward by that amount, add to `accumulatedPauseMs`, clear `pausedAt`, set `status = 'in_question'`, re-schedule timer with remaining ms, broadcast `question_resumed { deadlineMs }`
+- [ ] `pauseQuestion(io, g)` — only valid when `status === 'in_question'`. Clear the active timer, capture **`remainingMs = Math.max(0, questionDeadlineAt - now)`** (clamp — if the deadline has already passed, remaining is 0, not negative), set `pausedAt = now`, set `status = 'paused'`, broadcast `question_paused { remainingMs }`. If `remainingMs === 0` you may also choose to fire `endQuestion` immediately instead of pausing — pick one and document.
+- [ ] `resumeQuestion(io, g)` — only valid when `status === 'paused'`. Compute `pauseDuration = Math.max(0, now - pausedAt)`, push `questionDeadlineAt` forward by that amount, add to `accumulatedPauseMs`, clear `pausedAt`, set `status = 'in_question'`, re-schedule timer using **`Math.max(0, questionDeadlineAt - now)`** (clamp again — never schedule a negative-delay `setTimeout`; treat 0 as "fire on next tick"), broadcast `question_resumed { deadlineMs }`
 - [ ] `skipQuestion(io, g)` — only valid when `status` is `'in_question'` or `'paused'`. Force-call `endQuestion(io, g, currentQuestionIndex)` (existing function already handles reveal + leaderboard + auto-advance). If paused: unpause first so timing math stays consistent.
 - [ ] `advanceNow(io, g)` — only valid when `status === 'between'`. Clear the active timer (the one scheduling next question), call `beginQuestion(io, g, currentQuestionIndex + 1)` (or `endGame` if no more questions)
 - [ ] [`recordAnswer`](../../backend/src/services/game/lifecycle.ts#L157) rejects with a new reason `'paused'` when `status === 'paused'`
@@ -65,7 +65,7 @@ In [backend/src/ws/host.handlers.ts](../../backend/src/ws/host.handlers.ts):
 ### 5. Reconnect / late-join sync
 
 - [ ] `join_game` reconnect path in [backend/src/ws/player.handlers.ts](../../backend/src/ws/player.handlers.ts) must include the `'paused'` status correctly when re-emitting the current question — late-joiners should see "paused" UI, not a stuck timer
-- [ ] If status is `'paused'`, the re-sync payload should set `deadlineMs` to `now + remainingMs` so the client renders a frozen countdown until `question_resumed` arrives
+- [ ] If status is `'paused'`, the re-sync payload sends the fresh `remainingMs` (recomputed server-side: `questionDeadlineAt - pausedAt`, clamped to 0) plus an explicit `paused: true` flag. **Do not** synthesise a `deadlineMs = now + remainingMs` — that would let the client decrement past it. Clients **must not decrement `deadlineMs`** while `status === 'paused'`; they render a static `remainingMs` until the next `question_resumed` event arrives, at which point they switch back to deadline-based countdown using the new `deadlineMs`.
 
 ### 6. Standalone host UI
 

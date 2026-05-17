@@ -141,7 +141,7 @@ These belong in any agent's launching prompt, not just in this doc:
 
 1. **Touch only the files listed in your assigned PR's "Files to touch".** If your work needs a file outside that set, stop and raise it — don't silently expand scope.
 2. **Rebase on `main` before each commit if your PR is part of a wave where multiple PRs touch the same file with section-level ownership.** Phase 7 PR-F and Phase 9 PR-B/C/D/F are the common culprits — see the per-section ownership notes in those plans.
-3. **Open the PR with the plan section it implements quoted in the description** (e.g. "Implements PR-A from [docs/phases/05-slides.md](docs/phases/05-slides.md)"). Reviewers should never have to ask which doc to read.
+3. **Open the PR with the plan section it implements quoted in the description** (e.g. "Implements PR-A from [docs/phases/05-slides.md](phases/05-slides.md)"). Reviewers should never have to ask which doc to read.
 4. **Verification gate is what the plan says, not what you feel like running.** Each plan's `Verification` section is the contract — every command listed must pass before the PR is opened.
 5. **CHANGELOG entry under `[Unreleased]`** in the same commit, per the project rule. On a long-lived feature branch, accumulate on the branch.
 6. **Never push to `main`. Never force-push to a shared branch.** PRs only.
