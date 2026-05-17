@@ -23,6 +23,8 @@ Categories: **Added**, **Changed**, **Deprecated**, **Removed**, **Fixed**, **Se
 
 ### Changed
 - Frontend backend URL is now configurable via `VITE_BACKEND_URL` (falls back to `http://localhost:3001`). Affects API calls and the Google sign-in link.
+- Meet add-on side panel: replaced the 🎮 placeholder with the Pikirly wordmark, hide the "Are you the host?" sign-in CTA while a game is already active, and renamed the per-quiz `Host` action button to `Start` (host is already in the meeting). Implements items (b), (d), (f) from `docs/phases/04-meet-followups.md`.
+- Browser tab title is now `Pikirly` everywhere (was a stray `Quizzr` placeholder in `frontend/src/app.html`).
 
 ### Fixed
 - Finished games are evicted from in-memory state 1 hour after `game_end`, and empty lobbies free their map slot on cleanup.
