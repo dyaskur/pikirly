@@ -171,7 +171,12 @@
   .reveal-grid.has-board {
     grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   }
-  .reveal-chart, .reveal-board { padding: 18px; margin: 0; }
+  .reveal-chart, .reveal-board {
+    padding: 18px;
+    margin: 0;
+    max-width: none;
+    width: 100%;
+  }
   @media (max-width: 800px) {
     .reveal-grid.has-board { grid-template-columns: 1fr; }
   }
