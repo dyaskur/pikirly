@@ -68,3 +68,9 @@ export const gameResults = pgTable('game_results', {
 }, (table) => ({
   pk: primaryKey({ columns: [table.gameId, table.playerNickname] }),
 }));
+
+export const pairingCodes = pgTable('pairing_codes', {
+  code: varchar('code', { length: 64 }).primaryKey(),
+  token: text('token').notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+});

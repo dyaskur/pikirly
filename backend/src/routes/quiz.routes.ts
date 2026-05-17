@@ -27,9 +27,13 @@ export async function quizRoutes(app: FastifyInstance) {
     try {
       const quizzes = await quizRepo.list(req.user.id);
       reply.send(quizzes);
-    } catch (err) {
-      req.log.error(err);
-      reply.status(500).send({ error: 'internal_error', message: 'Failed to fetch quizzes' });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      console.error('[QUIZ-V5] Failed to fetch quizzes:', err);
+      reply.status(500).send({ 
+        error: 'internal_error', 
+        message: 'Failed to fetch quizzes: ' + message 
+      });
     }
   });
 
@@ -39,6 +43,7 @@ export async function quizRoutes(app: FastifyInstance) {
       reply.status(400).send({ error: 'invalid_id', message: 'ID must be a valid UUID' });
       return;
     }
+    console.log('[QUIZ-V5] GET /quizzes/:id hit. ID:', parseParams.data.id);
 
     try {
       const quiz = await quizRepo.getById(parseParams.data.id, req.user.id);

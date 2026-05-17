@@ -32,9 +32,17 @@ export interface GameState {
   players: Map<string, PlayerState>;
   answersByQuestion: Map<number, Map<string, AnswerRecord>>;
   createdAt: number;
+  meetingId?: string;
+  meetParticipants: Map<string, string>; // meetParticipantId -> playerId
 }
 
-export function createGameState(quiz: Quiz, gameId: string, dbQuizId?: string, hostUserId?: string): GameState {
+export function createGameState(
+  quiz: Quiz,
+  gameId: string,
+  dbQuizId?: string,
+  hostUserId?: string,
+  meetingId?: string
+): GameState {
   return {
     gameId,
     hostToken: randomUUID(),
@@ -49,6 +57,8 @@ export function createGameState(quiz: Quiz, gameId: string, dbQuizId?: string, h
     players: new Map(),
     answersByQuestion: new Map(),
     createdAt: Date.now(),
+    meetingId,
+    meetParticipants: new Map(),
   };
 }
 

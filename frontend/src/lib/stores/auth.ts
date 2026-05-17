@@ -34,6 +34,7 @@ function createAuthStore() {
       try {
         await api('/auth/logout', { method: 'POST' });
       } finally {
+        import('$lib/api').then(m => m.setAuthToken(null));
         set({ user: null, loading: false });
       }
     }
