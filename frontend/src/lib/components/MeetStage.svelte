@@ -105,8 +105,10 @@
   async function loadQuizzes() {
     try {
       loading = true;
+      error = null;
       const res = await api('/quizzes');
       if (res.ok) {
+        error = null;
         quizzes = await res.json();
       } else {
         error = 'Failed to load quizzes';
@@ -131,13 +133,11 @@
         })
       });
 
-      console.log('[DEBUG] Server response status:', res.status);
       let data;
       try {
         data = await res.json();
-        console.log('[DEBUG] Server response body:', data);
       } catch (jsonErr) {
-        console.error('[DEBUG] Failed to parse JSON:', jsonErr);
+        console.error('Failed to parse create-game response:', jsonErr);
         createError = 'Server returned an invalid response (not JSON).';
         creatingGame = false;
         return;

@@ -229,11 +229,11 @@
           <div class="fade-in card" style="text-align:center; padding: 36px 24px;">
             {#if revealResult.correct}
               <div style="font-size: 3.4rem;">🎉</div>
-              <h2 style="margin: 6px 0 4px; color: var(--c-green);">Correct!</h2>
+              <h2 style="margin: 6px 0 4px;">Correct!</h2>
               <div class="muted">+{revealResult.earned} points</div>
             {:else}
               <div style="font-size: 3.4rem;">😔</div>
-              <h2 style="margin: 6px 0 4px; color: var(--c-red);">Not quite</h2>
+              <h2 style="margin: 6px 0 4px;">Not quite</h2>
               <div class="muted">+0 points</div>
             {/if}
             <div style="margin-top: 22px; padding: 14px; background:#f3f4f6; border-radius:12px;">
@@ -333,11 +333,11 @@
         <div class="fade-in card" style="text-align:center; padding: 36px 24px;">
           {#if revealResult.correct}
             <div style="font-size: 3.4rem;">🎉</div>
-            <h2 style="margin: 6px 0 4px; color: var(--c-green);">Correct!</h2>
+            <h2 style="margin: 6px 0 4px;">Correct!</h2>
             <div class="muted">+{revealResult.earned} points</div>
           {:else}
             <div style="font-size: 3.4rem;">😔</div>
-            <h2 style="margin: 6px 0 4px; color: var(--c-red);">Not quite</h2>
+            <h2 style="margin: 6px 0 4px;">Not quite</h2>
             <div class="muted">+0 points</div>
           {/if}
           <div style="margin-top: 22px; padding: 14px; background:#f3f4f6; border-radius:12px;">

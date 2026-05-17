@@ -67,19 +67,22 @@ try {
   }
 
   const meetingInfo = await meetClient.getMeetingInfo();
-    // Generate a stable visitorId for this user in this meeting if no identity provided by Meet
+    // Stable per-client visitorId. localStorage access can throw in partitioned/disabled-storage contexts.
     let visitorId = '';
-    if (typeof localStorage !== 'undefined') {
+    try {
       visitorId = localStorage.getItem('pikirly.visitorId') || '';
       if (!visitorId) {
         visitorId = crypto.randomUUID();
         localStorage.setItem('pikirly.visitorId', visitorId);
       }
+    } catch {
+      // Storage blocked (e.g. third-party iframe partitioning) — fall back to a fresh per-load id
+      visitorId = crypto.randomUUID();
     }
 
     return {
       meetingCode: meetingInfo.meetingCode || meetingInfo.meetingId,
-      participantId: visitorId || meetingInfo.meetingId || meetingInfo.meetingCode || 'unknown', 
+      participantId: visitorId || crypto.randomUUID() || 'unknown',
       displayName: '',   // Will be populated from auth store if available
       surface
     };

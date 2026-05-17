@@ -5,6 +5,9 @@ import { users } from '../schema.js';
 export const userRepo = {
   async findOrCreateByGoogleSub(sub: string, email: string, name: string) {
     const cleanSub = String(sub).trim();
+    if (!cleanSub) {
+      throw new Error('Google subject identifier is empty');
+    }
 
     // Use sql wrapper with explicit text cast in the query
     // This is safer than raw db.execute because it preserves Drizzle's pooling

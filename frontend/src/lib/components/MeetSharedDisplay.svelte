@@ -97,7 +97,7 @@
             <div style="display:flex; flex-direction:column; align-items:center; gap:12px;">
               <div style="font-weight:900; font-size: 1.2rem;">{count}</div>
               <div style="height:{h}px; width:100%; background:{tileColors[i % 4]}; border-radius:12px 12px 0 0; opacity:{isCorrect ? 1 : 0.4}; transition: height 0.5s ease-out;"></div>
-              <div style="display:flex; gap:8px; align-items:center; font-weight:700; font-size: 1rem; color:{isCorrect ? 'var(--c-green)' : 'var(--ink)'}; text-align: center;">
+              <div style="display:flex; gap:8px; align-items:center; font-weight:700; font-size: 1rem; text-align: center;">
                 {shapes[i % 4]} {isCorrect ? '✓' : ''}
               </div>
             </div>

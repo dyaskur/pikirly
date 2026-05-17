@@ -10,7 +10,7 @@
   }
   let { gameId }: Props = $props();
 
-  let role = $state<'host' | 'player' | 'spectator'>('player');
+  let role = $state<'host' | 'player' | 'spectator'>('spectator');
   let phase = $state<'lobby' | 'in_question' | 'answered' | 'reveal' | 'ended'>('lobby');
   let currentQuestion = $state<QuestionPublic | null>(null);
   let myFinalScore = $state<number | null>(null);

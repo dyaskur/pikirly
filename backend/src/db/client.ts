@@ -4,12 +4,15 @@ import { config } from '../config.js';
 
 // Support both ?sslmode=... in URL and DATABASE_SSL env var
 const parsed = new URL(config.DATABASE_URL);
+const urlSslMode = (parsed.searchParams.get('sslmode') ?? '').toLowerCase();
+// Anything other than disable/off/empty (e.g. require, verify-ca, verify-full, prefer, allow) enables SSL
+const urlWantsSsl = urlSslMode !== '' && urlSslMode !== 'disable' && urlSslMode !== 'off';
 // Remove SSL params from the URL string so they don't conflict with our Pool config
 parsed.searchParams.delete('sslmode');
 parsed.searchParams.delete('ssl');
 const sanitizedUrl = parsed.toString();
 
-const sslEnv = config.DATABASE_SSL || process.env.NODE_ENV === 'production';
+const sslEnv = config.DATABASE_SSL || urlWantsSsl || process.env.NODE_ENV === 'production';
 const finalSsl = sslEnv
   ? { rejectUnauthorized: !config.DATABASE_SSL_NO_VERIFY }
   : false;
