@@ -311,7 +311,7 @@
                 <div class="muted text-sm">{quiz.questionCount} question{quiz.questionCount === 1 ? '' : 's'}</div>
               </div>
               <button class="btn btn-primary meet-host-btn" onclick={() => hostQuiz(quiz.id)} disabled={creatingGame}>
-                {creatingGame ? '…' : 'Host'}
+                {creatingGame ? '…' : 'Start'}
               </button>
             </div>
           {/each}

@@ -193,9 +193,12 @@
   {:else}
     <!-- Participant / Unauthenticated View -->
     <div class="card p-8 w-full max-w-sm">
-      <div class="text-4xl mb-4">🎮</div>
-      <h3 class="text-xl font-bold mb-2">Pikirly for Meet</h3>
-      
+      <div
+        class="mb-4"
+        style="font-size: 2.6rem; font-weight: 900; color: var(--brand); letter-spacing: -0.02em;"
+      >Pikirly</div>
+      <h3 class="text-xl font-bold mb-2">for Meet</h3>
+
       {#if activeGameId}
         <div class="mb-4">
           <p class="font-bold">Game is active!</p>
@@ -207,14 +210,16 @@
         </div>
       {/if}
 
-      <div class="mt-8 pt-8 border-t">
-        <div class="mb-4">
-          <p>Are you the host?</p>
+      {#if !activeGameId}
+        <div class="mt-8 pt-8 border-t">
+          <div class="mb-4">
+            <p>Are you the host?</p>
+          </div>
+          <button class="btn btn-secondary w-full" onclick={handleLogin}>
+            Sign in to Host
+          </button>
         </div>
-        <button class="btn btn-secondary w-full" onclick={handleLogin}>
-          Sign in to Host
-        </button>
-      </div>
+      {/if}
     </div>
   {/if}
 </div>
