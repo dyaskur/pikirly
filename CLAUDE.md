@@ -22,6 +22,8 @@ Read this before touching code. Architecture decisions are intentional — don't
 | 7 | Poll / Open Ended / Word Cloud | 🔜 | [docs/phases/07-poll-openended-wordcloud.md](docs/phases/07-poll-openended-wordcloud.md) |
 | 8 | Ordering / Ranking | 🔜 | [docs/phases/08-ordering-ranking.md](docs/phases/08-ordering-ranking.md) |
 | 9 | UX polish + deploy | 🔜 | [docs/phases/09-polish-deploy.md](docs/phases/09-polish-deploy.md) |
+| 10 | Admin panel | 🔜 | [docs/phases/10-admin-panel.md](docs/phases/10-admin-panel.md) |
+| 11 | Self-paced learning paths (solo study) | 🔜 | [docs/phases/11-learning-paths.md](docs/phases/11-learning-paths.md) |
 | — | Redis multi-instance scaling | ⏸ Deferred | [docs/phases/deferred-redis.md](docs/phases/deferred-redis.md) |
 
 **For agents picking up work**: read the relevant phase doc — it contains a checklist of deliverables, files to touch, and verification steps. Don't infer; the plan is explicit.
