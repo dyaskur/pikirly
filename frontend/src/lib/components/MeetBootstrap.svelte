@@ -52,10 +52,13 @@
     // Check if game already exists for this meeting
     try {
       const res = await api(`/games/by-meeting/${meetContext.meetingCode}`);
-      const data = await res.json();
-      if (res.ok && data.ok) {
-        activeGameId = data.gameId;
-      } else if (!res.ok) {
+      if (res.status === 404) {
+        // Normal: no game exists for this meeting yet. Host UI will let them create one.
+        activeGameId = null;
+      } else if (res.ok) {
+        const data = await res.json();
+        if (data.ok) activeGameId = data.gameId;
+      } else {
         error = 'Failed to connect to server. Please try again.';
       }
     } catch (e) {
