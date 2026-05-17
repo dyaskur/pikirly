@@ -10,8 +10,9 @@ parsed.searchParams.delete('ssl');
 const sanitizedUrl = parsed.toString();
 
 const sslEnv = config.DATABASE_SSL || process.env.NODE_ENV === 'production';
-// FORCE rejectUnauthorized: false if SSL is requested at all
-const finalSsl = sslEnv ? { rejectUnauthorized: false } : false;
+const finalSsl = sslEnv
+  ? { rejectUnauthorized: !config.DATABASE_SSL_NO_VERIFY }
+  : false;
 
 console.log('[DB-INIT] Attempting connection to:', {
   host: parsed.hostname,

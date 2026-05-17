@@ -15,8 +15,9 @@ import { aiRoutes } from './routes/ai.routes.js';
 import { templateRoutes } from './routes/template.routes.js';
 import { gameRoutes } from './routes/game.routes.js';
 
-// Bypass self-signed certificate errors for local development behind corporate proxies
-if (process.env.NODE_ENV !== 'production') {
+import { config } from './config.js';
+
+if (config.ALLOW_INSECURE_TLS) {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 }
 

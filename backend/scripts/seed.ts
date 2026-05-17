@@ -1,6 +1,6 @@
 import 'dotenv/config';
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.ALLOW_INSECURE_TLS === 'true') {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 }
 

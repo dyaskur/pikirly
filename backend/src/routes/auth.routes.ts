@@ -22,15 +22,13 @@ export async function authRoutes(app: FastifyInstance) {
     });
     const query = querySchema.parse(req.query);
     const pairingCode = query.state;
-    
-    console.log('[AUTH-V7] OAuth callback received. Pairing code:', pairingCode);
 
     const token = await app.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
 
     // Fetch user info with a 10s timeout to prevent hanging
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
-    
+
     let rawUserInfo;
     try {
       const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
@@ -41,12 +39,10 @@ export async function authRoutes(app: FastifyInstance) {
     } finally {
       clearTimeout(timeoutId);
     }
-    
-    console.log('Google UserInfo received. ID:', rawUserInfo.id, 'Type:', typeof rawUserInfo.id);
-    
+
     const parsed = googleUserInfoSchema.safeParse(rawUserInfo);
     if (!parsed.success) {
-      console.error('UserInfo validation failed:', parsed.error);
+      req.log.warn({ err: parsed.error }, 'OAuth userinfo validation failed');
       reply.status(400).send({ error: 'oauth_failed', message: 'Failed to validate user info' });
       return;
     }
@@ -54,7 +50,6 @@ export async function authRoutes(app: FastifyInstance) {
 
     // Force ID to string to prevent any DB type inference issues
     const googleSub = String(userInfo.id).trim();
-    console.log('[AUTH-V7] Processed googleSub for DB:', googleSub);
 
     let user;
     try {
@@ -64,11 +59,10 @@ export async function authRoutes(app: FastifyInstance) {
         userInfo.name ?? userInfo.email,
       );
     } catch (dbErr) {
-      console.error('[AUTH-V7] DB Query Failed:', dbErr);
-      return reply.status(500).send({ 
-        error: 'database_error', 
+      req.log.error({ err: dbErr }, 'OAuth DB lookup failed');
+      return reply.status(500).send({
+        error: 'database_error',
         message: 'Failed to find or create user',
-        debug: googleSub 
       });
     }
 
@@ -87,25 +81,24 @@ export async function authRoutes(app: FastifyInstance) {
     });
 
     const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/host\/?$/, '').replace(/\/+$/, '');
-    
+
     // SECURITY: Do not put JWT in the redirect query string to prevent leakage in logs/history.
     // Instead, rely on the pairing flow (if pairingCode present) or httpOnly cookie.
     let redirectUrl = `${frontendUrl}/login/callback`;
-    
+
     if (pairingCode) {
-      console.log(`[AUTH-V7] Linking token to pairingCode: ${pairingCode}`);
       try {
         await db.insert(pairingCodes).values({
           code: pairingCode,
           token: jwtToken,
           expiresAt: new Date(Date.now() + 5 * 60000), // 5 minutes
         });
-        
+
         // Append pairingCode to redirect so frontend knows it can close/notify
         const sep = redirectUrl.includes('?') ? '&' : '?';
         redirectUrl += `${sep}pairingCode=${encodeURIComponent(pairingCode)}`;
       } catch (err) {
-        console.error('Failed to save pairing code to db:', err);
+        req.log.error({ err }, 'Failed to save pairing code');
       }
     }
     reply.redirect(redirectUrl);
@@ -129,11 +122,11 @@ export async function authRoutes(app: FastifyInstance) {
       .delete(pairingCodes)
       .where(eq(pairingCodes.code, code))
       .returning();
-      
+
     const data = deleted[0];
 
     if (!data) return reply.code(404).send({ ok: false, error: 'not_found' });
-    
+
     if (Date.now() > data.expiresAt.getTime()) {
       return reply.code(410).send({ ok: false, error: 'expired' });
     }
