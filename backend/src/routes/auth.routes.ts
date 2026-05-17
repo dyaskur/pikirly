@@ -16,12 +16,13 @@ export async function authRoutes(app: FastifyInstance) {
   // GET /auth/google - handled by oauth2 plugin directly because of startRedirectPath
 
   app.get('/auth/google/callback', async (req, reply) => {
-    // Validate state (pairingCode) strictly
+    // Validate state (pairingCode) strictly — fall through with no pairing
+    // code on malformed input rather than letting ZodError surface to Fastify.
     const querySchema = z.object({
       state: z.string().optional()
     });
-    const query = querySchema.parse(req.query);
-    const pairingCode = query.state;
+    const parsedQuery = querySchema.safeParse(req.query);
+    const pairingCode = parsedQuery.success ? parsedQuery.data.state : undefined;
 
     const token = await app.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
 

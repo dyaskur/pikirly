@@ -24,10 +24,8 @@ export async function quizRoutes(app: FastifyInstance) {
   app.addHook('preValidation', verifyJwt);
 
   app.get('/quizzes', async (req, reply) => {
-    console.log('[QUIZ-V5] GET /quizzes hit. User:', req.user.id);
     try {
       const quizzes = await quizRepo.list(req.user.id);
-      console.log('[QUIZ-V5] Found quizzes:', quizzes.length);
       reply.send(quizzes);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';
