@@ -6,14 +6,14 @@ dotenv.config();
 // z.coerce.boolean() uses Boolean() which treats "false" as truthy. Parse strings explicitly.
 function envBool(defaultValue: boolean) {
   return z.preprocess((v) => {
-    if (v === undefined || v === null || v === '') return defaultValue;
+    if (v === null || v === '') return defaultValue;
     if (typeof v === 'boolean') return v;
     if (typeof v === 'string') {
       const lower = v.toLowerCase().trim();
       return lower === 'true' || lower === '1' || lower === 'yes';
     }
     return defaultValue;
-  }, z.boolean());
+  }, z.boolean()).default(defaultValue);
 }
 
 const envSchema = z.object({
