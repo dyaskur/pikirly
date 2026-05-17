@@ -30,7 +30,7 @@
   const totalAnswers = $derived(reveal ? reveal.distribution.reduce((a, b) => a + b, 0) : 0);
 </script>
 
-<div class="center" style="padding: 28px 16px; width: 100%; max-width: 900px; margin: 0 auto;">
+<div class="center meet-shared" style="padding: 20px 16px; width: 100%; max-width: 1280px; margin: 0 auto;">
   {#if phase === 'lobby'}
     <div class="fade-in" style="text-align:center; color:white;">
       <div class="tag">Game PIN</div>
@@ -84,43 +84,45 @@
 
   {:else if phase === 'reveal' && currentQuestion && reveal}
     {@const maxCount = Math.max(1, ...reveal.distribution)}
-    <div class="fade-in" style="color:white; width: 100%;">
+    <div class="fade-in reveal-wrap" style="color:white; width: 100%;">
       <div class="tag">Results</div>
-      <h2 style="margin: 10px 0 24px; font-size: 2rem;">{currentQuestion.text}</h2>
+      <h2 class="reveal-question">{currentQuestion.text}</h2>
 
-      <div class="card" style="margin-bottom: 24px; padding: 30px;">
-        <div style="display:grid; grid-template-columns: repeat({currentQuestion.choices.length}, 1fr); gap: 16px; align-items:end; min-height: 250px;">
-          {#each currentQuestion.choices as choice, i}
-            {@const isCorrect = i === reveal.correctChoice}
-            {@const count = reveal.distribution[i] ?? 0}
-            {@const h = Math.max(10, (count / maxCount) * 200)}
-            <div style="display:flex; flex-direction:column; align-items:center; gap:12px;">
-              <div style="font-weight:900; font-size: 1.2rem;">{count}</div>
-              <div style="height:{h}px; width:100%; background:{tileColors[i % 4]}; border-radius:12px 12px 0 0; opacity:{isCorrect ? 1 : 0.4}; transition: height 0.5s ease-out;"></div>
-              <div style="display:flex; gap:8px; align-items:center; font-weight:700; font-size: 1rem; text-align: center;">
-                {shapes[i % 4]} {isCorrect ? '✓' : ''}
+      <div class="reveal-grid" class:has-board={leaderboard.length > 0}>
+        <div class="card reveal-chart">
+          <div style="display:grid; grid-template-columns: repeat({currentQuestion.choices.length}, 1fr); gap: 12px; align-items:end; min-height: 160px;">
+            {#each currentQuestion.choices as choice, i}
+              {@const isCorrect = i === reveal.correctChoice}
+              {@const count = reveal.distribution[i] ?? 0}
+              {@const h = Math.max(8, (count / maxCount) * 140)}
+              <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+                <div style="font-weight:900; font-size: 1rem;">{count}</div>
+                <div style="height:{h}px; width:100%; background:{tileColors[i % 4]}; border-radius:10px 10px 0 0; opacity:{isCorrect ? 1 : 0.4}; transition: height 0.5s ease-out;"></div>
+                <div style="display:flex; gap:6px; align-items:center; font-weight:700; font-size: 0.95rem; text-align: center;">
+                  {shapes[i % 4]} {isCorrect ? '✓' : ''}
+                </div>
               </div>
-            </div>
-          {/each}
-        </div>
-        <div style="text-align:center; margin-top:20px; opacity: 0.7;">
-          {totalAnswers} total response{totalAnswers === 1 ? '' : 's'}
-        </div>
-      </div>
-
-      {#if leaderboard.length > 0}
-        <div class="card" style="padding: 24px;">
-          <h3 style="margin-top:0; border-bottom: 2px solid #f3f4f6; padding-bottom: 12px;">Leaderboard</h3>
-          <ol style="padding: 0; margin:0; list-style: none;">
-            {#each leaderboard.slice(0, 5) as entry (entry.playerId)}
-              <li style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f3f4f6;">
-                <span style="font-weight: 600;">{entry.nickname}</span>
-                <strong style="color: var(--brand);">{entry.score}</strong>
-              </li>
             {/each}
-          </ol>
+          </div>
+          <div style="text-align:center; margin-top:12px; opacity: 0.7; font-size: 0.9rem;">
+            {totalAnswers} total response{totalAnswers === 1 ? '' : 's'}
+          </div>
         </div>
-      {/if}
+
+        {#if leaderboard.length > 0}
+          <div class="card reveal-board">
+            <h3 style="margin:0 0 10px; border-bottom: 2px solid #f3f4f6; padding-bottom: 8px; font-size: 1.05rem;">Leaderboard</h3>
+            <ol style="padding: 0; margin:0; list-style: none;">
+              {#each leaderboard.slice(0, 5) as entry (entry.playerId)}
+                <li style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f3f4f6; font-size: 0.95rem;">
+                  <span style="font-weight: 600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{entry.nickname}</span>
+                  <strong style="color: var(--brand);">{entry.score}</strong>
+                </li>
+              {/each}
+            </ol>
+          </div>
+        {/if}
+      </div>
     </div>
 
   {:else if phase === 'ended' && final}
@@ -143,3 +145,25 @@
     </div>
   {/if}
 </div>
+
+<style>
+  .meet-shared { min-height: 100vh; align-items: flex-start; }
+  .reveal-question {
+    margin: 8px 0 14px;
+    font-size: clamp(1.2rem, 2.4vw, 1.75rem);
+    line-height: 1.2;
+  }
+  .reveal-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  .reveal-grid.has-board {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+  .reveal-chart, .reveal-board { padding: 18px; margin: 0; }
+  @media (max-width: 800px) {
+    .reveal-grid.has-board { grid-template-columns: 1fr; }
+  }
+</style>
