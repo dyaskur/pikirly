@@ -17,7 +17,7 @@ describe('quizRepo', () => {
     const quizData = {
       title: 'Test Quiz',
       questions: [
-        { id: '1', text: 'Q1', choices: ['A', 'B', 'C', 'D'], correct: 0, limitMs: 20_000 },
+        { id: '1', type: 'multiple_choice' as const, text: 'Q1', choices: ['A', 'B', 'C', 'D'], correct: 0, limitMs: 20_000 },
       ],
     };
 

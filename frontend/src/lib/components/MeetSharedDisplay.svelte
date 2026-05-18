@@ -25,9 +25,12 @@
     final 
   }: Props = $props();
 
-  const tileColors = ['var(--c-red)', 'var(--c-blue)', 'var(--c-yellow)', 'var(--c-green)'];
-  const shapes = ['▲', '◆', '●', '■'];
+  const tileColors = ['var(--c-red)', 'var(--c-blue)', 'var(--c-yellow)', 'var(--c-green)', '#8b5cf6', '#f97316'];
+  const shapes = ['▲', '◆', '●', '■', '★', '⬢'];
   const totalAnswers = $derived(reveal ? reveal.distribution.reduce((a, b) => a + b, 0) : 0);
+  const choiceCols = $derived(
+    !currentQuestion ? 2 : currentQuestion.choices.length <= 4 ? 2 : 3,
+  );
 </script>
 
 <div class="center meet-shared" style="padding: 20px 16px; width: 100%; max-width: 1280px; margin: 0 auto;">
@@ -80,10 +83,10 @@
 
       <div class="card" style="margin: 0 auto; max-width: 820px; text-align:center; padding: 40px;">
         <h2 style="font-size: clamp(1.8rem, 4vw, 2.5rem); margin: 0 0 40px; line-height: 1.2;">{currentQuestion.text}</h2>
-        <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+        <div style="display:grid; grid-template-columns: repeat({choiceCols}, 1fr); gap: 20px;">
           {#each currentQuestion.choices as choice, i}
-            <div style="background:{tileColors[i % 4]}; color:white; padding: 30px; border-radius: 16px; font-weight:800; font-size: 1.3rem; display:flex; gap:15px; align-items:center; justify-content:center; box-shadow: 0 4px 0 rgba(0,0,0,0.1);">
-              <span style="font-size:1.8rem;">{shapes[i % 4]}</span>
+            <div style="background:{tileColors[i % tileColors.length]}; color:white; padding: 30px; border-radius: 16px; font-weight:800; font-size: 1.3rem; display:flex; gap:15px; align-items:center; justify-content:center; box-shadow: 0 4px 0 rgba(0,0,0,0.1);">
+              <span style="font-size:1.8rem;">{shapes[i % shapes.length]}</span>
               <span>{choice}</span>
             </div>
           {/each}
@@ -106,9 +109,9 @@
               {@const h = Math.max(8, (count / maxCount) * 140)}
               <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
                 <div style="font-weight:900; font-size: 1rem;">{count}</div>
-                <div style="height:{h}px; width:100%; background:{tileColors[i % 4]}; border-radius:10px 10px 0 0; opacity:{isCorrect ? 1 : 0.4}; transition: height 0.5s ease-out;"></div>
+                <div style="height:{h}px; width:100%; background:{tileColors[i % tileColors.length]}; border-radius:10px 10px 0 0; opacity:{isCorrect ? 1 : 0.4}; transition: height 0.5s ease-out;"></div>
                 <div style="display:flex; gap:6px; align-items:center; font-weight:700; font-size: 0.95rem; text-align: center;">
-                  {shapes[i % 4]} {isCorrect ? '✓' : ''}
+                  {shapes[i % shapes.length]} {isCorrect ? '✓' : ''}
                 </div>
               </div>
             {/each}

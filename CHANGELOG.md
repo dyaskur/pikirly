@@ -9,6 +9,13 @@ Categories: **Added**, **Changed**, **Deprecated**, **Removed**, **Fixed**, **Se
 ## [Unreleased]
 
 ### Added
+- **Phase 6: Question type system foundation**
+  - New `QuestionType` union: `multiple_choice`, `true_false`, `poll`, `open_ended`, `word_cloud`, `ranking` (only the first two are wired up so far)
+  - True/False questions: hosts can pick the type in the editor; choices are locked to "True"/"False" and scored normally
+  - Dynamic choice count: multiple-choice questions support 2–6 choices via per-choice add/remove buttons in the editor (was: hardcoded 4)
+  - Per-question `randomizeChoices` toggle: when enabled, each player sees the choice tiles in a deterministically-shuffled order seeded by `playerId + ':' + questionIndex`; the canonical index is still used for scoring
+  - Player and host UIs extend the colour/shape palette to 6 and switch to a 3-column grid when there are 5–6 choices
+  - DB migration `0001_question_type_backfill.sql` injects `type: 'multiple_choice'` into existing JSONB question rows
 - **Phase 4: Google Meet Add-on**
   - Google Meet Add-ons SDK integration (`@googleworkspace/meet-addons`)
   - Identity reconciliation: participants join using their Meet identity (automatic `playerId` mapping)

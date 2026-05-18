@@ -3,14 +3,10 @@
   import { api } from '$lib/api';
   import { goto } from '$app/navigation';
   import AIGenerateDrawer from './AIGenerateDrawer.svelte';
+  import type { Question, QuestionType } from '@kahoot/shared';
 
-  interface Question {
-    id: string;
-    text: string;
-    choices: string[];
-    correct: number;
-    limitMs: number;
-  }
+  const MIN_CHOICES = 2;
+  const MAX_CHOICES = 6;
 
   let {
     quizId = null as string | null,
@@ -71,6 +67,7 @@
       ...questions,
       {
         id: crypto.randomUUID(),
+        type: 'multiple_choice',
         text: '',
         choices: ['', '', '', ''],
         correct: 0,
@@ -81,6 +78,40 @@
 
   function removeQuestion(index: number) {
     questions = questions.filter((_, i) => i !== index);
+  }
+
+  function setQuestionType(index: number, type: QuestionType) {
+    const q = questions[index];
+    if (q.type === type) return;
+    if (type === 'true_false') {
+      q.choices = ['True', 'False'];
+      if (q.correct === undefined || q.correct > 1) q.correct = 0;
+    } else if (type === 'multiple_choice' && q.type === 'true_false') {
+      // T/F → MC: pad to 4 blank choices so the editor feels normal.
+      const padded = [...q.choices];
+      while (padded.length < 4) padded.push('');
+      q.choices = padded;
+    }
+    q.type = type;
+    questions = [...questions];
+  }
+
+  function addChoice(index: number) {
+    const q = questions[index];
+    if (q.type !== 'multiple_choice' || q.choices.length >= MAX_CHOICES) return;
+    q.choices = [...q.choices, ''];
+    questions = [...questions];
+  }
+
+  function removeChoice(qIndex: number, choiceIndex: number) {
+    const q = questions[qIndex];
+    if (q.type !== 'multiple_choice' || q.choices.length <= MIN_CHOICES) return;
+    q.choices = q.choices.filter((_, i) => i !== choiceIndex);
+    if (q.correct !== undefined) {
+      if (q.correct === choiceIndex) q.correct = 0;
+      else if (q.correct > choiceIndex) q.correct = q.correct - 1;
+    }
+    questions = [...questions];
   }
 
   function onAIGenerate(generated: Question[]) {
@@ -111,8 +142,23 @@
         error = `Question ${i + 1} text is required`;
         return;
       }
+      if (q.type === 'true_false') {
+        if (q.choices.length !== 2) {
+          error = `Question ${i + 1} (True/False) must have exactly 2 choices`;
+          return;
+        }
+      } else {
+        if (q.choices.length < MIN_CHOICES || q.choices.length > MAX_CHOICES) {
+          error = `Question ${i + 1} must have between ${MIN_CHOICES} and ${MAX_CHOICES} choices`;
+          return;
+        }
+      }
       if (q.choices.some((c: string) => !c.trim())) {
-        error = `Question ${i + 1} must have all 4 choices filled`;
+        error = `Question ${i + 1} must have all choices filled`;
+        return;
+      }
+      if (q.correct === undefined || q.correct < 0 || q.correct >= q.choices.length) {
+        error = `Question ${i + 1} must have a correct answer selected`;
         return;
       }
     }
@@ -195,6 +241,25 @@
 
                   <div style="font-weight: bold; margin-bottom: 1rem;">Question {index + 1}</div>
 
+                  <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                    <div style="flex: 0 0 200px;">
+                      <label for="q-type-{index}" style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem;">Type</label>
+                      <select
+                        id="q-type-{index}"
+                        value={question.type}
+                        onchange={(e) => setQuestionType(index, (e.currentTarget as HTMLSelectElement).value as QuestionType)}
+                        style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 4px;"
+                      >
+                        <option value="multiple_choice">Multiple Choice</option>
+                        <option value="true_false">True / False</option>
+                      </select>
+                    </div>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; align-self: flex-end; padding-bottom: 0.5rem;">
+                      <input type="checkbox" bind:checked={question.randomizeChoices} />
+                      Randomize choice order per player
+                    </label>
+                  </div>
+
                   <div style="margin-bottom: 1rem;">
                     <label for="q-text-{index}" style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem;">Question Text</label>
                     <input
@@ -207,22 +272,39 @@
                   </div>
 
                   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                    {#each question.choices as choice, choiceIndex}
+                    {#each question.choices as _choice, choiceIndex}
                       <div>
                         <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; margin-bottom: 0.25rem;">
                           <input type="radio" bind:group={question.correct} value={choiceIndex} name="correct-{index}" />
                           Choice {choiceIndex + 1} {question.correct === choiceIndex ? '(Correct)' : ''}
+                          {#if question.type === 'multiple_choice' && question.choices.length > MIN_CHOICES}
+                            <button
+                              type="button"
+                              onclick={() => removeChoice(index, choiceIndex)}
+                              aria-label="Remove choice {choiceIndex + 1}"
+                              style="margin-left: auto; background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 0 4px;"
+                            >×</button>
+                          {/if}
                         </label>
                         <input
                           type="text"
                           bind:value={question.choices[choiceIndex]}
                           placeholder={`Option ${choiceIndex + 1}`}
                           aria-label="Question {index + 1} choice {choiceIndex + 1}"
+                          disabled={question.type === 'true_false'}
                           style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 4px; border-left: 4px solid {question.correct === choiceIndex ? '#10b981' : '#e5e7eb'};"
                         />
                       </div>
                     {/each}
                   </div>
+
+                  {#if question.type === 'multiple_choice' && question.choices.length < MAX_CHOICES}
+                    <div style="margin-bottom: 1rem;">
+                      <button class="btn-secondary" onclick={() => addChoice(index)} style="padding: 0.4rem 0.75rem;">
+                        + Add choice ({question.choices.length}/{MAX_CHOICES})
+                      </button>
+                    </div>
+                  {/if}
 
                   <div>
                     <label for="q-limit-{index}" style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem;">Time Limit</label>
