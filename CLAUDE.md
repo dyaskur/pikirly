@@ -17,7 +17,8 @@ Read this before touching code. Architecture decisions are intentional — don't
 | — | Host live session controls (pause/skip/advance) | 🔜 | [docs/phases/improvements-host-controls.md](docs/phases/improvements-host-controls.md) |
 | — | Slide-rail quiz editor (1 question = 1 slide) | 🔜 | [docs/phases/improvements-slide-rail-editor.md](docs/phases/improvements-slide-rail-editor.md) |
 | 5 | Google Slides add-on | 🔜 | [docs/phases/05-slides.md](docs/phases/05-slides.md) |
-| 6 | Question type system (True/False, dynamic choices, randomize) | 🔜 | [docs/phases/06-question-types-foundation.md](docs/phases/06-question-types-foundation.md) |
+| 6 | Question type system (True/False, dynamic choices, randomize) | 🚧 In progress | [docs/phases/06-question-types-foundation.md](docs/phases/06-question-types-foundation.md) |
+| — | AI question-type parity (T/F + 2–6 choices in AI gen) | 🔜 | [docs/phases/improvements-ai-question-types.md](docs/phases/improvements-ai-question-types.md) |
 | 6.5 | Rich slides (media + info slides + slide editor) | 🔜 | [docs/phases/06.5-rich-slides.md](docs/phases/06.5-rich-slides.md) |
 | 7 | Poll / Open Ended / Word Cloud | 🔜 | [docs/phases/07-poll-openended-wordcloud.md](docs/phases/07-poll-openended-wordcloud.md) |
 | 8 | Ordering / Ranking | 🔜 | [docs/phases/08-ordering-ranking.md](docs/phases/08-ordering-ranking.md) |
