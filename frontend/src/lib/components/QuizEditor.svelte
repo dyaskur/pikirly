@@ -274,18 +274,20 @@
                   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                     {#each question.choices as _choice, choiceIndex}
                       <div>
-                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; margin-bottom: 0.25rem;">
-                          <input type="radio" bind:group={question.correct} value={choiceIndex} name="correct-{index}" />
-                          Choice {choiceIndex + 1} {question.correct === choiceIndex ? '(Correct)' : ''}
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem;">
+                          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+                            <input type="radio" bind:group={question.correct} value={choiceIndex} name="correct-{index}" />
+                            Choice {choiceIndex + 1} {question.correct === choiceIndex ? '(Correct)' : ''}
+                          </label>
                           {#if question.type === 'multiple_choice' && question.choices.length > MIN_CHOICES}
                             <button
                               type="button"
                               onclick={() => removeChoice(index, choiceIndex)}
                               aria-label="Remove choice {choiceIndex + 1}"
-                              style="margin-left: auto; background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 0 4px;"
+                              style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 0 4px;"
                             >×</button>
                           {/if}
-                        </label>
+                        </div>
                         <input
                           type="text"
                           bind:value={question.choices[choiceIndex]}
