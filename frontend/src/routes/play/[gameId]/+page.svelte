@@ -326,19 +326,19 @@
               <div style="font-weight: 800; font-size: 1.2rem; margin-top: 6px;">Answer locked in!</div>
               <div class="muted" style="margin-top: 4px;">Waiting for other players…</div>
               {#if myChoice !== null}
-                <div style="margin-top:14px; display:inline-flex; align-items:center; gap:8px; padding: 10px 18px; background:{tileColors[myChoice]}; color:white; border-radius:12px; font-weight:800;">
-                  {shapes[myChoice]} {currentQuestion.choices[myChoice]}
+                <div style="margin-top:14px; display:inline-flex; align-items:center; gap:8px; padding: 10px 18px; background:{tileColors[myChoice % tileColors.length]}; color:white; border-radius:12px; font-weight:800;">
+                  {shapes[myChoice % shapes.length]} {currentQuestion.choices[myChoice]}
                 </div>
               {/if}
             </div>
           {:else}
-            <div style="margin-top: 18px; display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-              {#each currentQuestion.choices as choice, i}
+            <div style="margin-top: 18px; display:grid; grid-template-columns: repeat({choiceCols}, 1fr); gap: 12px;">
+              {#each displayOrder as canonicalIdx}
                 <button
-                  onclick={() => pick(i)}
+                  onclick={() => pick(canonicalIdx)}
                   disabled={myChoice !== null}
                   style="
-                    background:{tileColors[i]};
+                    background:{tileColors[canonicalIdx % tileColors.length]};
                     color:white;
                     padding: 28px 14px;
                     font-size: 1.05rem;
@@ -347,8 +347,8 @@
                     box-shadow: 0 4px 0 rgba(0,0,0,0.18);
                   "
                 >
-                  <span style="font-size:1.6rem;">{shapes[i]}</span>
-                  <span>{choice}</span>
+                  <span style="font-size:1.6rem;">{shapes[canonicalIdx % shapes.length]}</span>
+                  <span>{currentQuestion.choices[canonicalIdx]}</span>
                 </button>
               {/each}
             </div>
