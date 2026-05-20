@@ -6,11 +6,12 @@ UPDATE "quizzes"
 SET "questions" = (
   SELECT jsonb_agg(
     CASE
-      WHEN q ? 'type' THEN q
-      ELSE jsonb_set(q, '{type}', '"multiple_choice"'::jsonb, true)
+      WHEN q.item ? 'type' THEN q.item
+      ELSE jsonb_set(q.item, '{type}', '"multiple_choice"'::jsonb, true)
     END
+    ORDER BY q.ord
   )
-  FROM jsonb_array_elements("questions") AS q
+  FROM jsonb_array_elements("questions") WITH ORDINALITY AS q(item, ord)
 )
 WHERE EXISTS (
   SELECT 1 FROM jsonb_array_elements("questions") AS q
