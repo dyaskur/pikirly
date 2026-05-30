@@ -141,7 +141,7 @@ describe('lifecycle', () => {
     });
 
     it('accepts a valid answer and calculates score', () => {
-      const res = recordAnswer(state, 'p1', 0, quiz.questions[0].correct, Date.now());
+      const res = recordAnswer(state, 'p1', 0, quiz.questions[0].correct!, Date.now());
       expect(res.accepted).toBe(true);
       
       const answers = state.answersByQuestion.get(0)!;

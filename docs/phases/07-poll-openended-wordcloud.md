@@ -35,6 +35,10 @@ PR-B engine text-answer storage    PR-D ResponseList.svelte         QuizEditor +
 - Anonymous vs named response toggle
 - Response editing after submission
 
+## Coordinated work
+
+Before this phase ships, the AI generator must also learn about `poll`, `open_ended`, and `word_cloud`. The Phase 6 carry-over for `true_false` + 2–6 choices is tracked separately in [improvements-ai-question-types.md](improvements-ai-question-types.md) — fold the Phase 7 type additions into that same prompt/zod pass rather than touching the AI surface twice.
+
 ## Deliverables
 
 ### 1. Poll / Vote

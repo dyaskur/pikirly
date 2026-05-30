@@ -69,10 +69,12 @@ export function registerPlayerHandlers(io: IO, socket: IOSocket) {
           socket.emit('question', {
             index: game.currentQuestionIndex,
             total: game.quiz.questions.length,
+            type: q.type,
             text: q.text,
             choices: q.choices,
             deadlineMs: game.questionDeadlineAt,
             limitMs: q.limitMs,
+            randomizeChoices: q.randomizeChoices,
           });
         }
       }

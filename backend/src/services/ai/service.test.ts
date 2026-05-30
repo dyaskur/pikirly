@@ -32,7 +32,7 @@ describe('AIService', () => {
 
   it('should use straico by default and return questions', async () => {
     const questions = [
-      { id: '1', text: 'Q1', choices: ['A', 'B', 'C', 'D'], correct: 0, limitMs: 10000 }
+      { id: '1', type: 'multiple_choice', text: 'Q1', choices: ['A', 'B', 'C', 'D'], correct: 0, limitMs: 10000 }
     ];
     (mockStraico.generateQuestions as any).mockResolvedValue(questions);
 
@@ -45,7 +45,7 @@ describe('AIService', () => {
 
   it('should fallback to openai if straico fails', async () => {
     const questions = [
-      { id: '1', text: 'Q1', choices: ['A', 'B', 'C', 'D'], correct: 0, limitMs: 10000 }
+      { id: '1', type: 'multiple_choice', text: 'Q1', choices: ['A', 'B', 'C', 'D'], correct: 0, limitMs: 10000 }
     ];
     (mockStraico.generateQuestions as any).mockRejectedValue(new Error('Straico down'));
     (mockOpenAI.generateQuestions as any).mockResolvedValue(questions);
@@ -75,7 +75,7 @@ describe('AIService', () => {
   });
 
   it('should use specified provider if provided in options', async () => {
-    const questions = [{ id: '1', text: 'Q1', choices: ['A', 'B', 'C', 'D'], correct: 0, limitMs: 10000 }];
+    const questions = [{ id: '1', type: 'multiple_choice', text: 'Q1', choices: ['A', 'B', 'C', 'D'], correct: 0, limitMs: 10000 }];
     (mockOpenAI.generateQuestions as any).mockResolvedValue(questions);
 
     const result = await service.generateQuestions({ topic: 'Test', count: 1, provider: 'openai' });

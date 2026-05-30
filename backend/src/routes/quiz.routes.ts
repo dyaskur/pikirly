@@ -3,13 +3,24 @@ import { z } from 'zod';
 import { quizRepo } from '../db/repositories/quizRepo.js';
 import { verifyJwt } from '../auth/middleware.js';
 
-const questionSchema = z.object({
-  id: z.string(),
-  text: z.string().min(1).max(500),
-  choices: z.array(z.string().min(1).max(200)).length(4),
-  correct: z.number().int().min(0).max(3),
-  limitMs: z.number().int().positive(),
-});
+const questionSchema = z
+  .object({
+    id: z.string(),
+    type: z.enum(['multiple_choice', 'true_false']).default('multiple_choice'),
+    text: z.string().min(1).max(500),
+    choices: z.array(z.string().min(1).max(200)).min(2).max(6),
+    correct: z.number().int().min(0),
+    limitMs: z.number().int().positive(),
+    randomizeChoices: z.boolean().optional(),
+  })
+  .refine((q) => q.correct < q.choices.length, {
+    message: 'correct must be a valid choice index',
+    path: ['correct'],
+  })
+  .refine((q) => q.type !== 'true_false' || q.choices.length === 2, {
+    message: 'true_false questions must have exactly 2 choices',
+    path: ['choices'],
+  });
 
 const quizBodySchema = z.object({
   title: z.string().min(1).max(80),

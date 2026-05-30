@@ -4,7 +4,7 @@ Read this before touching code. Architecture decisions are intentional — don't
 
 ## Project status
 
-**Phases 1–4 complete** (Meet add-on merged in PR #6, commit `4ec6c96`). **Phase 4.1 in progress** (Meet UX polish).
+**Phases 1–4 and 6 complete** (Meet add-on merged in PR #6, commit `4ec6c96`; Phase 6 merged in commit `f5ac2ba`). **Phase 4.1 in progress** (Meet UX polish).
 
 | # | Phase | Status | Action plan |
 |---|---|---|---|
@@ -17,7 +17,9 @@ Read this before touching code. Architecture decisions are intentional — don't
 | — | Host live session controls (pause/skip/advance) | 🔜 | [docs/phases/improvements-host-controls.md](docs/phases/improvements-host-controls.md) |
 | — | Slide-rail quiz editor (1 question = 1 slide) | 🔜 | [docs/phases/improvements-slide-rail-editor.md](docs/phases/improvements-slide-rail-editor.md) |
 | 5 | Google Slides add-on | 🔜 | [docs/phases/05-slides.md](docs/phases/05-slides.md) |
-| 6 | Question type system (True/False, dynamic choices, randomize) | 🔜 | [docs/phases/06-question-types-foundation.md](docs/phases/06-question-types-foundation.md) |
+| 6 | Question type system (True/False, dynamic choices, randomize) | ✅ Done | [docs/phases/06-question-types-foundation.md](docs/phases/06-question-types-foundation.md) |
+| — | AI question-type parity (T/F + 2–6 choices in AI gen) | 🔜 | [docs/phases/improvements-ai-question-types.md](docs/phases/improvements-ai-question-types.md) |
+| — | Multi-select questions (2+ correct answers) | 🔜 | [docs/phases/improvements-multi-select.md](docs/phases/improvements-multi-select.md) |
 | 6.5 | Rich slides (media + info slides + slide editor) | 🔜 | [docs/phases/06.5-rich-slides.md](docs/phases/06.5-rich-slides.md) |
 | 7 | Poll / Open Ended / Word Cloud | 🔜 | [docs/phases/07-poll-openended-wordcloud.md](docs/phases/07-poll-openended-wordcloud.md) |
 | 8 | Ordering / Ranking | 🔜 | [docs/phases/08-ordering-ranking.md](docs/phases/08-ordering-ranking.md) |
@@ -108,4 +110,4 @@ Always run type checks before claiming a task done. Once Phase 2 lands, also run
 
 ## Current work
 
-Phase 4 shipped in PR #6. The remaining Meet polish lives in [docs/phases/04-meet-followups.md](docs/phases/04-meet-followups.md) — pick from that list before starting on Phase 5.
+Phase 6 (Question Type Foundation) is complete. Current focus is on **Phase 4.1 (Meet UX Polish)**, specifically the items in [docs/phases/04-meet-followups.md](docs/phases/04-meet-followups.md) to improve the participant side panel and host controls during gameplay.

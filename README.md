@@ -103,15 +103,13 @@ Detailed documentation is available in the `docs/` directory:
 
 1. ✅ **Phase 1**: Minimal playable loop (In-memory)
 2. ✅ **Phase 2**: Persistence (Postgres) + Auth (Google) + Quiz Editor
-3. 🚧 **Phase 3**: Templates + AI Quiz Generation — *AI generation shipped; quiz templates pending*
-4. 🔜 **Phase 4**: Google Meet Add-on
+3. ✅ **Phase 3**: Templates + AI Quiz Generation
+4. ✅ **Phase 4**: Google Meet Add-on
 5. 🔜 **Phase 5**: Google Slides Add-on
-6. 🔜 **Phase 6**: Advanced Question Types (True/False, Poll, etc.)
+6. ✅ **Phase 6**: Question Type System (True/False, dynamic choices, randomize)
 7. 🔜 **Phase 9**: UX Polish & Deployment
 
 ### TODO (next up)
 
-- [ ] Quiz template library (`backend/src/data/templates.ts`) + `GET /templates` endpoints
-- [ ] "Start from template" flow in the quiz editor
 - [ ] Host-side reconnect using the existing `hostToken` (so a host refresh during lobby resumes the game)
 - [ ] Production build path for the backend (replace `tsx` runtime with a `tsc` build)
