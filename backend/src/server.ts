@@ -94,6 +94,11 @@ async function main() {
   await app.register(aiRoutes);
   await app.register(templateRoutes);
 
+  if (process.env.E2E_TEST_MODE === '1') {
+    const { testRoutes } = await import('./routes/test.routes.js');
+    await app.register(testRoutes);
+  }
+
   const gameIdParamsSchema = z.object({
     gameId: z.string().length(6).regex(/^\d+$/),
   });
@@ -119,6 +124,11 @@ async function main() {
     cors: { origin: ORIGIN, credentials: true },
   });
   registerHandlers(io, app);
+
+  if (process.env.E2E_TEST_MODE === '1') {
+    const { setIO } = await import('./ws/ioRef.js');
+    setIO(io);
+  }
 
   app.log.info(`Socket.IO ready on ws://${HOST}:${PORT}`);
 }

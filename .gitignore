@@ -10,3 +10,8 @@ build
 .idea
 vite.config.ts.timestamp-*
 vite.config.js.timestamp-*
+
+# Playwright screenshot suite
+frontend/test-results
+frontend/playwright-report
+frontend/.playwright

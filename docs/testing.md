@@ -113,6 +113,12 @@ cd backend && pnpm test:integration
 
 # DB tests (requires Docker)
 cd backend && pnpm vitest db
+
+# Playwright UI screenshots (Meet stage + side panel, ~10s)
+cd frontend && pnpm screenshots
+# Outputs PNGs to frontend/test-results/screenshots/ (gitignored).
+# Spins up backend with E2E_TEST_MODE=1 (mounts /test/* routes)
+# and the frontend dev server on :4173. See `frontend/playwright.config.ts`.
 ```
 
 ## CI expectations (Phase 3)
