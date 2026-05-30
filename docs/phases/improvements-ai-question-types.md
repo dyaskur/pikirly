@@ -8,8 +8,8 @@
 
 Phase 6 added `true_false` and dynamic 2–6 choices to the human editor and the engine, but the AI path was deliberately left at "4-choice multiple-choice only":
 
-- Prompts in [straico.ts:20](../../backend/src/services/ai/adapters/straico.ts) and [openai-compatible.ts:26](../../backend/src/services/ai/adapters/openai-compatible.ts) hardcode `["choice 1", "choice 2", "choice 3", "choice 4"]` and don't mention `type`.
-- The AI-only zod validator at [ai/service.ts:11-14](../../backend/src/services/ai/service.ts) still enforces `choices.length(4)` + `correct.max(3)`. Even if a model returned T/F, it would be rejected as invalid format.
+- Prompts in [straico.ts](../../backend/src/services/ai/adapters/straico.ts) and [openai-compatible.ts](../../backend/src/services/ai/adapters/openai-compatible.ts) hardcode `["choice 1", "choice 2", "choice 3", "choice 4"]` and don't mention `type`.
+- The AI-only zod validator in [ai/service.ts](../../backend/src/services/ai/service.ts) still enforces `choices.length(4)` + `correct.max(3)`. Even if a model returned T/F, it would be rejected as invalid format.
 
 Closing this gap is its own concern — prompt changes can regress generation quality, so it deserves a focused PR with model-output spot checks rather than being bundled with the UI work.
 
@@ -68,5 +68,5 @@ backend/
 
 ## Relation to other plans
 
-- [Phase 7 — Poll / Open Ended / Word Cloud](07-poll-openended-wordcloud.md) extends the type system further; when those land, the AI prompts will need another pass. Phase 7's plan references this doc rather than duplicating the AI work.
+- [Phase 7 — Poll / Open-Ended / Word Cloud](07-poll-openended-wordcloud.md) extends the type system further; when those land, the AI prompts will need another pass. Phase 7's plan references this doc rather than duplicating the AI work.
 - [Improvements — AI Hardening](improvements-ai-hardening.md) is orthogonal (rate limits, cost caps, redaction) — can land before, after, or alongside.
