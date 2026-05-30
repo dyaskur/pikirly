@@ -19,7 +19,8 @@ describe('seededShuffle', () => {
   it('preserves the multiset of elements', () => {
     const input = ['A', 'B', 'C', 'D', 'E', 'F'];
     const shuffled = seededShuffle(input, 'seed');
-    expect([...shuffled].sort()).toEqual([...input].sort());
+    const cmp = (a: string, b: string) => a.localeCompare(b);
+    expect([...shuffled].sort(cmp)).toEqual([...input].sort(cmp));
     expect(shuffled).toHaveLength(input.length);
   });
 
@@ -38,6 +39,7 @@ describe('seededShuffle', () => {
   it('handles 2-element arrays (true/false choices)', () => {
     const tf = ['True', 'False'];
     const a = seededShuffle(tf, 'p:0');
-    expect([...a].sort()).toEqual([...tf].sort());
+    const cmp = (x: string, y: string) => x.localeCompare(y);
+    expect([...a].sort(cmp)).toEqual([...tf].sort(cmp));
   });
 });

@@ -6,15 +6,17 @@
   import { playerSession } from '$lib/stores/player';
   import MeetSharedDisplay from '$lib/components/MeetSharedDisplay.svelte';
   import MeetSideControls from '$lib/components/MeetSideControls.svelte';
-  import type { PlayerPublic, QuestionPublic, LeaderboardEntry } from '@kahoot/shared';
+  import type { PlayerPublic, QuestionPublic, LeaderboardEntry, QuestionEndPayload } from '@kahoot/shared';
   import { seededShuffle } from '@kahoot/shared';
+
+  type Reveal = Pick<QuestionEndPayload, 'correctChoice' | 'distribution'>;
 
   const gameId = $derived($page.params.gameId ?? '');
 
   let players = $state<PlayerPublic[]>([]);
   let leaderboard = $state<LeaderboardEntry[]>([]);
   let final = $state<LeaderboardEntry[] | null>(null);
-  let reveal = $state<{ correctChoice: number | null; distribution: number[] } | null>(null);
+  let reveal = $state<Reveal | null>(null);
 
   let phase = $state<'lobby' | 'in_question' | 'answered' | 'reveal' | 'ended'>('lobby');
   let currentQuestion = $state<QuestionPublic | null>(null);

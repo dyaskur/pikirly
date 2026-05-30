@@ -10,7 +10,10 @@
     PlayerPublic,
     QuestionPublic,
     LeaderboardEntry,
+    QuestionEndPayload,
   } from '@kahoot/shared';
+
+  type Reveal = Pick<QuestionEndPayload, 'correctChoice' | 'distribution'>;
 
   const gameId = $derived($page.params.gameId ?? '');
 
@@ -23,7 +26,7 @@
   let phase = $state<'lobby' | 'in_question' | 'reveal' | 'ended'>('lobby');
   let currentQuestion = $state<QuestionPublic | null>(null);
   let timeLeftMs = $state(0);
-  let reveal = $state<{ correctChoice: number | null; distribution: number[] } | null>(null);
+  let reveal = $state<Reveal | null>(null);
   let leaderboard = $state<LeaderboardEntry[]>([]);
   let final = $state<LeaderboardEntry[] | null>(null);
 

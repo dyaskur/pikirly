@@ -103,6 +103,15 @@ export interface ClientToServerEvents {
   }) => void;
 }
 
+export interface QuestionEndPayload {
+  questionIndex: number;
+  correctChoice: number | null;
+  distribution: number[];
+  yourScore?: number;
+  yourCorrect?: boolean;
+  totalScore?: number;
+}
+
 // Server -> Client
 export interface ServerToClientEvents {
   player_joined: (p: PlayerPublic) => void;
@@ -114,14 +123,7 @@ export interface ServerToClientEvents {
     reason?: 'late' | 'duplicate' | 'wrong_question';
     questionIndex: number;
   }) => void;
-  question_end: (payload: {
-    questionIndex: number;
-    correctChoice: number | null;
-    distribution: number[];
-    yourScore?: number;
-    yourCorrect?: boolean;
-    totalScore?: number;
-  }) => void;
+  question_end: (payload: QuestionEndPayload) => void;
   leaderboard_update: (payload: { top: LeaderboardEntry[]; totalPlayers: number }) => void;
   game_end: (payload: { finalLeaderboard: LeaderboardEntry[]; gameId: string }) => void;
   error_msg: (e: { code: string; message: string }) => void;

@@ -1,5 +1,7 @@
 <script lang="ts">
-  import type { PlayerPublic, QuestionPublic, LeaderboardEntry } from '@kahoot/shared';
+  import type { PlayerPublic, QuestionPublic, LeaderboardEntry, QuestionEndPayload } from '@kahoot/shared';
+
+  type Reveal = Pick<QuestionEndPayload, 'correctChoice' | 'distribution'>;
 
   interface Props {
     phase: 'lobby' | 'in_question' | 'reveal' | 'ended';
@@ -8,7 +10,7 @@
     currentQuestion: QuestionPublic | null;
     progressPct: number;
     timeLeftMs: number;
-    reveal: { correctChoice: number | null; distribution: number[] } | null;
+    reveal: Reveal | null;
     leaderboard: LeaderboardEntry[];
     final: LeaderboardEntry[] | null;
   }
