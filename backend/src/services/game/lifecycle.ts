@@ -104,7 +104,7 @@ function endQuestion(io: IO, g: GameState, qIndex: number) {
   const distribution = answerDistribution(g, qIndex);
   const answers = g.answersByQuestion.get(qIndex) ?? new Map();
 
-  const correctChoice = q.correct ?? -1;
+  const correctChoice = q.correct ?? null;
 
   // Per-player reveal includes their score breakdown.
   for (const [playerId, ans] of answers) {

@@ -8,7 +8,7 @@
     currentQuestion: QuestionPublic | null;
     progressPct: number;
     timeLeftMs: number;
-    reveal: { correctChoice: number; distribution: number[] } | null;
+    reveal: { correctChoice: number | null; distribution: number[] } | null;
     leaderboard: LeaderboardEntry[];
     final: LeaderboardEntry[] | null;
   }

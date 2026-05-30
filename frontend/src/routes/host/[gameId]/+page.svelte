@@ -23,7 +23,7 @@
   let phase = $state<'lobby' | 'in_question' | 'reveal' | 'ended'>('lobby');
   let currentQuestion = $state<QuestionPublic | null>(null);
   let timeLeftMs = $state(0);
-  let reveal = $state<{ correctChoice: number; distribution: number[] } | null>(null);
+  let reveal = $state<{ correctChoice: number | null; distribution: number[] } | null>(null);
   let leaderboard = $state<LeaderboardEntry[]>([]);
   let final = $state<LeaderboardEntry[] | null>(null);
 

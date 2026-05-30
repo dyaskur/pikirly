@@ -14,7 +14,7 @@
   let players = $state<PlayerPublic[]>([]);
   let leaderboard = $state<LeaderboardEntry[]>([]);
   let final = $state<LeaderboardEntry[] | null>(null);
-  let reveal = $state<{ correctChoice: number; distribution: number[] } | null>(null);
+  let reveal = $state<{ correctChoice: number | null; distribution: number[] } | null>(null);
 
   let phase = $state<'lobby' | 'in_question' | 'answered' | 'reveal' | 'ended'>('lobby');
   let currentQuestion = $state<QuestionPublic | null>(null);
